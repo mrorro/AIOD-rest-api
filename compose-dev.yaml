@@ -1,0 +1,31 @@
+services:
+  app:
+    entrypoint:
+    - sleep
+    - infinity
+    build:
+      dockerfile: DevDockerfile
+    init: true
+    volumes:
+    - type: bind
+      source: /var/run/docker.sock
+      target: /var/run/docker.sock
+    ports:
+      - "8000:8000"
+    networks:
+      - sql-network
+
+  sqlserver:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ok
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    networks:
+      - sql-network
+
+networks:
+  sql-network:
+    driver: bridge
+
+
