@@ -9,6 +9,7 @@ COPY ./pyproject.toml /app/pyproject.toml
 
 
 RUN pip install .
+RUN python -m pip install ".[dev]"
 
 COPY ./src /app
 
