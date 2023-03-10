@@ -21,6 +21,11 @@ class Publication(BaseModel):
     url: str = Field(max_length=250)
     id: int | None
 
+class Tag(BaseModel):
+    """ The complete metadata for tags """
+    tag: str = Field(max_length=250)
+    id: int | None
+
 
 class BusinessCategory(BaseModel):
     """ The complete metadata of a business category """
@@ -52,4 +57,5 @@ class News(BaseModel):
     comments: Optional[list[str]]
     news_categories: Optional[list[NewsCategory]]
     business_categories: Optional[list[BusinessCategory]]
+    tags: Optional[list[Tag]]
     id: int | None
