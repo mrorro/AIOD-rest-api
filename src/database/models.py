@@ -7,9 +7,10 @@ See also:
 Note: because we use MySQL in the demo, we need to explicitly set maximum string lengths.
 """
 import dataclasses
+from sqlite3 import Date
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
-
-from sqlalchemy import ForeignKey, Table, Column, String, UniqueConstraint
+from sqlalchemy.sql import func
+from sqlalchemy import ForeignKey, Table, Column, String, UniqueConstraint, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, MappedAsDataclass, relationship
 
 
@@ -83,6 +84,7 @@ class DatasetDescription(Base):
     )
 
 
+
 class Publication(Base):
     """Any publication."""
 
@@ -104,6 +106,31 @@ class Publication(Base):
     )
 
 
+news_business_category_relationship = Table(
+    "news_business_category",
+    Base.metadata,
+    Column("news_id", ForeignKey("news.id"),primary_key=True),
+    Column("business_category_id", ForeignKey("business_categories.id"),primary_key=True),
+)
+
+news_tag_relationship = Table(
+    "news_tag",
+    Base.metadata,
+    Column("news_id", ForeignKey("news.id"),primary_key=True),
+    Column("tag_id", ForeignKey("tags.id"),primary_key=True),
+)
+
+news_news_category_relationship = Table(
+    "news_news_category",
+    Base.metadata,
+    Column("news_id", ForeignKey("news.id"),primary_key=True),
+    Column("news_category_id", ForeignKey("news_categories.id"),primary_key=True),
+    
+)
+
+
+
+
 class BusinessCategory(Base):
     """ Any business category """
     __tablename__ = "business_categories"
@@ -115,6 +142,12 @@ class BusinessCategory(Base):
     )
     category: Mapped[str] = mapped_column(String(250), nullable=False)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
+
+    news_business_categories: Mapped[list["News"]] = relationship(
+        default_factory=list,
+        back_populates="business_categories",
+        secondary=news_business_category_relationship,
+    )
 
 
 class NewsCategory(Base):
@@ -129,3 +162,58 @@ class NewsCategory(Base):
     category: Mapped[str] = mapped_column(String(250), nullable=False)
     parent_id: Mapped[int] = mapped_column(ForeignKey("news_categories.id"))
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
+
+
+    news_news_categories: Mapped[list["News"]] = relationship(
+        default_factory=list,
+        back_populates="news_categories",
+        secondary=news_news_category_relationship,
+    )
+
+
+class Tag(Base):
+    """ Any tag """
+    __tablename__ = "tags"
+    __table_args__ = (
+        UniqueConstraint(
+            "tag",
+            name="tag_unique_tag",
+        ),
+    )
+    tag: Mapped[str] = mapped_column(String(250), nullable=False)
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    news_tags: Mapped[list["News"]] = relationship(
+        default_factory=list,
+        back_populates="tags",
+        secondary=news_tag_relationship,
+    )
+
+
+class News(Base):
+    """ Any news """
+    __tablename__ = "news"
+ 
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    date:  Mapped[Date] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    body: Mapped[str] = mapped_column(String(2000), nullable=False)
+    source: Mapped[str] = mapped_column(String(500), nullable=True)
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+
+    business_categories: Mapped[list["BusinessCategory"]] = relationship(
+        default_factory=list,
+        back_populates="news_business_categories",
+        secondary=news_business_category_relationship,
+    )
+
+    news_categories: Mapped[list["NewsCategory"]] = relationship(
+        default_factory=list,
+        back_populates="news_news_categories",
+        secondary=news_news_category_relationship,
+    )
+
+    tags: Mapped[list["Tag"]] = relationship(
+        default_factory=list,
+        back_populates="news_tags",
+        secondary=news_tag_relationship,
+    )
+
