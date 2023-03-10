@@ -18,3 +18,10 @@ class Publication(BaseModel):
     title: str = Field(max_length=250)
     url: str = Field(max_length=250)
     id: int | None
+
+
+class BusinessCategory(BaseModel):
+    """ The complete metadata of a business category """
+    category: str = Field(max_length=250)
+    id: int | None
+
