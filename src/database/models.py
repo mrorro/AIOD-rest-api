@@ -102,3 +102,16 @@ class Publication(Base):
         back_populates="publications",
         secondary=dataset_publication_relationship,
     )
+
+
+class BusinessCategory(Base):
+    """ Any business category """
+    __tablename__ = "business_categories"
+    __table_args__ = (
+        UniqueConstraint(
+            "category",
+            name="business_categories_unique_category",
+        ),
+    )
+    category: Mapped[str] = mapped_column(String(250), nullable=False)
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
