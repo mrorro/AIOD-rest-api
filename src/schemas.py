@@ -1,5 +1,7 @@
+from typing import Optional
+from enum import Enum
 from pydantic import BaseModel, Field
-
+import datetime
 
 class Dataset(BaseModel):
     """The complete metadata of a dataset. Possibly in schema.org format. For now, only a couple
@@ -25,3 +27,28 @@ class BusinessCategory(BaseModel):
     category: str = Field(max_length=250)
     id: int | None
 
+
+class NewsCategory(BaseModel):
+    """ The complete metadata of a business category """
+    category: str = Field(max_length=250)
+    id: int | None
+
+
+class MediaEnum(str,Enum):
+    books = 'books'
+    Eclipse = 'Eclipse'
+    education = 'education'
+    library = 'library'
+
+class News(BaseModel):
+    """ The complete metadata for news entity """
+    
+    title: str = Field(max_length=500)
+    date: datetime.date = datetime.date
+    body: str = Field(max_length=2000)
+    media: Optional[MediaEnum]
+    source: Optional[str] = Field(max_length=500)
+    comments: Optional[list[str]]
+    news_categories: Optional[list[NewsCategory]]
+    business_categories: Optional[list[BusinessCategory]]
+    id: int | None
