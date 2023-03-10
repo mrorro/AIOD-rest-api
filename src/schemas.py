@@ -31,6 +31,7 @@ class BusinessCategory(BaseModel):
 class NewsCategory(BaseModel):
     """ The complete metadata of a business category """
     category: str = Field(max_length=250)
+    parent_id: int | None
     id: int | None
 
 
