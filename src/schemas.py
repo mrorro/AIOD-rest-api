@@ -54,7 +54,6 @@ class News(BaseModel):
     body: str = Field(max_length=2000)
     media: Optional[MediaEnum]
     source: Optional[str] = Field(max_length=500)
-    comments: Optional[list[str]]
     news_categories: Optional[list[NewsCategory]]
     business_categories: Optional[list[BusinessCategory]]
     tags: Optional[list[Tag]]
