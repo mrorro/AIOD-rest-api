@@ -7,8 +7,8 @@ from database.models import PublicationDescription
 
 def test_happy_path(client: TestClient, engine: Engine):
     publications = [
-        PublicationDescription(title="Title 1", url="https://test.test"),
-        PublicationDescription(title="Title 2", url="https://test.test2"),
+        PublicationDescription(doi="10.5281/zenodo.121",node="zenodo",node_specific_identifier="121"),
+        PublicationDescription(doi="10.5281/zenodo.122",node="zenodo",node_specific_identifier="122"),
     ]
     with Session(engine) as session:
         # Populate database
@@ -19,8 +19,9 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response.status_code == 200
     response_json = response.json()
     assert len(response_json) == 2
-    assert {pub["title"] for pub in response_json} == {"Title 1", "Title 2"}
-    assert {pub["url"] for pub in response_json} == {"https://test.test", "https://test.test2"}
+    assert {pub["doi"] for pub in response_json} == {"10.5281/zenodo.121", "10.5281/zenodo.122"}
+    assert {pub["node"] for pub in response_json} == {"zenodo", "zenodo"}
+    assert {pub["node_specific_identifier"] for pub in response_json} == {"121", "122"}
     assert {pub["id"] for pub in response_json} == {1, 2}
     for pub in response_json:
-        assert len(pub) == 3
+        assert len(pub) == 4
