@@ -1,6 +1,8 @@
 import typing
 
-from connectors.zenodo.zenodo_publication_connector import ZenodoPublicationConnector  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
+from connectors.zenodo.zenodo_publication_connector import (
+    ZenodoPublicationConnector,
+)  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 
 from .abstract.dataset_connector import DatasetConnector  # noqa:F401
 from .abstract.publication_connector import PublicationConnector  # noqa:F401
@@ -16,5 +18,5 @@ dataset_connectors = {
 }  # type: typing.Dict[NodeName, DatasetConnector]
 
 publication_connectors = {
-    p.node_name: p for p in (ExamplePublicationConnector(),ZenodoPublicationConnector())
+    p.node_name: p for p in (ExamplePublicationConnector(), ZenodoPublicationConnector())
 }  # type: typing.Dict[NodeName, PublicationConnector]

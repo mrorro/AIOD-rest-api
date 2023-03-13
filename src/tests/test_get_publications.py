@@ -7,8 +7,12 @@ from database.models import PublicationDescription
 
 def test_happy_path(client: TestClient, engine: Engine):
     publications = [
-        PublicationDescription(doi="10.5281/zenodo.121",node="zenodo",node_specific_identifier="121"),
-        PublicationDescription(doi="10.5281/zenodo.122",node="zenodo",node_specific_identifier="122"),
+        PublicationDescription(
+            doi="10.5281/zenodo.121", node="zenodo", node_specific_identifier="121"
+        ),
+        PublicationDescription(
+            doi="10.5281/zenodo.122", node="zenodo", node_specific_identifier="122"
+        ),
     ]
     with Session(engine) as session:
         # Populate database

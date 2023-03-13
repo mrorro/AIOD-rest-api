@@ -19,7 +19,6 @@ class PublicationConnector(abc.ABC):
         """Retrieve all publications"""
         pass
 
-    
     @abc.abstractmethod
     def fetch(self, publication: PublicationDescription) -> Publication:
         """Retrieve extra metadata for this dataset"""
