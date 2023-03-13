@@ -129,7 +129,7 @@ def _retrieve_publication(session, identifier, node=None) -> PublicationDescript
     if node is None:
         query = select(PublicationDescription).where(PublicationDescription.id == identifier)
     else:
-         query = select(PublicationDescription).where(
+        query = select(PublicationDescription).where(
             and_(
                 PublicationDescription.node_specific_identifier == identifier,
                 PublicationDescription.node == node,
@@ -138,9 +138,9 @@ def _retrieve_publication(session, identifier, node=None) -> PublicationDescript
     publication = session.scalars(query).first()
     if not publication:
         if node is None:
-            msg= f"Publication '{identifier}' not found in the database.",
+            msg = (f"Publication '{identifier}' not found in the database.",)
         else:
-            msg=f"Publication '{identifier}' of '{node}' not found in the database."
+            msg = f"Publication '{identifier}' of '{node}' not found in the database."
         raise HTTPException(status_code=404, detail=msg)
     return publication
 
@@ -328,7 +328,9 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 return [
                     publication.to_dict(depth=0)
                     for publication in session.scalars(
-                        select(PublicationDescription).offset(pagination.offset).limit(pagination.limit)
+                        select(PublicationDescription)
+                        .offset(pagination.offset)
+                        .limit(pagination.limit)
                     ).all()
                 ]
         except Exception as e:
@@ -339,7 +341,9 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         """Add a publication."""
         try:
             with Session(engine) as session:
-                new_publication = PublicationDescription(title=publication.title, url=publication.url)
+                new_publication = PublicationDescription(
+                    title=publication.title, url=publication.url
+                )
                 session.add(new_publication)
                 session.commit()
                 return new_publication.to_dict(depth=1)
@@ -383,27 +387,30 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 _retrieve_publication(session, identifier)  # Raise error if it does not exist
 
-                statement = delete(PublicationDescription).where(PublicationDescription.id == identifier)
+                statement = delete(PublicationDescription).where(
+                    PublicationDescription.id == identifier
+                )
                 session.execute(statement)
                 session.commit()
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
     @app.get(url_prefix + "/nodes/{node}/publications/{identifier}")
-    def get_node_dataset(node: str, identifier: str) -> dict:
+    def get_node_publication(node: str, identifier: str) -> dict:
         """Retrieve all meta-data for a specific publication identified by the
         node-specific-identifier."""
-        
+
         try:
-            connector = _connector_from_node_name("publication", connectors.publication_connectors, node)
+            connector = _connector_from_node_name(
+                "publication", connectors.publication_connectors, node
+            )
             with Session(engine) as session:
                 publication = _retrieve_publication(session, identifier, node)
-      
+
             publication_meta = connector.fetch(publication)
             return publication_meta.dict()
         except Exception as e:
             raise _wrap_as_http_exception(e)
-
 
     @app.get(url_prefix + "/datasets/{identifier}/publications")
     def list_publications_related_to_dataset(identifier: str) -> list[dict]:
