@@ -109,22 +109,22 @@ class Publication(Base):
 news_business_category_relationship = Table(
     "news_business_category",
     Base.metadata,
-    Column("news_id", ForeignKey("news.id"),primary_key=True),
-    Column("business_category_id", ForeignKey("business_categories.id"),primary_key=True),
+    Column("news_id", ForeignKey("news.id",ondelete='CASCADE'),primary_key=True),
+    Column("business_category_id", ForeignKey("business_categories.id",ondelete='CASCADE'),primary_key=True),
 )
 
 news_tag_relationship = Table(
     "news_tag",
     Base.metadata,
-    Column("news_id", ForeignKey("news.id"),primary_key=True),
-    Column("tag_id", ForeignKey("tags.id"),primary_key=True),
+    Column("news_id", ForeignKey("news.id",ondelete='CASCADE'),primary_key=True),
+    Column("tag_id", ForeignKey("tags.id",ondelete='CASCADE'),primary_key=True)
 )
 
 news_news_category_relationship = Table(
     "news_news_category",
     Base.metadata,
-    Column("news_id", ForeignKey("news.id"),primary_key=True),
-    Column("news_category_id", ForeignKey("news_categories.id"),primary_key=True),
+    Column("news_id", ForeignKey("news.id",ondelete='CASCADE'),primary_key=True),
+    Column("news_category_id", ForeignKey("news_categories.id",ondelete='CASCADE'),primary_key=True),
     
 )
 
@@ -182,6 +182,6 @@ class News(Base):
 
     business_categories = relationship('BusinessCategory',secondary=news_business_category_relationship,backref='business_categories')
     news_categories = relationship('NewsCategory',secondary=news_news_category_relationship,backref='news_categories')
-    tags = relationship('Tag',secondary=news_tag_relationship,backref='news')
+    tags = relationship('Tag',secondary=news_tag_relationship,backref='news',passive_deletes=True)
 
    
