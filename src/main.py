@@ -138,7 +138,7 @@ def _retrieve_publication(session, identifier, node=None) -> PublicationDescript
     publication = session.scalars(query).first()
     if not publication:
         if node is None:
-            msg = (f"Publication '{identifier}' not found in the database.",)
+            msg = f"Publication '{identifier}' not found in the database."
         else:
             msg = f"Publication '{identifier}' of '{node}' not found in the database."
         raise HTTPException(status_code=404, detail=msg)
