@@ -473,6 +473,16 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
+    @app.get(url_prefix + "/news")
+    def list_all_news(pagination: Pagination = Depends(Pagination)) -> list[News]:
+        """Lists all news registered with AIoD."""
+        try:
+            with Session(engine) as session:
+                query = select(News).offset(pagination.offset).limit(pagination.limit)
+                return session.scalars(query).all()
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
 
 def create_app() -> FastAPI:
     """Create the FastAPI application, complete with routes."""
