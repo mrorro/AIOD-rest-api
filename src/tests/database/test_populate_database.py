@@ -10,7 +10,7 @@ from connectors import (
     OpenMlDatasetConnector,
     HuggingFaceDatasetConnector,
 )
-from database.models import Publication, DatasetDescription
+from database.models import PublicationDescription, DatasetDescription
 from database.setup import populate_database
 from tests.testutils.paths import path_test_resources
 
@@ -26,7 +26,7 @@ def test_example_happy_path(engine: Engine):
     )
     with Session(engine) as session:
         datasets = session.scalars(select(DatasetDescription)).all()
-        publications = session.scalars(select(Publication)).all()
+        publications = session.scalars(select(PublicationDescription)).all()
         assert len(datasets) == 5
         assert len(publications) == 2
         assert {len(d.publications) for d in datasets} == {0, 1, 2}
@@ -46,7 +46,7 @@ def test_openml_happy_path(engine: Engine):
 
     with Session(engine) as session:
         datasets = session.scalars(select(DatasetDescription)).all()
-        publications = session.scalars(select(Publication)).all()
+        publications = session.scalars(select(PublicationDescription)).all()
         assert len(datasets) == 5
         assert len(publications) == 2
         assert {len(d.publications) for d in datasets} == {0, 1}

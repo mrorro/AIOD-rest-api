@@ -76,26 +76,27 @@ class DatasetDescription(Base):
     node: Mapped[str] = mapped_column(String(30), nullable=False)
     node_specific_identifier: Mapped[str] = mapped_column(String(250), nullable=False)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    publications: Mapped[list["Publication"]] = relationship(
+    publications: Mapped[list["PublicationDescription"]] = relationship(
         default_factory=list,
         back_populates="datasets",
         secondary=dataset_publication_relationship,
     )
 
 
-class Publication(Base):
+class PublicationDescription(Base):
     """Any publication."""
 
     __tablename__ = "publications"
     __table_args__ = (
         UniqueConstraint(
-            "title",
-            "url",
-            name="publications_unique_title_url",
+            "node",
+            "node_specific_identifier",
+            name="publications_unique_node_node_specific_identifier",
         ),
     )
-    title: Mapped[str] = mapped_column(String(250), nullable=False)
-    url: Mapped[str] = mapped_column(String(250), nullable=False)
+    doi: Mapped[str] = mapped_column(String(250), nullable=False)
+    node: Mapped[str] = mapped_column(String(30), nullable=False)
+    node_specific_identifier: Mapped[str] = mapped_column(String(250), nullable=False)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     datasets: Mapped[list["DatasetDescription"]] = relationship(
         default_factory=list,

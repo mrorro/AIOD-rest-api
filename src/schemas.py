@@ -15,6 +15,6 @@ class Publication(BaseModel):
     """The complete metadata of a publication. For now, only a couple of fields are shown,
     we have to decide which fields to use."""
 
+    doi: str = Field(max_length=250)
     title: str = Field(max_length=250)
-    url: str = Field(max_length=250)
     id: int | None

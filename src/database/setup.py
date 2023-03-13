@@ -8,7 +8,7 @@ from sqlalchemy import Engine, text, create_engine, select
 from sqlalchemy.orm import Session
 
 from connectors import DatasetConnector, PublicationConnector
-from .models import Base, DatasetDescription, Publication
+from .models import Base, DatasetDescription, PublicationDescription
 
 
 def connect_to_database(
@@ -81,7 +81,7 @@ def populate_database(
     _link_datasets_with_publications(datasets, publications)
     with Session(engine) as session:
         data_exists = (
-            session.scalars(select(Publication)).first()
+            session.scalars(select(PublicationDescription)).first()
             or session.scalars(select(DatasetDescription)).first()
         )
         if only_if_empty and data_exists:

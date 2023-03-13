@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 import connectors
 import schemas
 from connectors import NodeName
-from database.models import DatasetDescription, Publication
+from database.models import DatasetDescription, PublicationDescription
 from database.setup import connect_to_database, populate_database
 
 
@@ -125,14 +125,23 @@ def _retrieve_dataset(session, identifier, node=None) -> DatasetDescription:
     return dataset
 
 
-def _retrieve_publication(session, identifier) -> Publication:
-    query = select(Publication).where(Publication.id == identifier)
+def _retrieve_publication(session, identifier, node=None) -> PublicationDescription:
+    if node is None:
+        query = select(PublicationDescription).where(PublicationDescription.id == identifier)
+    else:
+         query = select(PublicationDescription).where(
+            and_(
+                PublicationDescription.node_specific_identifier == identifier,
+                PublicationDescription.node == node,
+            )
+        )
     publication = session.scalars(query).first()
     if not publication:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Publication '{identifier}' not found in the database.",
-        )
+        if node is None:
+            msg= f"Publication '{identifier}' not found in the database.",
+        else:
+            msg=f"Publication '{identifier}' of '{node}' not found in the database."
+        raise HTTPException(status_code=404, detail=msg)
     return publication
 
 
@@ -319,7 +328,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 return [
                     publication.to_dict(depth=0)
                     for publication in session.scalars(
-                        select(Publication).offset(pagination.offset).limit(pagination.limit)
+                        select(PublicationDescription).offset(pagination.offset).limit(pagination.limit)
                     ).all()
                 ]
         except Exception as e:
@@ -330,7 +339,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         """Add a publication."""
         try:
             with Session(engine) as session:
-                new_publication = Publication(title=publication.title, url=publication.url)
+                new_publication = PublicationDescription(title=publication.title, url=publication.url)
                 session.add(new_publication)
                 session.commit()
                 return new_publication.to_dict(depth=1)
@@ -354,12 +363,12 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 _retrieve_publication(session, identifier)  # Raise error if dataset does not exist
                 statement = (
-                    update(Publication)
+                    update(PublicationDescription)
                     .values(
                         title=publication.title,
                         url=publication.url,
                     )
-                    .where(Publication.id == identifier)
+                    .where(PublicationDescription.id == identifier)
                 )
                 session.execute(statement)
                 session.commit()
@@ -374,7 +383,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 _retrieve_publication(session, identifier)  # Raise error if it does not exist
 
-                statement = delete(Publication).where(Publication.id == identifier)
+                statement = delete(PublicationDescription).where(PublicationDescription.id == identifier)
                 session.execute(statement)
                 session.commit()
         except Exception as e:
@@ -384,13 +393,14 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
     def get_node_dataset(node: str, identifier: str) -> dict:
         """Retrieve all meta-data for a specific publication identified by the
         node-specific-identifier."""
-        return {"ok": True}
+        
         try:
-            connector = _connector_from_node_name("dataset", connectors.dataset_connectors, node)
+            connector = _connector_from_node_name("publication", connectors.publication_connectors, node)
             with Session(engine) as session:
-                dataset = _retrieve_dataset(session, identifier, node)
-            dataset_meta = connector.fetch(dataset)
-            return dataset_meta.dict()
+                publication = _retrieve_publication(session, identifier, node)
+      
+            publication_meta = connector.fetch(publication)
+            return publication_meta.dict()
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
