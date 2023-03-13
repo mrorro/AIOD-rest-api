@@ -116,8 +116,8 @@ news_business_category_relationship = Table(
 news_tag_relationship = Table(
     "news_tag",
     Base.metadata,
-    Column("news_id", ForeignKey("news.id",ondelete='CASCADE'),primary_key=True),
-    Column("tag_id", ForeignKey("tags.id",ondelete='CASCADE'),primary_key=True)
+    Column("news_id", ForeignKey("news.id",ondelete='CASCADE', onupdate='RESTRICT'),primary_key=True),
+    Column("tag_id", ForeignKey("tags.id",ondelete='CASCADE', onupdate='RESTRICT'),primary_key=True)
 )
 
 news_news_category_relationship = Table(
@@ -180,8 +180,8 @@ class News(Base):
     source: Mapped[str] = mapped_column(String(500), nullable=True)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
-    business_categories = relationship('BusinessCategory',secondary=news_business_category_relationship,backref='business_categories')
-    news_categories = relationship('NewsCategory',secondary=news_news_category_relationship,backref='news_categories')
+    business_categories = relationship('BusinessCategory',secondary=news_business_category_relationship,backref='business_categories',passive_deletes=True)
+    news_categories = relationship('NewsCategory',secondary=news_news_category_relationship,backref='news_categories',passive_deletes=True)
     tags = relationship('Tag',secondary=news_tag_relationship,backref='news',passive_deletes=True)
 
    
