@@ -10,6 +10,9 @@ services:
     - type: bind
       source: /var/run/docker.sock
       target: /var/run/docker.sock
+    - type: bind
+      source: ~/.ssh/
+      target: /root/.ssh/
     ports:
       - "8000:8000"
     networks:
