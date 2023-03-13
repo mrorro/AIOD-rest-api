@@ -12,7 +12,7 @@ from tests.testutils.paths import path_test_resources
 #Testing imports
 import pytest
 
-ZENODO_URL = "https://zenodo.org/api/"
+ZENODO_URL = "https://zenodo.org/api"
 
 
 def test_happy_path(client: TestClient, engine: Engine):
@@ -60,6 +60,32 @@ def test_publication_not_found_in_local_db(client: TestClient, engine: Engine):
     assert response.json()["detail"] == "Publication '2' of 'zenodo' not found in the database."
 
 
+def test_publication_not_found_in_zenodo(client: TestClient, engine: Engine):
+    dataset_description = PublicationDescription(
+        doi="10.5281/zenodo.7712947", node="zenodo", node_specific_identifier="7712947"
+    )
+    with Session(engine) as session:
+        # Populate database
+        # Deepcopy necessary because SqlAlchemy changes the instance so that accessing the
+        # node_specific_identifier is not possible anymore
+        session.add(copy.deepcopy(dataset_description))
+        session.commit()
+
+    with responses.RequestsMock() as mocked_requests:
+        mocked_requests.add(
+            responses.GET,
+            f"{ZENODO_URL}/records/{dataset_description.node_specific_identifier}",
+            json={"status": "404", "message": "PID does not exist."},
+            status=404,
+        )
+        response = client.get("/nodes/zenodo/publications/7712947")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Error while fetching data from Zenodo: 'PID does not exist.'"
+
+
+
+
+
 
 def _mock_normal_responses(
     mocked_requests: responses.RequestsMock, publication_description: PublicationDescription
@@ -72,7 +98,7 @@ def _mock_normal_responses(
 
     mocked_requests.add(
         responses.GET,
-        f"{ZENODO_URL}records/{publication_description.node_specific_identifier}",
+        f"{ZENODO_URL}/records/{publication_description.node_specific_identifier}",
         json=data_response,
         status=200,
     )

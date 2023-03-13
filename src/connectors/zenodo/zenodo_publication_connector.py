@@ -16,9 +16,7 @@ class ZenodoPublicationConnector(PublicationConnector):
         response = requests.get(url_data)
         if not response.ok:
             code = response.status_code
-            if code == 404 and response.json()["message"] == "PID does not exist.":
-                code = 404
-            msg = response.json()["error"]["message"]
+            msg = response.json()["message"]
             raise HTTPException(
                 status_code=code,
                 detail=f"Error while fetching data from Zenodo: '{msg}'",
@@ -30,7 +28,7 @@ class ZenodoPublicationConnector(PublicationConnector):
          )
         return result
     
-    
+
     def fetch_all(self, limit: int | None) -> Iterator[PublicationDescription]:
         yield from [
             
