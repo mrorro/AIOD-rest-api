@@ -11,12 +11,12 @@ from database.models import PublicationDescription, DatasetDescription
 @pytest.mark.parametrize("publication_id", [1, 2])
 def test_happy_path(client: TestClient, engine: Engine, publication_id: int):
     datasets = [
-        DatasetDescription(name="dset1", node="openml", node_specific_identifier="1"),
+        DatasetDescription(name="dset1", node="zenodo", node_specific_identifier="1"),
         DatasetDescription(name="dset1", node="other_node", node_specific_identifier="1"),
     ]
     publications = [
-        PublicationDescription(title="Title 1", url="https://test.test", datasets=datasets),
-        PublicationDescription(title="Title 2", url="https://test.test2", datasets=datasets),
+        PublicationDescription(doi="10.5281/zenodo.121",node="zenodo",node_specific_identifier="121", datasets=datasets),
+        PublicationDescription(doi="10.5281/zenodo.122",node="zenodo",node_specific_identifier="122",  datasets=datasets),
     ]
     with Session(engine) as session:
         # Populate database
@@ -30,11 +30,12 @@ def test_happy_path(client: TestClient, engine: Engine, publication_id: int):
     response_json = response.json()
 
     expected = publications[publication_id - 1]
-    assert response_json["title"] == expected.title
-    assert response_json["url"] == expected.url
+    assert response_json["doi"] == expected.doi
+    assert response_json["node"] == expected.node
+    assert response_json["node_specific_identifier"] == expected.node_specific_identifier
     assert response_json["id"] == publication_id
     assert len(response_json["datasets"]) == len(datasets)
-    assert len(response_json) == 4
+    assert len(response_json) == 5
 
 
 @pytest.mark.parametrize("publication_id", [-1, 2, 3])
