@@ -136,6 +136,15 @@ def _retrieve_publication(session, identifier) -> Publication:
         )
     return publication
 
+def _retrieve_news(session,identifier) -> News:
+    query = select(News).where(News.id == identifier)
+    news = session.scalars(query).first()
+    if not news:
+        raise HTTPException(
+            status_code=404,
+            detail=f"News '{identifier}' not found in the database.",
+        )
+    return news
 
 def _wrap_as_http_exception(exception: Exception) -> HTTPException:
     if isinstance(exception, HTTPException):
@@ -482,6 +491,20 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 return session.scalars(query).all()
         except Exception as e:
             raise _wrap_as_http_exception(e)
+
+    @app.delete(url_prefix + "/news/{identifier}")
+    def delete_news(identifier: str):
+        """Delete this news from AIoD."""
+        try:
+            with Session(engine) as session:
+                _retrieve_news(session, identifier)  # Raise error if it does not exist
+
+                statement = delete(News).where(News.id == identifier)
+                session.execute(statement)
+                session.commit()
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
 
 
 def create_app() -> FastAPI:
