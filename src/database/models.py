@@ -128,9 +128,6 @@ news_news_category_relationship = Table(
     
 )
 
-
-
-
 class BusinessCategory(Base):
     """ Any business category """
     __tablename__ = "business_categories"
@@ -143,12 +140,6 @@ class BusinessCategory(Base):
     category: Mapped[str] = mapped_column(String(250), nullable=False)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
-    news_business_categories: Mapped[list["News"]] = relationship(
-        default_factory=list,
-        back_populates="business_categories",
-        secondary=news_business_category_relationship,
-    )
-
 
 class NewsCategory(Base):
     """ Any news category """
@@ -160,15 +151,9 @@ class NewsCategory(Base):
         ),
     )
     category: Mapped[str] = mapped_column(String(250), nullable=False)
-    parent_id: Mapped[int] = mapped_column(ForeignKey("news_categories.id"))
+    parent_id: Mapped[int] = mapped_column(ForeignKey("news_categories.id"),nullable=True)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
-
-    news_news_categories: Mapped[list["News"]] = relationship(
-        default_factory=list,
-        back_populates="news_categories",
-        secondary=news_news_category_relationship,
-    )
 
 
 class Tag(Base):
@@ -182,11 +167,7 @@ class Tag(Base):
     )
     tag: Mapped[str] = mapped_column(String(250), nullable=False)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    news_tags: Mapped[list["News"]] = relationship(
-        default_factory=list,
-        back_populates="tags",
-        secondary=news_tag_relationship,
-    )
+
 
 
 class News(Base):
@@ -199,21 +180,8 @@ class News(Base):
     source: Mapped[str] = mapped_column(String(500), nullable=True)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
-    business_categories: Mapped[list["BusinessCategory"]] = relationship(
-        default_factory=list,
-        back_populates="news_business_categories",
-        secondary=news_business_category_relationship,
-    )
+    business_categories = relationship('BusinessCategory',secondary=news_business_category_relationship,backref='business_categories')
+    news_categories = relationship('NewsCategory',secondary=news_news_category_relationship,backref='news_categories')
+    tags = relationship('Tag',secondary=news_tag_relationship,backref='news')
 
-    news_categories: Mapped[list["NewsCategory"]] = relationship(
-        default_factory=list,
-        back_populates="news_news_categories",
-        secondary=news_news_category_relationship,
-    )
-
-    tags: Mapped[list["Tag"]] = relationship(
-        default_factory=list,
-        back_populates="news_tags",
-        secondary=news_tag_relationship,
-    )
-
+   

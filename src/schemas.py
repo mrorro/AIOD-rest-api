@@ -34,7 +34,7 @@ class BusinessCategory(BaseModel):
 
 
 class NewsCategory(BaseModel):
-    """ The complete metadata of a business category """
+    """ The complete metadata of a news category """
     category: str = Field(max_length=250)
     parent_id: int | None
     id: int | None
@@ -50,11 +50,11 @@ class News(BaseModel):
     """ The complete metadata for news entity """
     
     title: str = Field(max_length=500)
-    date: datetime.date = datetime.date
+    date: datetime.date
     body: str = Field(max_length=2000)
     media: Optional[MediaEnum]
-    source: Optional[str] = Field(max_length=500)
-    news_categories: Optional[list[NewsCategory]]
-    business_categories: Optional[list[BusinessCategory]]
-    tags: Optional[list[Tag]]
+    source: Optional[str]
+    news_categories: Optional[list[str]]
+    business_categories: Optional[list[str]]
+    tags: Optional[list[str]]
     id: int | None

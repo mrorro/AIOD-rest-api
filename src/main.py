@@ -5,6 +5,7 @@ Note: order matters for overloaded paths
 (https://fastapi.tiangolo.com/tutorial/path-params/#order-matters).
 """
 import argparse
+from unicodedata import category
 import tomllib
 import traceback
 from typing import Dict
@@ -20,7 +21,7 @@ from sqlalchemy.orm import Session
 import connectors
 import schemas
 from connectors import NodeName
-from database.models import DatasetDescription, Publication
+from database.models import *#DatasetDescription, Publication, News
 from database.setup import connect_to_database, populate_database
 
 
@@ -421,6 +422,54 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                     )
                 dataset.publications = [p for p in dataset.publications if p != publication]
                 session.commit()
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
+    @app.post(url_prefix + "/news")
+    def register_news(news: schemas.News) -> dict:
+        """Add news."""
+        try:
+            with Session(engine) as session:
+                tags = []
+                for t in news.tags:
+                    query = select(Tag).where(Tag.tag == t)
+                    tag = session.scalars(query).first()
+                    if not tag:
+                        raise HTTPException(
+                            status_code=404,
+                            detail=f"Tag '{t}' not found in the database.",
+                        )
+                    tags.append(tag)
+                business_categories = []
+                for c in news.business_categories:
+                    query = select(BusinessCategory).where(BusinessCategory.category == c)
+                    category = session.scalars(query).first()
+                    if not category:
+                        raise HTTPException(
+                            status_code=404,
+                            detail=f"Business category '{c}' not found in the database.",
+                        )
+                    business_categories.append(category)
+
+                news_categories = []
+                for c in news.news_categories:
+                    query = select(NewsCategory).where(NewsCategory.category == c)
+                    category = session.scalars(query).first()
+                    if not category:
+                        raise HTTPException(
+                            status_code=404,
+                            detail=f"News category '{c}' not found in the database.",
+                        )
+                    news_categories.append(category)
+
+
+                new_news = News(title=news.title, date=news.date, body=news.body,source=news.source)
+                new_news.tags = tags
+                new_news.business_categories = business_categories
+                new_news.news_categories = news_categories
+                session.add(new_news)
+                session.commit()
+                return new_news.to_dict(depth=1)
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
