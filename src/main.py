@@ -380,6 +380,21 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
+    @app.get(url_prefix + "/nodes/{node}/publications/{identifier}")
+    def get_node_dataset(node: str, identifier: str) -> dict:
+        """Retrieve all meta-data for a specific publication identified by the
+        node-specific-identifier."""
+        return {"ok": True}
+        try:
+            connector = _connector_from_node_name("dataset", connectors.dataset_connectors, node)
+            with Session(engine) as session:
+                dataset = _retrieve_dataset(session, identifier, node)
+            dataset_meta = connector.fetch(dataset)
+            return dataset_meta.dict()
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
+
     @app.get(url_prefix + "/datasets/{identifier}/publications")
     def list_publications_related_to_dataset(identifier: str) -> list[dict]:
         """Lists all publications registered with AIoD that use this dataset."""

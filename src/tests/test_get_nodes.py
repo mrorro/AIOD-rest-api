@@ -7,4 +7,4 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response.status_code == 200
     response_json = response.json()
 
-    assert set(response_json) == {"openml", "huggingface", "example"}
+    assert set(response_json) == {"openml", "huggingface", "example","zenodo"}
