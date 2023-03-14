@@ -29,9 +29,15 @@ class ZenodoPublicationConnector(PublicationConnector):
     def fetch_all(self, limit: int | None) -> Iterator[PublicationDescription]:
         yield from [
             PublicationDescription(
-                doi="10.5281/zenodo.7712947", node="zenodo", node_specific_identifier="7712947"
+                title="Student-Centred Studio Environments: A Deep Dive into Architecture Students' Needs",
+                doi="10.5281/zenodo.7712947",
+                node="zenodo",
+                node_specific_identifier="7712947",
             ),
             PublicationDescription(
-                doi=" 10.5281/zenodo.6306305", node="zenodo", node_specific_identifier="6306305"
+                title="[Supplementary Materials] De-escalation of asymptomatic testing and potential of future COVID-19 outbreaks in U.S. nursing homes amidst rising community vaccination coverage: a modeling study",
+                doi=" 10.5281/zenodo.6306305",
+                node="zenodo",
+                node_specific_identifier="6306305",
             ),
         ][:limit]

@@ -9,8 +9,6 @@ from starlette.testclient import TestClient
 from database.models import PublicationDescription
 from tests.testutils.paths import path_test_resources
 
-# Testing imports
-import pytest
 
 ZENODO_URL = "https://zenodo.org/api"
 
@@ -18,7 +16,10 @@ ZENODO_URL = "https://zenodo.org/api"
 def test_happy_path(client: TestClient, engine: Engine):
 
     publication_description = PublicationDescription(
-        doi="10.5281/zenodo.7712947", node="zenodo", node_specific_identifier="7712947"
+        title="Student-Centred Studio Environments: A Deep Dive into Architecture Students' Needs",
+        doi="10.5281/zenodo.7712947",
+        node="zenodo",
+        node_specific_identifier="7712947",
     )
     with Session(engine) as session:
         # Populate database.
@@ -44,7 +45,10 @@ def test_happy_path(client: TestClient, engine: Engine):
 def test_publication_not_found_in_local_db(client: TestClient, engine: Engine):
 
     publication_description = PublicationDescription(
-        doi="10.5281/zenodo.7712947", node="zenodo", node_specific_identifier="7712947"
+        title="Student-Centred Studio Environments: A Deep Dive into Architecture Students' Needs",
+        doi="10.5281/zenodo.7712947",
+        node="zenodo",
+        node_specific_identifier="7712947",
     )
     with Session(engine) as session:
         # Populate database.
@@ -59,20 +63,23 @@ def test_publication_not_found_in_local_db(client: TestClient, engine: Engine):
 
 
 def test_publication_not_found_in_zenodo(client: TestClient, engine: Engine):
-    dataset_description = PublicationDescription(
-        doi="10.5281/zenodo.7712947", node="zenodo", node_specific_identifier="7712947"
+    publication_description = PublicationDescription(
+        title="Student-Centred Studio Environments: A Deep Dive into Architecture Students' Needs",
+        doi="10.5281/zenodo.7712947",
+        node="zenodo",
+        node_specific_identifier="7712947",
     )
     with Session(engine) as session:
         # Populate database
         # Deepcopy necessary because SqlAlchemy changes the instance so that accessing the
         # node_specific_identifier is not possible anymore
-        session.add(copy.deepcopy(dataset_description))
+        session.add(copy.deepcopy(publication_description))
         session.commit()
 
     with responses.RequestsMock() as mocked_requests:
         mocked_requests.add(
             responses.GET,
-            f"{ZENODO_URL}/records/{dataset_description.node_specific_identifier}",
+            f"{ZENODO_URL}/records/{publication_description.node_specific_identifier}",
             json={"status": "404", "message": "PID does not exist."},
             status=404,
         )

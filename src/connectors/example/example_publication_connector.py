@@ -9,10 +9,16 @@ class ExamplePublicationConnector(PublicationConnector):
     def fetch_all(self, limit: int | None) -> Iterator[PublicationDescription]:
         yield from [
             PublicationDescription(
-                doi="10.5281/zenodo.7712947", node="zenodo", node_specific_identifier="7712947"
+                title="AMLB: an AutoML Benchmark",
+                doi="10.5281/zenodo.7712947",
+                node="zenodo",
+                node_specific_identifier="7712947",
             ),
             PublicationDescription(
-                doi=" 10.5281/zenodo.6306305", node="zenodo", node_specific_identifier="6306305"
+                title="Searching for exotic particles in high-energy physics with deep learning",
+                doi="10.5281/zenodo.6306305",
+                node="zenodo",
+                node_specific_identifier="6306305",
             ),
         ][:limit]
 

@@ -17,13 +17,13 @@ def test_get_happy_path(client: TestClient, engine: Engine):
         "AMLB: an AutoML Benchmark",
         "Searching for exotic particles in high-energy physics with deep learning",
     }
-    assert {pub["url"] for pub in publications} == {
-        "https://arxiv.org/abs/2207.12560",
-        "https://www.nature.com/articles/ncomms5308",
+    assert {pub["doi"] for pub in publications} == {
+        "10.5281/zenodo.7712947",
+        "10.5281/zenodo.6306305",
     }
     assert {pub["id"] for pub in publications} == {1, 2}
     for pub in publications:
-        assert len(pub) == 3
+        assert len(pub) == 5
 
 
 def test_post_happy_path(client: TestClient, engine: Engine):

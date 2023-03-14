@@ -69,7 +69,7 @@ def test_huggingface_happy_path(engine: Engine):
 
     with Session(engine) as session:
         datasets = session.scalars(select(DatasetDescription)).all()
-        publications = session.scalars(select(Publication)).all()
+        publications = session.scalars(select(PublicationDescription)).all()
         assert len(datasets) == 3 * 6
         ids = [d.node_specific_identifier for d in datasets]
         names = [d.name for d in datasets]

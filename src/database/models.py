@@ -94,6 +94,7 @@ class PublicationDescription(Base):
             name="publications_unique_node_node_specific_identifier",
         ),
     )
+    title: Mapped[str] = mapped_column(String(250), nullable=False)
     doi: Mapped[str] = mapped_column(String(250), nullable=False)
     node: Mapped[str] = mapped_column(String(30), nullable=False)
     node_specific_identifier: Mapped[str] = mapped_column(String(250), nullable=False)

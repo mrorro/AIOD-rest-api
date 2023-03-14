@@ -16,12 +16,14 @@ def test_happy_path(client: TestClient, engine: Engine, publication_id: int):
     ]
     publications = [
         PublicationDescription(
+            title="title 1",
             doi="10.5281/zenodo.121",
             node="zenodo",
             node_specific_identifier="121",
             datasets=datasets,
         ),
         PublicationDescription(
+            title="title 2",
             doi="10.5281/zenodo.122",
             node="zenodo",
             node_specific_identifier="122",
@@ -40,12 +42,13 @@ def test_happy_path(client: TestClient, engine: Engine, publication_id: int):
     response_json = response.json()
 
     expected = publications[publication_id - 1]
+    assert response_json["title"] == expected.title
     assert response_json["doi"] == expected.doi
     assert response_json["node"] == expected.node
     assert response_json["node_specific_identifier"] == expected.node_specific_identifier
     assert response_json["id"] == publication_id
     assert len(response_json["datasets"]) == len(datasets)
-    assert len(response_json) == 5
+    assert len(response_json) == 6
 
 
 @pytest.mark.parametrize("publication_id", [-1, 2, 3])
@@ -53,14 +56,17 @@ def test_empty_db(client: TestClient, engine: Engine, publication_id):
     response = client.get(f"/publications/{publication_id}")
     assert response.status_code == 404
     assert response.json()["detail"] == f"Publication '{publication_id}' not found in the database."
-    
 
 
 @pytest.mark.parametrize("publication_id", [-1, 2, 3])
 def test_publication_not_found(client: TestClient, engine: Engine, publication_id):
     publications = [
         PublicationDescription(
-            doi="10.5281/zenodo.121", node="zenodo", node_specific_identifier="121", datasets=[]
+            title="title 1",
+            doi="10.5281/zenodo.121",
+            node="zenodo",
+            node_specific_identifier="121",
+            datasets=[],
         ),
     ]
     with Session(engine) as session:
@@ -69,5 +75,4 @@ def test_publication_not_found(client: TestClient, engine: Engine, publication_i
         session.commit()
     response = client.get(f"/publications/{publication_id}")  # Note that only publication 1 exists
     assert response.status_code == 404
-    assert response.json()["detail"] ==  f"Publication '{publication_id}' not found in the database."
-    
+    assert response.json()["detail"] == f"Publication '{publication_id}' not found in the database."
