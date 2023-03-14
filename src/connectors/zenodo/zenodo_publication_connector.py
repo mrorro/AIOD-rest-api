@@ -22,7 +22,8 @@ class ZenodoPublicationConnector(PublicationConnector):
             )
         publication_json = response.json()
         result = Publication(
-            doi=publication_json["doi"], title=publication_json["metadata"]["title"]
+            doi=publication_json["doi"], title=publication_json["metadata"]["title"],node=publication.node,
+            node_specific_identifier=publication.node_specific_identifier
         )
         return result
 

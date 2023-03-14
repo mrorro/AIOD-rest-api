@@ -17,4 +17,6 @@ class Publication(BaseModel):
 
     doi: str = Field(max_length=250)
     title: str = Field(max_length=250)
+    node_specific_identifier: str = Field(max_length=250)
+    node: str = Field(max_length=30)
     id: int | None

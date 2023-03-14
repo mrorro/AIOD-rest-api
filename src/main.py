@@ -342,10 +342,26 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         try:
             with Session(engine) as session:
                 new_publication = PublicationDescription(
-                    title=publication.title, url=publication.url
+                    title=publication.title, doi=publication.doi,
+                    node=publication.node, node_specific_identifier=publication.node_specific_identifier
                 )
                 session.add(new_publication)
-                session.commit()
+                try:
+                    session.commit()
+                except IntegrityError:
+                    session.rollback()
+                    query = select(PublicationDescription).where(
+                        and_(
+                            PublicationDescription.doi == publication.doi,
+                            PublicationDescription.node == publication.node,
+                        )
+                    )
+                    existing_dataset = session.scalars(query).first()
+                    raise HTTPException(
+                        status_code=409,
+                        detail="There already exists a dataset with the same "
+                        f"node and name, with id={existing_dataset.id}.",
+                    )
                 return new_publication.to_dict(depth=1)
         except Exception as e:
             raise _wrap_as_http_exception(e)
