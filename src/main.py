@@ -342,8 +342,10 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         try:
             with Session(engine) as session:
                 new_publication = PublicationDescription(
-                    title=publication.title, doi=publication.doi,
-                    node=publication.node, node_specific_identifier=publication.node_specific_identifier
+                    title=publication.title,
+                    doi=publication.doi,
+                    node=publication.node,
+                    node_specific_identifier=publication.node_specific_identifier,
                 )
                 session.add(new_publication)
                 try:
@@ -386,7 +388,9 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                     update(PublicationDescription)
                     .values(
                         title=publication.title,
-                        url=publication.url,
+                        doi=publication.doi,
+                        node=publication.node,
+                        node_specific_identifier=publication.node_specific_identifier,
                     )
                     .where(PublicationDescription.id == identifier)
                 )
