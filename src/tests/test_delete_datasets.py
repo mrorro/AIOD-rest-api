@@ -11,9 +11,27 @@ from database.models import DatasetDescription
 @pytest.mark.parametrize("identifier", ["1", "2", "3"])
 def test_happy_path(client: TestClient, engine: Engine, identifier: str):
     datasets = [
-        DatasetDescription(name="dset1", node="openml", node_specific_identifier="1"),
-        DatasetDescription(name="dset1", node="other_node", node_specific_identifier="1"),
-        DatasetDescription(name="dset2", node="other_node", node_specific_identifier="2"),
+        DatasetDescription(
+            name="dset1",
+            description="",
+            node="openml",
+            same_as="url_openml",
+            node_specific_identifier="1",
+        ),
+        DatasetDescription(
+            name="dset1",
+            description="",
+            node="other_node",
+            same_as="url_other_node_1",
+            node_specific_identifier="1",
+        ),
+        DatasetDescription(
+            name="dset2",
+            description="",
+            node="other_node",
+            same_as="url_other_node_2",
+            node_specific_identifier="2",
+        ),
     ]
     with Session(engine) as session:
         # Populate database
@@ -29,9 +47,27 @@ def test_happy_path(client: TestClient, engine: Engine, identifier: str):
 @pytest.mark.parametrize("identifier", ["4", "5"])
 def test_nonexistent_dataset(client: TestClient, engine: Engine, identifier: str):
     datasets = [
-        DatasetDescription(name="dset1", node="openml", node_specific_identifier="1"),
-        DatasetDescription(name="dset1", node="other_node", node_specific_identifier="1"),
-        DatasetDescription(name="dset2", node="other_node", node_specific_identifier="2"),
+        DatasetDescription(
+            name="dset1",
+            node="openml",
+            description="",
+            same_as="openml.eu/1",
+            node_specific_identifier="1",
+        ),
+        DatasetDescription(
+            name="dset1",
+            node="other_node",
+            description="",
+            same_as="other_node.eu/1",
+            node_specific_identifier="1",
+        ),
+        DatasetDescription(
+            name="dset2",
+            node="other_node",
+            description="",
+            same_as="other_node.eu/2",
+            node_specific_identifier="2",
+        ),
     ]
     with Session(engine) as session:
         # Populate database

@@ -8,7 +8,15 @@ from sqlalchemy import Engine, text, create_engine, select
 from sqlalchemy.orm import Session
 
 from connectors import DatasetConnector, PublicationConnector
-from .models import Base, DatasetDescription, Publication
+from .models import (
+    Base,
+    DatasetDescription,
+    Publication,
+    License,
+    Keyword,
+    AlternateName,
+    MeasuredValue,
+)
 
 
 def connect_to_database(
@@ -75,8 +83,8 @@ def populate_database(
             *[c.fetch_all(limit=limit_publications) for c in publications_connectors]
         )
 
-    datasets = list(datasets_iterable)
-    publications = list(publications_iterable)
+    datasets: List[DatasetDescription] = list(datasets_iterable)
+    publications: List[Publication] = list(publications_iterable)
     # For now, we cannot make use of generators, because we have to link the datasets with the
     # publications. This is a temporary setup though, so it makes sense to let the fetch_all()
     # return an iterator for future benefits.
@@ -88,6 +96,24 @@ def populate_database(
         )
         if only_if_empty and data_exists:
             return
+
+        for dataset in datasets:
+            if dataset.license is not None:
+                dataset.license = License.as_unique(session=session, name=dataset.license.name)
+            dataset.alternate_names = [
+                AlternateName.as_unique(session=session, name=alias.name)
+                for alias in dataset.alternate_names
+            ]
+            dataset.keywords = [
+                Keyword.as_unique(session=session, name=keyword.name)
+                for keyword in dataset.keywords
+            ]
+            dataset.measured_values = [
+                MeasuredValue.as_unique(
+                    session=session, technique=measured_value.technique, value=measured_value.value
+                )
+                for measured_value in dataset.measured_values
+            ]
 
         session.add_all(datasets)
         session.add_all(publications)

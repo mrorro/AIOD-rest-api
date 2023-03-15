@@ -109,6 +109,8 @@ def _retrieve_dataset(session, identifier, node=None) -> DatasetDescription:
     if node is None:
         query = select(DatasetDescription).where(DatasetDescription.id == identifier)
     else:
+        if node not in {n.name for n in NodeName}:
+            raise HTTPException(status_code=400, detail=f"Node '{node}' not recognized.")
         query = select(DatasetDescription).where(
             and_(
                 DatasetDescription.node_specific_identifier == identifier,
@@ -202,15 +204,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         try:
             with Session(engine) as session:
                 dataset = _retrieve_dataset(session, identifier)
-            node = dataset.node
-            connector = connectors.dataset_connectors.get(node, None)
-            if connector is None:
-                raise HTTPException(
-                    status_code=501,
-                    detail=f"No connector for node '{node}' available.",
-                )
-            dataset_meta = connector.fetch(dataset)
-            return dataset_meta.dict()
+                return dataset.to_dict(depth=1)
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
@@ -239,11 +233,9 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         """Retrieve all meta-data for a specific dataset identified by the
         node-specific-identifier."""
         try:
-            connector = _connector_from_node_name("dataset", connectors.dataset_connectors, node)
             with Session(engine) as session:
                 dataset = _retrieve_dataset(session, identifier, node)
-            dataset_meta = connector.fetch(dataset)
-            return dataset_meta.dict()
+                return dataset.to_dict(depth=1)
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
@@ -254,7 +246,9 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 new_dataset = DatasetDescription(
                     name=dataset.name,
+                    description=dataset.description,
                     node=dataset.node,
+                    same_as=dataset.same_as,
                     node_specific_identifier=dataset.node_specific_identifier,
                 )
                 session.add(new_dataset)
@@ -290,6 +284,8 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                         node=dataset.node,
                         name=dataset.name,
                         node_specific_identifier=dataset.node_specific_identifier,
+                        description=dataset.description,
+                        same_as=dataset.same_as,
                     )
                     .where(DatasetDescription.id == identifier)
                 )
@@ -386,7 +382,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         try:
             with Session(engine) as session:
                 dataset = _retrieve_dataset(session, identifier)
-                return [publication.to_dict(depth=0) for publication in dataset.publications]
+                return [publication.to_dict(depth=0) for publication in dataset.citations]
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
@@ -396,13 +392,13 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 dataset = _retrieve_dataset(session, dataset_id)
                 publication = _retrieve_publication(session, publication_id)
-                if publication in dataset.publications:
+                if publication in dataset.citations:
                     raise HTTPException(
                         status_code=409,
                         detail=f"Dataset {dataset_id} is already linked to publication "
                         f"{publication_id}.",
                     )
-                dataset.publications.append(publication)
+                dataset.citations.append(publication)
                 session.commit()
         except Exception as e:
             raise _wrap_as_http_exception(e)
@@ -413,13 +409,13 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 dataset = _retrieve_dataset(session, dataset_id)
                 publication = _retrieve_publication(session, publication_id)
-                if publication not in dataset.publications:
+                if publication not in dataset.citations:
                     raise HTTPException(
                         status_code=404,
                         detail=f"Dataset {dataset_id} is not linked to publication "
                         f"{publication_id}.",
                     )
-                dataset.publications = [p for p in dataset.publications if p != publication]
+                dataset.citations = [p for p in dataset.citations if p != publication]
                 session.commit()
         except Exception as e:
             raise _wrap_as_http_exception(e)

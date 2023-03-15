@@ -1,0 +1,434 @@
+{
+    "data_qualities": {
+        "quality": [
+            {
+                "name": "AutoCorrelation",
+                "value": "0.75"
+            },
+            {
+                "name": "CfsSubsetEval_DecisionStumpAUC",
+                "value": "0.7297297297297297"
+            },
+            {
+                "name": "CfsSubsetEval_DecisionStumpErrRate",
+                "value": "0.24561403508771928"
+            },
+            {
+                "name": "CfsSubsetEval_DecisionStumpKappa",
+                "value": "0.4608108108108108"
+            },
+            {
+                "name": "CfsSubsetEval_NaiveBayesAUC",
+                "value": "0.7297297297297297"
+            },
+            {
+                "name": "CfsSubsetEval_NaiveBayesErrRate",
+                "value": "0.24561403508771928"
+            },
+            {
+                "name": "CfsSubsetEval_NaiveBayesKappa",
+                "value": "0.4608108108108108"
+            },
+            {
+                "name": "CfsSubsetEval_kNN1NAUC",
+                "value": "0.7297297297297297"
+            },
+            {
+                "name": "CfsSubsetEval_kNN1NErrRate",
+                "value": "0.24561403508771928"
+            },
+            {
+                "name": "CfsSubsetEval_kNN1NKappa",
+                "value": "0.4608108108108108"
+            },
+            {
+                "name": "ClassEntropy",
+                "value": "0.9348490242345945"
+            },
+            {
+                "name": "DecisionStumpAUC",
+                "value": "0.7378378378378379"
+            },
+            {
+                "name": "DecisionStumpErrRate",
+                "value": "0.3157894736842105"
+            },
+            {
+                "name": "DecisionStumpKappa",
+                "value": "0.32232496697490093"
+            },
+            {
+                "name": "Dimensionality",
+                "value": "0.2982456140350877"
+            },
+            {
+                "name": "EquivalentNumberOfAtts",
+                "value": "9.28828714469122"
+            },
+            {
+                "name": "J48.00001.AUC",
+                "value": "0.8054054054054054"
+            },
+            {
+                "name": "J48.00001.ErrRate",
+                "value": "0.2807017543859649"
+            },
+            {
+                "name": "J48.00001.Kappa",
+                "value": "0.41085271317829464"
+            },
+            {
+                "name": "J48.0001.AUC",
+                "value": "0.8054054054054054"
+            },
+            {
+                "name": "J48.0001.ErrRate",
+                "value": "0.2807017543859649"
+            },
+            {
+                "name": "J48.0001.Kappa",
+                "value": "0.41085271317829464"
+            },
+            {
+                "name": "J48.001.AUC",
+                "value": "0.8054054054054054"
+            },
+            {
+                "name": "J48.001.ErrRate",
+                "value": "0.2807017543859649"
+            },
+            {
+                "name": "J48.001.Kappa",
+                "value": "0.41085271317829464"
+            },
+            {
+                "name": "MajorityClassPercentage",
+                "value": "64.91228070175438"
+            },
+            {
+                "name": "MajorityClassSize",
+                "value": "37.0"
+            },
+            {
+                "name": "MaxAttributeEntropy",
+                "value": "1.5605046050671363"
+            },
+            {
+                "name": "MaxKurtosisOfNumericAtts",
+                "value": "13.193068570995823"
+            },
+            {
+                "name": "MaxMeansOfNumericAtts",
+                "value": "38.03921568627451"
+            },
+            {
+                "name": "MaxMutualInformation",
+                "value": "0.24447257116933"
+            },
+            {
+                "name": "MaxNominalAttDistinctValues",
+                "value": "3.0"
+            },
+            {
+                "name": "MaxSkewnessOfNumericAtts",
+                "value": "3.3180638457844434"
+            },
+            {
+                "name": "MaxStdDevOfNumericAtts",
+                "value": "5.027701042999452"
+            },
+            {
+                "name": "MeanAttributeEntropy",
+                "value": "1.0383925362945712"
+            },
+            {
+                "name": "MeanKurtosisOfNumericAtts",
+                "value": "2.046258446813748"
+            },
+            {
+                "name": "MeanMeansOfNumericAtts",
+                "value": "9.412290709168722"
+            },
+            {
+                "name": "MeanMutualInformation",
+                "value": "0.100648161460955"
+            },
+            {
+                "name": "MeanNoiseToSignalRatio",
+                "value": "9.317054193755945"
+            },
+            {
+                "name": "MeanNominalAttDistinctValues",
+                "value": "2.5555555555555554"
+            },
+            {
+                "name": "MeanSkewnessOfNumericAtts",
+                "value": "0.2550756866594959"
+            },
+            {
+                "name": "MeanStdDevOfNumericAtts",
+                "value": "2.2355097044693673"
+            },
+            {
+                "name": "MinAttributeEntropy",
+                "value": "0.2974722489192897"
+            },
+            {
+                "name": "MinKurtosisOfNumericAtts",
+                "value": "-2.0354063518898693"
+            },
+            {
+                "name": "MinMeansOfNumericAtts",
+                "value": "2.1607142857142856"
+            },
+            {
+                "name": "MinMutualInformation",
+                "value": "0.01017528536252"
+            },
+            {
+                "name": "MinNominalAttDistinctValues",
+                "value": "2.0"
+            },
+            {
+                "name": "MinSkewnessOfNumericAtts",
+                "value": "-2.0072170784082766"
+            },
+            {
+                "name": "MinStdDevOfNumericAtts",
+                "value": "0.7077951864586436"
+            },
+            {
+                "name": "MinorityClassPercentage",
+                "value": "35.08771929824561"
+            },
+            {
+                "name": "MinorityClassSize",
+                "value": "20.0"
+            },
+            {
+                "name": "NaiveBayesAUC",
+                "value": "0.9445945945945946"
+            },
+            {
+                "name": "NaiveBayesErrRate",
+                "value": "0.07017543859649122"
+            },
+            {
+                "name": "NaiveBayesKappa",
+                "value": "0.845945945945946"
+            },
+            {
+                "name": "NumberOfBinaryFeatures",
+                "value": "4.0"
+            },
+            {
+                "name": "NumberOfClasses",
+                "value": "2.0"
+            },
+            {
+                "name": "NumberOfFeatures",
+                "value": "17.0"
+            },
+            {
+                "name": "NumberOfInstances",
+                "value": "57.0"
+            },
+            {
+                "name": "NumberOfInstancesWithMissingValues",
+                "value": "56.0"
+            },
+            {
+                "name": "NumberOfMissingValues",
+                "value": "326.0"
+            },
+            {
+                "name": "NumberOfNumericFeatures",
+                "value": "8.0"
+            },
+            {
+                "name": "NumberOfSymbolicFeatures",
+                "value": "9.0"
+            },
+            {
+                "name": "PercentageOfBinaryFeatures",
+                "value": "23.52941176470588"
+            },
+            {
+                "name": "PercentageOfInstancesWithMissingValues",
+                "value": "98.24561403508771"
+            },
+            {
+                "name": "PercentageOfMissingValues",
+                "value": "33.64293085655315"
+            },
+            {
+                "name": "PercentageOfNumericFeatures",
+                "value": "47.05882352941176"
+            },
+            {
+                "name": "PercentageOfSymbolicFeatures",
+                "value": "52.94117647058824"
+            },
+            {
+                "name": "Quartile1AttributeEntropy",
+                "value": "0.6244896350927029"
+            },
+            {
+                "name": "Quartile1KurtosisOfNumericAtts",
+                "value": "-1.413442063840237"
+            },
+            {
+                "name": "Quartile1MeansOfNumericAtts",
+                "value": "3.8310119047619047"
+            },
+            {
+                "name": "Quartile1MutualInformation",
+                "value": "0.0336959149271975"
+            },
+            {
+                "name": "Quartile1SkewnessOfNumericAtts",
+                "value": "-0.5630562624901791"
+            },
+            {
+                "name": "Quartile1StdDevOfNumericAtts",
+                "value": "1.187969733292903"
+            },
+            {
+                "name": "Quartile2AttributeEntropy",
+                "value": "1.0889602035585444"
+            },
+            {
+                "name": "Quartile2KurtosisOfNumericAtts",
+                "value": "-0.2634387154565929"
+            },
+            {
+                "name": "Quartile2MeansOfNumericAtts",
+                "value": "4.421353436185133"
+            },
+            {
+                "name": "Quartile2MutualInformation",
+                "value": "0.07970808701396001"
+            },
+            {
+                "name": "Quartile2SkewnessOfNumericAtts",
+                "value": "0.1585498852098189"
+            },
+            {
+                "name": "Quartile2StdDevOfNumericAtts",
+                "value": "1.3374554220264092"
+            },
+            {
+                "name": "Quartile3AttributeEntropy",
+                "value": "1.48049792155805"
+            },
+            {
+                "name": "Quartile3KurtosisOfNumericAtts",
+                "value": "5.1804637540929885"
+            },
+            {
+                "name": "Quartile3MeansOfNumericAtts",
+                "value": "10.181865828092244"
+            },
+            {
+                "name": "Quartile3MutualInformation",
+                "value": "0.158427693407435"
+            },
+            {
+                "name": "Quartile3SkewnessOfNumericAtts",
+                "value": "0.8086595304734336"
+            },
+            {
+                "name": "Quartile3StdDevOfNumericAtts",
+                "value": "4.034545918750684"
+            },
+            {
+                "name": "REPTreeDepth1AUC",
+                "value": "0.6040540540540541"
+            },
+            {
+                "name": "REPTreeDepth1ErrRate",
+                "value": "0.21052631578947367"
+            },
+            {
+                "name": "REPTreeDepth1Kappa",
+                "value": "0.5155807365439093"
+            },
+            {
+                "name": "REPTreeDepth2AUC",
+                "value": "0.6040540540540541"
+            },
+            {
+                "name": "REPTreeDepth2ErrRate",
+                "value": "0.21052631578947367"
+            },
+            {
+                "name": "REPTreeDepth2Kappa",
+                "value": "0.5155807365439093"
+            },
+            {
+                "name": "REPTreeDepth3AUC",
+                "value": "0.6040540540540541"
+            },
+            {
+                "name": "REPTreeDepth3ErrRate",
+                "value": "0.21052631578947367"
+            },
+            {
+                "name": "REPTreeDepth3Kappa",
+                "value": "0.5155807365439093"
+            },
+            {
+                "name": "RandomTreeDepth1AUC",
+                "value": "0.7500711237553342"
+            },
+            {
+                "name": "RandomTreeDepth1ErrRate",
+                "value": "0.2982456140350877"
+            },
+            {
+                "name": "RandomTreeDepth1Kappa",
+                "value": "0.3376623376623376"
+            },
+            {
+                "name": "RandomTreeDepth2AUC",
+                "value": "0.7500711237553342"
+            },
+            {
+                "name": "RandomTreeDepth2ErrRate",
+                "value": "0.2982456140350877"
+            },
+            {
+                "name": "RandomTreeDepth2Kappa",
+                "value": "0.3376623376623376"
+            },
+            {
+                "name": "RandomTreeDepth3AUC",
+                "value": "0.7500711237553342"
+            },
+            {
+                "name": "RandomTreeDepth3ErrRate",
+                "value": "0.2982456140350877"
+            },
+            {
+                "name": "RandomTreeDepth3Kappa",
+                "value": "0.3376623376623376"
+            },
+            {
+                "name": "StdvNominalAttDistinctValues",
+                "value": "0.5270462766947299"
+            },
+            {
+                "name": "kNN1NAUC",
+                "value": "0.7675675675675676"
+            },
+            {
+                "name": "kNN1NErrRate",
+                "value": "0.21052631578947367"
+            },
+            {
+                "name": "kNN1NKappa",
+                "value": "0.5581395348837209"
+            }
+        ]
+    }
+}

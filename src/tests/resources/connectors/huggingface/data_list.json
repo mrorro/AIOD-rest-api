@@ -1,7 +1,340 @@
-{
-    "valid": [
-        "04-07-22/wep-probes",
-        "0n1xus/codexglue",
-        "rotten_tomatoes"
-    ]
-}
+[
+        {
+        "_id": "621ffdd236468d709f181d58",
+        "id": "acronym_identification",
+        "cardData": {
+            "annotations_creators": [
+                "expert-generated"
+            ],
+            "language_creators": [
+                "found"
+            ],
+            "language": [
+                "en"
+            ],
+            "license": [
+                "mit"
+            ],
+            "multilinguality": [
+                "monolingual"
+            ],
+            "size_categories": [
+                "10K<n<100K"
+            ],
+            "source_datasets": [
+                "original"
+            ],
+            "task_categories": [
+                "token-classification"
+            ],
+            "task_ids": [],
+            "paperswithcode_id": "acronym-identification",
+            "pretty_name": "Acronym Identification Dataset",
+            "tags": [
+                "acronym-identification"
+            ],
+            "dataset_info": {
+                "features": [
+                    {
+                        "name": "id",
+                        "dtype": "string"
+                    },
+                    {
+                        "name": "tokens",
+                        "sequence": "string"
+                    },
+                    {
+                        "name": "labels",
+                        "sequence": {
+                            "class_label": {
+                                "names": {
+                                    "0": "B-long",
+                                    "1": "B-short",
+                                    "2": "I-long",
+                                    "3": "I-short",
+                                    "4": "O"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "splits": [
+                    {
+                        "name": "train",
+                        "num_bytes": 7792803,
+                        "num_examples": 14006
+                    },
+                    {
+                        "name": "validation",
+                        "num_bytes": 952705,
+                        "num_examples": 1717
+                    },
+                    {
+                        "name": "test",
+                        "num_bytes": 987728,
+                        "num_examples": 1750
+                    }
+                ],
+                "download_size": 8556464,
+                "dataset_size": 9733236
+            },
+            "train-eval-index": [
+                {
+                    "config": "default",
+                    "task": "token-classification",
+                    "task_id": "entity_extraction",
+                    "splits": {
+                        "eval_split": "test"
+                    },
+                    "col_mapping": {
+                        "tokens": "tokens",
+                        "labels": "tags"
+                    }
+                }
+            ]
+        },
+        "disabled": false,
+        "gated": false,
+        "lastModified": "2023-01-25T14:18:28.000Z",
+        "likes": 10,
+        "private": false,
+        "sha": "c3c245a18bbd57b1682b099e14460eebf154cbdf",
+        "citation": "@inproceedings{veyseh-et-al-2020-what,\n   title={{What Does This Acronym Mean? Introducing a New Dataset for Acronym Identification and Disambiguation}},\n   author={Amir Pouran Ben Veyseh and Franck Dernoncourt and Quan Hung Tran and Thien Huu Nguyen},\n   year={2020},\n   booktitle={Proceedings of COLING},\n   link={https://arxiv.org/pdf/2010.14678v1.pdf}\n}",
+        "description": "Acronym identification training and development sets for the acronym identification task at SDU@AAAI-21.",
+        "downloads": 6011,
+        "paperswithcode_id": "acronym-identification",
+        "tags": [
+            "task_categories:token-classification",
+            "annotations_creators:expert-generated",
+            "language_creators:found",
+            "multilinguality:monolingual",
+            "size_categories:10K<n<100K",
+            "source_datasets:original",
+            "language:en",
+            "license:mit",
+            "acronym-identification",
+            "arxiv:2010.14678"
+        ],
+        "siblings": null,
+        "key": ""
+    },
+    {
+        "_id": "621ffdd236468d709f181f5f",
+        "id": "rotten_tomatoes",
+        "cardData": {
+            "annotations_creators": [
+                "crowdsourced"
+            ],
+            "language_creators": [
+                "crowdsourced"
+            ],
+            "language": [
+                "en"
+            ],
+            "license": [
+                "unknown"
+            ],
+            "multilinguality": [
+                "monolingual"
+            ],
+            "size_categories": [
+                "1K<n<10K"
+            ],
+            "source_datasets": [
+                "original"
+            ],
+            "task_categories": [
+                "text-classification"
+            ],
+            "task_ids": [
+                "sentiment-classification"
+            ],
+            "paperswithcode_id": "mr",
+            "pretty_name": "RottenTomatoes - MR Movie Review Data",
+            "dataset_info": {
+                "features": [
+                    {
+                        "name": "text",
+                        "dtype": "string"
+                    },
+                    {
+                        "name": "label",
+                        "dtype": {
+                            "class_label": {
+                                "names": {
+                                    "0": "neg",
+                                    "1": "pos"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "splits": [
+                    {
+                        "name": "train",
+                        "num_bytes": 1074810,
+                        "num_examples": 8530
+                    },
+                    {
+                        "name": "validation",
+                        "num_bytes": 134679,
+                        "num_examples": 1066
+                    },
+                    {
+                        "name": "test",
+                        "num_bytes": 135972,
+                        "num_examples": 1066
+                    }
+                ],
+                "download_size": 487770,
+                "dataset_size": 1345461
+            },
+            "train-eval-index": [
+                {
+                    "config": "default",
+                    "task": "text-classification",
+                    "task_id": "binary_classification",
+                    "splits": {
+                        "train_split": "train",
+                        "eval_split": "test"
+                    },
+                    "col_mapping": {
+                        "text": "text",
+                        "label": "target"
+                    },
+                    "metrics": [
+                        {
+                            "type": "accuracy",
+                            "name": "Accuracy"
+                        },
+                        {
+                            "type": "f1",
+                            "name": "F1",
+                            "args": {
+                                "average": "binary"
+                            }
+                        },
+                        {
+                            "type": "f1",
+                            "name": "F1 micro",
+                            "args": {
+                                "average": "micro"
+                            }
+                        },
+                        {
+                            "type": "f1",
+                            "name": "F1 weighted",
+                            "args": {
+                                "average": "weighted"
+                            }
+                        },
+                        {
+                            "type": "precision",
+                            "name": "Precision macro",
+                            "args": {
+                                "average": "macro"
+                            }
+                        },
+                        {
+                            "type": "precision",
+                            "name": "Precision micro",
+                            "args": {
+                                "average": "micro"
+                            }
+                        },
+                        {
+                            "type": "precision",
+                            "name": "Precision weighted",
+                            "args": {
+                                "average": "weighted"
+                            }
+                        },
+                        {
+                            "type": "recall",
+                            "name": "Recall macro",
+                            "args": {
+                                "average": "macro"
+                            }
+                        },
+                        {
+                            "type": "recall",
+                            "name": "Recall micro",
+                            "args": {
+                                "average": "micro"
+                            }
+                        },
+                        {
+                            "type": "recall",
+                            "name": "Recall weighted",
+                            "args": {
+                                "average": "weighted"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "disabled": false,
+        "gated": false,
+        "lastModified": "2023-01-25T14:43:24.000Z",
+        "likes": 11,
+        "private": false,
+        "sha": "c33cbf965006dba64f134f7bef69c53d5d0d285d",
+        "citation": "@InProceedings{Pang+Lee:05a,\n  author =       {Bo Pang and Lillian Lee},\n  title =        {Seeing stars: Exploiting class relationships for sentiment\n                  categorization with respect to rating scales},\n  booktitle =    {Proceedings of the ACL},\n  year =         2005\n}",
+        "description": "Movie Review Dataset.\nThis is a dataset of containing 5,331 positive and 5,331 negative processed\nsentences from Rotten Tomatoes movie reviews. This data was first used in Bo\nPang and Lillian Lee, ``Seeing stars: Exploiting class relationships for\nsentiment categorization with respect to rating scales.'', Proceedings of the\nACL, 2005.",
+        "downloads": 68254,
+        "paperswithcode_id": "mr",
+        "tags": [
+            "task_categories:text-classification",
+            "task_ids:sentiment-classification",
+            "annotations_creators:crowdsourced",
+            "language_creators:crowdsourced",
+            "multilinguality:monolingual",
+            "size_categories:1K<n<10K",
+            "source_datasets:original",
+            "language:en",
+            "license:unknown"
+        ],
+        "siblings": null,
+        "key": ""
+    },
+    {
+        "_id": "621ffdd236468d709f18203a",
+        "id": "0n1xus/codexglue",
+        "author": "0n1xus",
+        "disabled": false,
+        "gated": false,
+        "lastModified": "2021-11-18T08:45:46.000Z",
+        "likes": 1,
+        "private": false,
+        "sha": "e4604616235cdfa7398d489ba1f95d44a18d2f5d",
+        "citation": "@article{Lu2021,\nauthor = {Lu, Shuai and Guo, Daya and Ren, Shuo and Huang, Junjie and Svyatkovskiy, Alexey and Blanco, Ambrosio and Clement, Colin B. and Drain, Dawn and Jiang, Daxin and Tang, Duyu and Li, Ge and Zhou, Lidong and Shou, Linjun and Zhou, Long and Tufano, Michele and Gong, Ming and Zhou, Ming and Duan, Nan and Sundaresan, Neel and Deng, Shao Kun and Fu, Shengyu and Liu, Shujie},\nyear = {2021},\nbooktitle = {arXiv},\ntitle = {CodeXGLUE - A Machine Learning Benchmark Dataset for Code Understanding and Generation}\n}",
+        "description": "CodeXGLUE is a benchmark dataset to foster machine learning research for program understanding and generation. \nCodeXGLUE includes a collection of 10 tasks across 14 datasets and a platform for model evaluation and comparison.",
+        "downloads": 295,
+        "tags": [],
+        "siblings": null,
+        "key": ""
+    },
+    {
+        "_id": "62cd5fa83e5ba89c40f22b0d",
+        "id": "04-07-22/wep-probes",
+        "author": "04-07-22",
+        "cardData": {
+            "license": "apache-2.0"
+        },
+        "disabled": false,
+        "gated": false,
+        "lastModified": "2022-07-12T16:26:46.000Z",
+        "likes": 0,
+        "private": false,
+        "sha": "0681013e6518c8d53cac727b2ca4dc821ffd954c",
+        "citation": "Probing neural language models for understanding of words of estimative probability\nAnonymous submission",
+        "description": "Probing neural language models for understanding of words of estimative probability\nAnonymous submission",
+        "downloads": 0,
+        "tags": [
+            "license:apache-2.0"
+        ],
+        "siblings": null,
+        "key": ""
+    }
+]

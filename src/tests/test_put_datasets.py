@@ -9,12 +9,12 @@ from database.models import DatasetDescription
 
 
 @pytest.mark.parametrize(
-    "identifier,name,node,node_specific_identifier",
+    "identifier,name,node,node_specific_identifier,same_as,description",
     [
-        (1, "NEW NAME", "openml", "1"),
-        (1, "dset1", "openml", "new-id"),
-        (1, "dset1", "other_node", "3"),
-        (3, "DSET2", "other_node", "3"),
+        (1, "NEW NAME", "openml", "1", "url1", "description"),
+        (1, "dset1", "openml", "new-id", "url2", "description dset1"),
+        (1, "dset1", "other_node", "3", "url3", "description dset1"),
+        (3, "DSET2", "other_node", "3", "http://test.org/dataset/1", "description DSET2"),
     ],
 )
 def test_happy_path(
@@ -24,11 +24,19 @@ def test_happy_path(
     name: str,
     node: str,
     node_specific_identifier: str,
+    same_as: str,
+    description: str,
 ):
     _setup(engine)
     response = client.put(
         f"/datasets/{identifier}",
-        json={"name": name, "node": node, "node_specific_identifier": node_specific_identifier},
+        json={
+            "name": name,
+            "node": node,
+            "node_specific_identifier": node_specific_identifier,
+            "same_as": same_as,
+            "description": description,
+        },
     )
     assert response.status_code == 200
     response_json = response.json()
@@ -36,7 +44,9 @@ def test_happy_path(
     assert response_json["node"] == node
     assert response_json["node_specific_identifier"] == node_specific_identifier
     assert response_json["id"] == identifier
-    assert len(response_json) == 5
+    assert response_json["same_as"] == same_as
+    assert response_json["description"] == description
+    assert len(response_json) == 6
 
 
 def test_non_existent(client: TestClient, engine: Engine):
@@ -44,7 +54,13 @@ def test_non_existent(client: TestClient, engine: Engine):
 
     response = client.put(
         "/datasets/4",
-        json={"name": "name", "node": "node", "node_specific_identifier": "id"},
+        json={
+            "name": "name",
+            "node": "node",
+            "description": "description",
+            "same_as": "url",
+            "node_specific_identifier": "id",
+        },
     )
     assert response.status_code == 404
     response_json = response.json()
@@ -61,6 +77,8 @@ def test_partial_update(client: TestClient, engine: Engine):
     assert response.status_code == 422
     response_json = response.json()
     assert response_json["detail"] == [
+        {"loc": ["body", "description"], "msg": "field required", "type": "value_error.missing"},
+        {"loc": ["body", "same_as"], "msg": "field required", "type": "value_error.missing"},
         {"loc": ["body", "node"], "msg": "field required", "type": "value_error.missing"},
         {
             "loc": ["body", "node_specific_identifier"],
@@ -76,7 +94,13 @@ def test_too_long_name(client: TestClient, engine: Engine):
     name = "a" * 200
     response = client.put(
         "/datasets/4",
-        json={"name": name, "node": "node", "node_specific_identifier": "id"},
+        json={
+            "name": name,
+            "node": "node",
+            "description": "description",
+            "same_as": "url",
+            "node_specific_identifier": "id",
+        },
     )
     assert response.status_code == 422
     response_json = response.json()
@@ -92,9 +116,27 @@ def test_too_long_name(client: TestClient, engine: Engine):
 
 def _setup(engine):
     datasets = [
-        DatasetDescription(name="dset1", node="openml", node_specific_identifier="1"),
-        DatasetDescription(name="dset1", node="other_node", node_specific_identifier="1"),
-        DatasetDescription(name="dset2", node="other_node", node_specific_identifier="2"),
+        DatasetDescription(
+            name="dset1",
+            node="openml",
+            same_as="openml.org/1",
+            description="",
+            node_specific_identifier="1",
+        ),
+        DatasetDescription(
+            name="dset1",
+            node="other_node",
+            same_as="other.org/1",
+            description="",
+            node_specific_identifier="1",
+        ),
+        DatasetDescription(
+            name="dset2",
+            node="other_node",
+            same_as="other.org/2",
+            description="",
+            node_specific_identifier="2",
+        ),
     ]
     with Session(engine) as session:
         # Populate database

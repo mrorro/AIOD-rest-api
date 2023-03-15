@@ -1,140 +1,94 @@
+import logging
 import typing
 
+import bibtexparser as bibtexparser
+import datasets
+import dateutil.parser
 import requests
-from fastapi import HTTPException
-from pydantic import Extra
-from pydantic_schemaorg.DataCatalog import DataCatalog
-from pydantic_schemaorg.DataDownload import DataDownload
-from pydantic_schemaorg.Dataset import Dataset
-from pydantic_schemaorg.QuantitativeValue import QuantitativeValue
 
 from connectors import DatasetConnector
-from database.models import DatasetDescription
-
-for obj in (DataCatalog, DataDownload, Dataset, QuantitativeValue):
-    obj.Config.extra = Extra.forbid  # Throw exception on unrecognized fields
+from database.models import DatasetDescription, DataDownload, Keyword, Publication, License
 
 
 class HuggingFaceDatasetConnector(DatasetConnector):
-    ID_DELIMITER = "|"  # The node_specific_identifier for HuggingFace consists of 3 or 4
-    # parts: [namespace,] name_dataset, config and split. We need to concat these parts into a
-    # single identifier. We cannot use "/" in requests, so "|" seems like a logical choice, that
-    # does not occur in the names of current HuggingFace datasets.
+    def fetch(self, node_specific_identifier: str) -> DatasetDescription:
+        raise NotImplementedError()
 
     @staticmethod
-    def _get(
-        url: str, error_msg: str, params: typing.Dict[str, typing.Any] | None = None
-    ) -> typing.Dict[str, typing.Any]:
+    def _get(url: str, dataset_id: str) -> typing.List[typing.Dict[str, typing.Any]]:
         """
         Perform a GET request and raise an exception if the response code is not OK.
         """
-        response = requests.get(url, params=params)
+        response = requests.get(url, params={"dataset": dataset_id})
         response_json = response.json()
         if not response.ok:
             msg = response_json["error"]
-            raise HTTPException(
-                status_code=response.status_code,
-                detail=f"{error_msg}: '{msg}'",
+            logging.error(
+                f"Error while fetching parquet info for dataset {dataset_id}: " f"'{msg}'"
             )
-        return response_json
+            return []
+        return response_json["parquet_files"]
 
-    def fetch(self, dataset: DatasetDescription) -> Dataset:
-        id_splitted = dataset.node_specific_identifier.split("|")
-        if len(id_splitted) not in (3, 4):
-            msg = (
-                "The identifier for huggingface data should be formatted as "
-                "'namespace|name_dataset|config|split', or "
-                "'name_dataset|config|split' if the dataset does not have a namespace. "
-                "Examples: 'Helsinki-NLP|tatoeba_mt|eng-fra|train' or "
-                "'rotten_tomatoes|default|validation'"
+    def fetch_all(self, limit: int | None = None) -> typing.Iterator[DatasetDescription]:
+        ds = datasets.list_datasets(with_details=True)[:limit]
+        for dataset in ds:
+            citations = []
+            if dataset.citation is not None:
+                parsed_citations = bibtexparser.loads(dataset.citation).entries
+                if len(parsed_citations) == 0:
+                    citations = [Publication(title=dataset.citation)]
+                elif len(parsed_citations) == 1:
+                    citation = parsed_citations[0]
+                    citations = [
+                        Publication(
+                            title=citation["title"],
+                            url=citation["link"] if "link" in citation else None,
+                        )
+                    ]
+                else:
+                    raise ValueError(
+                        f"Unexpected number of citations found for dataset "
+                        f"{dataset.id} in {dataset.citation}: {len(parsed_citations)}"
+                    )
+
+            parquet_info = HuggingFaceDatasetConnector._get(
+                url="https://datasets-server.huggingface.co/parquet", dataset_id=dataset.id
             )
-            raise HTTPException(status_code=400, detail=msg)
-        dataset_name = "/".join(id_splitted[:-2])
-        config = id_splitted[-2]
-        split = id_splitted[-1]
+            distributions = [
+                DataDownload(
+                    name=pq_file["filename"],
+                    description=f"{pq_file['dataset']}. Config: {pq_file['config']}. Split: "
+                    f"{pq_file['split']}",
+                    content_url=pq_file["url"],
+                    content_size_kb=pq_file["size"],
+                )
+                for pq_file in parquet_info
+            ]
+            size = None
+            ds_license = None
+            if dataset.cardData is not None:
+                if isinstance(dataset.cardData["license"], str):
+                    ds_license = dataset.cardData["license"]
+                else:
+                    (ds_license,) = dataset.cardData["license"]
 
-        split_info = HuggingFaceDatasetConnector._fetch_item(
-            url="https://datasets-server.huggingface.co/splits",
-            items_name="splits",
-            dataset_name=dataset_name,
-            config=config,
-            split=split,
-        )
-        file_info = HuggingFaceDatasetConnector._fetch_item(
-            url="https://datasets-server.huggingface.co/parquet",
-            items_name="parquet_files",
-            dataset_name=dataset_name,
-            config=config,
-            split=split,
-        )
-
-        # TODO: decide our output format for datasets.
-        #  If we want extra information, e.g. the number of features, this works:
-        # url = "https://datasets-server.huggingface.co/first-rows"
-        # params = {"dataset": dataset_name, "config": config, "split": split}
-        # error_msg = "Error while fetching first-rows from HuggingFace"
-        # response_json = HuggingFaceDatasetConnector._get(url, error_msg, params=params)
-        # n_features = len(response_json["features"])
-
-        return Dataset(
-            name=dataset.name,
-            identifier=dataset.node_specific_identifier,
-            distribution=DataDownload(contentUrl=file_info["url"], encodingFormat="parquet"),
-            size=QuantitativeValue(value=split_info["num_examples"]),
-            isAccessibleForFree=True,
-            includedInDataCatalog=DataCatalog(name="HuggingFace"),
-        )
-
-    @staticmethod
-    def _fetch_item(url: str, items_name: str, dataset_name: str, config: str, split: str):
-        """Fetching a single item (split information, or parquet file information)"""
-        params = {"dataset": dataset_name}
-        error_msg = f"Error while fetching {items_name} from HuggingFace"
-        response_json = HuggingFaceDatasetConnector._get(url, error_msg, params=params)
-        items = [
-            file
-            for file in response_json[items_name]
-            if file["config"] == config and file["split"] == split
-        ]
-        if len(items) != 1:
-            msg = (
-                f"HuggingFace's {items_name} endpoint does not contain {config=}, {split=} for "
-                f"dataset {dataset_name} (or returns multiple)."
-            )
-            raise HTTPException(status_code=404, detail=msg)
-        return items[0]
-
-    def fetch_all(self, limit: int | None) -> typing.Iterator[DatasetDescription]:
-        if limit is None or limit > 10:
-            limit = 25  # it's slow...
-        url = "https://datasets-server.huggingface.co/valid"
-        error_msg = "Error while fetching all data from HuggingFace"
-        response_json = HuggingFaceDatasetConnector._get(url, error_msg)
-        for dataset_name in response_json["valid"][:limit]:
-            yield from self._yield_datasets_with_name(dataset_name)
-
-    def _yield_datasets_with_name(self, dataset_name: str) -> typing.Iterator[DatasetDescription]:
-        """Yield a DataSet for each (config, split) combination with this name."""
-        if self.ID_DELIMITER in dataset_name:
-            raise ValueError(
-                f"The huggingface name '{dataset_name}' contains a '{self.ID_DELIMITER}', which we "
-                f"use as delimiter."
-            )
-        url = "https://datasets-server.huggingface.co/splits"
-        params = {"dataset": dataset_name}
-        error_msg = "Error while fetching splits from HuggingFace"
-        try:
-            response_json = HuggingFaceDatasetConnector._get(url, error_msg, params=params)
-        except HTTPException:
-            return  # Probably authentication issue
-
-        for split_json in response_json["splits"]:
-            config = split_json["config"]
-            split = split_json["split"]
-            identifier_complete = f"{dataset_name.replace('/', '|')}|{config}|{split}"
-            name_complete = f"{dataset_name.split('/')[-1]} config:{config} split:{split}"
+                if "dataset_info" in dataset.cardData:
+                    size = sum(
+                        split["num_examples"]
+                        for split in dataset.cardData["dataset_info"]["splits"]
+                    )
             yield DatasetDescription(
-                name=name_complete,
+                description=dataset.description,
+                name=dataset.id,
+                node_specific_identifier=dataset.id,
                 node=self.node_name,
-                node_specific_identifier=identifier_complete,
+                same_as=f"https://huggingface.co/datasets/{dataset.id}",
+                creator=dataset.author,
+                date_modified=dateutil.parser.parse(dataset.lastModified),
+                citations=citations,
+                license=License(name=ds_license) if ds_license is not None else None,
+                distributions=distributions,
+                is_accessible_for_free=True,
+                size=size,
+                keywords=[Keyword(name=tag) for tag in dataset.tags],
             )
