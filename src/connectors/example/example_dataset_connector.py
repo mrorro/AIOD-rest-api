@@ -1,4 +1,4 @@
-import typing
+import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 
 from pydantic_schemaorg.DataCatalog import DataCatalog
 from pydantic_schemaorg.DataDownload import DataDownload
