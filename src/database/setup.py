@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from connectors import DatasetConnector, PublicationConnector
 from converters import dataset_converter
+from schemas import AIoDDataset
 from .models import (
     Base,
     OrmDataset,
@@ -80,7 +81,7 @@ def populate_database(
             *[c.fetch_all(limit=limit_publications) for c in publications_connectors]
         )
 
-    datasets: List[OrmDataset] = list(datasets_iterable)
+    datasets: List[AIoDDataset] = list(datasets_iterable)
     publications: List[OrmPublication] = list(publications_iterable)
     # For now, we cannot make use of generators, because we have to link the datasets with the
     # publications. This is a temporary setup though, so it makes sense to let the fetch_all()

@@ -2,6 +2,7 @@
 This module knows how to load an OpenML object based on its AIoD implementation,
 and how to convert the OpenML response to some agreed AIoD format.
 """
+import logging
 from typing import Iterator
 
 import dateutil.parser
@@ -47,7 +48,7 @@ class OpenMlDatasetConnector(DatasetConnector):
             node=self.node_name,
             node_specific_identifier=node_specific_identifier,
             name=dataset_json["name"],
-            same_as=dataset_json["original_data_url"],
+            same_as=url_data,
             description=dataset_json["description"],
             date_published=dateutil.parser.parse(dataset_json["upload_date"]),
             date_modified=dateutil.parser.parse(dataset_json["processing_date"]),
@@ -77,7 +78,12 @@ class OpenMlDatasetConnector(DatasetConnector):
                 detail=f"Error while fetching data list from OpenML: '{msg}'.",
             )
         for dataset_json in response_json["data"]["dataset"]:
-            yield self.fetch(dataset_json["did"])
+            try:
+                yield self.fetch(dataset_json["did"])
+            except Exception as e:
+                logging.error(
+                    f"Error while fetching openml  dataset {dataset_json['did']}: '{str(e)}'"
+                )
 
 
 def _as_int(v: str) -> int:

@@ -15,6 +15,7 @@ def test_fetch_all_happy_path():
         "04-07-22/wep-probes",
         "rotten_tomatoes",
         "acronym_identification",
+        "air_dialogue",
     }
     connector = connectors.dataset_connectors[NodeName.huggingface]
     with responses.RequestsMock() as mocked_requests:
@@ -31,7 +32,7 @@ def test_fetch_all_happy_path():
             mock_parquet(mocked_requests, dataset_id)
         datasets = list(connector.fetch_all(limit=None))
 
-    assert len(datasets) == 4
+    assert len(datasets) == 5
     ids = {d.node_specific_identifier for d in datasets}
     names = {d.name for d in datasets}
     assert ids == ids_expected

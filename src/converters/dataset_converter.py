@@ -11,7 +11,7 @@ from database.models import (
     OrmMeasuredValue,
     OrmKeyword,
     OrmPublication,
-    Base,
+    Base, OrmDataDownload,
 )
 from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue
 
@@ -68,9 +68,11 @@ def aiod_to_orm(session: Session, aiod: AIoDDataset) -> OrmDataset:
     OrmDataset)
     """
 
-    citations = _retrieve_related_objects_by_ids(
-        session, aiod.citations, OrmPublication
-    )  # type: ignore
+    if isinstance(aiod.citations, List):
+        # TODO: retrieve OrmPublication from AIoDPublication
+        citations = []
+    else:
+        citations = _retrieve_related_objects_by_ids(session, aiod.citations, OrmPublication)
     has_parts = _retrieve_related_objects_by_ids(session, aiod.has_parts, OrmDataset)
     is_part = _retrieve_related_objects_by_ids(session, aiod.is_part, OrmDataset)
 
@@ -102,7 +104,7 @@ def aiod_to_orm(session: Session, aiod: AIoDDataset) -> OrmDataset:
         ],
         citations=citations,
         distributions=[
-            AIoDDistribution(
+            OrmDataDownload(
                 content_url=orm_distr.content_url,
                 content_size_kb=orm_distr.content_size_kb,
                 description=orm_distr.description,
@@ -127,12 +129,8 @@ T = TypeVar("T", bound=Base)
 
 
 def _retrieve_related_objects_by_ids(
-    session: Session, ids_or_objects: Set[str] | List[T], cls: Type[T]
+    session: Session, ids: Set[str], cls: Type[T]
 ) -> List[T]:
-    if isinstance(ids_or_objects, List):
-        related_objects: List[T] = ids_or_objects
-        return related_objects
-    ids: Set[str] = ids_or_objects
     related_objects = []
     if len(ids) > 0:
         query = select(cls).where(cls.id.in_(ids))

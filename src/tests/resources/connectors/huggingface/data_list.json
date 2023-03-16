@@ -336,5 +336,285 @@
         ],
         "siblings": null,
         "key": ""
+    },
+     {
+        "_id": "621ffdd236468d709f181d5f",
+        "id": "air_dialogue",
+        "cardData": {
+            "pretty_name": "AirDialogue",
+            "annotations_creators": [
+                "crowdsourced"
+            ],
+            "language_creators": [
+                "machine-generated"
+            ],
+            "language": [
+                "en"
+            ],
+            "license": [
+                "cc-by-nc-4.0"
+            ],
+            "multilinguality": [
+                "monolingual"
+            ],
+            "size_categories": [
+                "100K<n<1M"
+            ],
+            "source_datasets": [
+                "original"
+            ],
+            "task_categories": [
+                "conversational",
+                "text-generation",
+                "fill-mask"
+            ],
+            "task_ids": [
+                "dialogue-generation",
+                "dialogue-modeling",
+                "language-modeling",
+                "masked-language-modeling"
+            ],
+            "paperswithcode_id": null,
+            "dataset_info": [
+                {
+                    "config_name": "air_dialogue_data",
+                    "features": [
+                        {
+                            "name": "action",
+                            "struct": [
+                                {
+                                    "name": "status",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "name",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "flight",
+                                    "sequence": "int32"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "intent",
+                            "struct": [
+                                {
+                                    "name": "return_month",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "return_day",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "max_price",
+                                    "dtype": "int32"
+                                },
+                                {
+                                    "name": "departure_airport",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "max_connections",
+                                    "dtype": "int32"
+                                },
+                                {
+                                    "name": "departure_day",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "goal",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "departure_month",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "name",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "return_airport",
+                                    "dtype": "string"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "timestamps",
+                            "sequence": "int64"
+                        },
+                        {
+                            "name": "dialogue",
+                            "sequence": "string"
+                        },
+                        {
+                            "name": "expected_action",
+                            "struct": [
+                                {
+                                    "name": "status",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "name",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "flight",
+                                    "sequence": "int32"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "search_info",
+                            "list": [
+                                {
+                                    "name": "button_name",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "field_name",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "field_value",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "timestmamp",
+                                    "dtype": "int64"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "correct_sample",
+                            "dtype": "bool_"
+                        }
+                    ],
+                    "splits": [
+                        {
+                            "name": "train",
+                            "num_bytes": 353721137,
+                            "num_examples": 321459
+                        },
+                        {
+                            "name": "validation",
+                            "num_bytes": 44442238,
+                            "num_examples": 40363
+                        }
+                    ],
+                    "download_size": 272898923,
+                    "dataset_size": 398163375
+                },
+                {
+                    "config_name": "air_dialogue_kb",
+                    "features": [
+                        {
+                            "name": "kb",
+                            "list": [
+                                {
+                                    "name": "airline",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "class",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "departure_airport",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "departure_day",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "departure_month",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "departure_time_num",
+                                    "dtype": "int32"
+                                },
+                                {
+                                    "name": "flight_number",
+                                    "dtype": "int32"
+                                },
+                                {
+                                    "name": "num_connections",
+                                    "dtype": "int32"
+                                },
+                                {
+                                    "name": "price",
+                                    "dtype": "int32"
+                                },
+                                {
+                                    "name": "return_airport",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "return_day",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "return_month",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "return_time_num",
+                                    "dtype": "int32"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "reservation",
+                            "dtype": "int32"
+                        }
+                    ],
+                    "splits": [
+                        {
+                            "name": "train",
+                            "num_bytes": 782592158,
+                            "num_examples": 321459
+                        },
+                        {
+                            "name": "validation",
+                            "num_bytes": 98269789,
+                            "num_examples": 40363
+                        }
+                    ],
+                    "download_size": 272898923,
+                    "dataset_size": 880861947
+                }
+            ]
+        },
+        "disabled": false,
+        "gated": false,
+        "lastModified": "2022-11-03T16:31:11.000Z",
+        "likes": 1,
+        "private": false,
+        "sha": "3ef284c2b1ca63cebd46335641fa31b09763f4e5",
+        "citation": "@inproceedings{wei-etal-2018-airdialogue,\n    title = \"{A}ir{D}ialogue: An Environment for Goal-Oriented Dialogue Research\",\n    author = \"Wei, Wei  and\n      Le, Quoc  and\n      Dai, Andrew  and\n      Li, Jia\",\n    booktitle = \"Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing\",\n    month = oct # \"-\" # nov,\n    year = \"2018\",\n    address = \"Brussels, Belgium\",\n    publisher = \"Association for Computational Linguistics\",\n    url = \"https://www.aclweb.org/anthology/D18-1419\",\n    doi = \"10.18653/v1/D18-1419\",\n    pages = \"3844--3854\",\n    abstract = \"Recent progress in dialogue generation has inspired a number of studies on dialogue systems that are capable of accomplishing tasks through natural language interactions. A promising direction among these studies is the use of reinforcement learning techniques, such as self-play, for training dialogue agents. However, current datasets are limited in size, and the environment for training agents and evaluating progress is relatively unsophisticated. We present AirDialogue, a large dataset that contains 301,427 goal-oriented conversations. To collect this dataset, we create a context-generator which provides travel and flight restrictions. We then ask human annotators to play the role of a customer or an agent and interact with the goal of successfully booking a trip given the restrictions. Key to our environment is the ease of evaluating the success of the dialogue, which is achieved by using ground-truth states (e.g., the flight being booked) generated by the restrictions. Any dialogue agent that does not generate the correct states is considered to fail. Our experimental results indicate that state-of-the-art dialogue models can only achieve a score of 0.17 while humans can reach a score of 0.91, which suggests significant opportunities for future improvement.\",\n}",
+        "description": "AirDialogue, is a large dataset that contains 402,038 goal-oriented conversations. To collect this dataset, we create a contextgenerator which provides travel and flight restrictions. Then the human annotators are asked to play the role of a customer or an agent and interact with the goal of successfully booking a trip given the restrictions.",
+        "downloads": 422,
+        "tags": [
+            "task_categories:conversational",
+            "task_categories:text-generation",
+            "task_categories:fill-mask",
+            "task_ids:dialogue-generation",
+            "task_ids:dialogue-modeling",
+            "task_ids:language-modeling",
+            "task_ids:masked-language-modeling",
+            "annotations_creators:crowdsourced",
+            "language_creators:machine-generated",
+            "multilinguality:monolingual",
+            "size_categories:100K<n<1M",
+            "source_datasets:original",
+            "language:en",
+            "license:cc-by-nc-4.0"
+        ],
+        "siblings": null,
+        "key": ""
     }
 ]

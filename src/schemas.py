@@ -78,6 +78,6 @@ class AIoDDataset(BaseModel):
         "publications",
         default_factory=set,
     )
-    distributions: List[AIoDDistribution] = Field(default_factory=list)
+    distributions: List[AIoDDistribution] = []
     keywords: Set[str] = Field(default_factory=set)
     measured_values: List[AIoDMeasurementValue] = Field(default_factory=list)

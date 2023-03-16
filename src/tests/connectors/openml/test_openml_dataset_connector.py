@@ -25,7 +25,7 @@ def test_fetch_happy_path():
     assert dataset.id is None  # will be set when saving to the db
     assert dataset.node == NodeName.openml.value
     assert dataset.node_specific_identifier == id_
-    assert dataset.same_as == "https://archive.ics.uci.edu/ml/datasets/Annealing"
+    assert dataset.same_as == "https://www.openml.org/api/v1/json/data/2"
     assert len(dataset.citations) == 0
     assert dataset.license == "Public"
     assert dataset.version == "1"
