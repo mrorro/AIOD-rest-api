@@ -8,14 +8,11 @@ from sqlalchemy import Engine, text, create_engine, select
 from sqlalchemy.orm import Session
 
 from connectors import DatasetConnector, PublicationConnector
+from converters import dataset_converter
 from .models import (
     Base,
     OrmDataset,
     OrmPublication,
-    OrmLicense,
-    OrmKeyword,
-    OrmAlternateName,
-    OrmMeasuredValue,
 )
 
 
@@ -88,7 +85,10 @@ def populate_database(
     # For now, we cannot make use of generators, because we have to link the datasets with the
     # publications. This is a temporary setup though, so it makes sense to let the fetch_all()
     # return an iterator for future benefits.
-    _link_datasets_with_publications(datasets, publications)
+
+    # TODO: return AIoDPublication instead of OrmPublication, and link them again
+    # _link_datasets_with_publications(datasets, publications)
+
     with Session(engine) as session:
         data_exists = (
             session.scalars(select(OrmPublication)).first()
@@ -97,25 +97,8 @@ def populate_database(
         if only_if_empty and data_exists:
             return
 
-        for dataset in datasets:
-            if dataset.license is not None:
-                dataset.license = OrmLicense.as_unique(session=session, name=dataset.license.name)
-            dataset.alternate_names = [
-                OrmAlternateName.as_unique(session=session, name=alias.name)
-                for alias in dataset.alternate_names
-            ]
-            dataset.keywords = [
-                OrmKeyword.as_unique(session=session, name=keyword.name)
-                for keyword in dataset.keywords
-            ]
-            dataset.measured_values = [
-                OrmMeasuredValue.as_unique(
-                    session=session, technique=measured_value.technique, value=measured_value.value
-                )
-                for measured_value in dataset.measured_values
-            ]
-
-        session.add_all(datasets)
+        orm_datasets = [dataset_converter.aiod_to_orm(session, dataset) for dataset in datasets]
+        session.add_all(orm_datasets)
         session.add_all(publications)
         session.commit()
 

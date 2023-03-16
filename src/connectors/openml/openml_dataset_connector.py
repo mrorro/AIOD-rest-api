@@ -9,12 +9,11 @@ import requests
 from fastapi import HTTPException
 
 from connectors.abstract.dataset_connector import DatasetConnector
-from database.models import OrmDataDownload
-from database.models import OrmDataset, OrmKeyword, OrmLicense
+from schemas import AIoDDataset, AIoDDistribution
 
 
 class OpenMlDatasetConnector(DatasetConnector):
-    def fetch(self, node_specific_identifier: str) -> OrmDataset:
+    def fetch(self, node_specific_identifier: str) -> AIoDDataset:
         url_data = f"https://www.openml.org/api/v1/json/data/{node_specific_identifier}"
         response = requests.get(url_data)
         if not response.ok:
@@ -44,7 +43,7 @@ class OpenMlDatasetConnector(DatasetConnector):
             for quality in response.json()["data_qualities"]["quality"]
         }
 
-        return OrmDataset(
+        return AIoDDataset(
             node=self.node_name,
             node_specific_identifier=node_specific_identifier,
             name=dataset_json["name"],
@@ -54,18 +53,18 @@ class OpenMlDatasetConnector(DatasetConnector):
             date_modified=dateutil.parser.parse(dataset_json["processing_date"]),
             # TODO(Jos): check if processing_date is updated on update; check if it's UTC
             distributions=[
-                OrmDataDownload(
+                AIoDDistribution(
                     content_url=dataset_json["url"], encoding_format=dataset_json["format"]
                 )
             ],
             size=_as_int(qualities_json["NumberOfInstances"]),
             is_accessible_for_free=True,
-            keywords=[OrmKeyword(name=tag) for tag in set(dataset_json["tag"])],
-            license=OrmLicense(name=dataset_json["licence"]),
+            keywords=set(dataset_json["tag"]),
+            license=dataset_json["licence"],
             version=dataset_json["version"],
         )
 
-    def fetch_all(self, limit: int | None = None) -> Iterator[OrmDataset]:
+    def fetch_all(self, limit: int | None = None) -> Iterator[AIoDDataset]:
         url = "https://www.openml.org/api/v1/json/data/list"
         if limit is not None:
             url = f"{url}/limit/{limit}"

@@ -4,8 +4,15 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from database.models import OrmDataset, OrmLicense, OrmAlternateName, OrmMeasuredValue, OrmKeyword, \
-    OrmPublication, Base
+from database.models import (
+    OrmDataset,
+    OrmLicense,
+    OrmAlternateName,
+    OrmMeasuredValue,
+    OrmKeyword,
+    OrmPublication,
+    Base,
+)
 from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue
 
 
@@ -43,18 +50,15 @@ def orm_to_aiod(orm: OrmDataset) -> AIoDDataset:
                 content_size_kb=orm_distr.content_size_kb,
                 description=orm_distr.description,
                 name=orm_distr.name,
-                encoding_format=orm_distr.encoding_format
+                encoding_format=orm_distr.encoding_format,
             )
             for orm_distr in orm.distributions
         ],
         keywords=[keyword.name for keyword in orm.keywords],
         measured_values=[
-            AIoDMeasurementValue(
-                variable=mv.variable,
-                technique=mv.technique
-            )
+            AIoDMeasurementValue(variable=mv.variable, technique=mv.technique)
             for mv in orm.measured_values
-        ]
+        ],
     )
 
 
@@ -64,7 +68,9 @@ def aiod_to_orm(session: Session, aiod: AIoDDataset) -> OrmDataset:
     OrmDataset)
     """
 
-    citations = _retrieve_related_objects_by_ids(session, aiod.citations, OrmPublication)
+    citations = _retrieve_related_objects_by_ids(
+        session, aiod.citations, OrmPublication
+    )  # type: ignore
     has_parts = _retrieve_related_objects_by_ids(session, aiod.has_parts, OrmDataset)
     is_part = _retrieve_related_objects_by_ids(session, aiod.is_part, OrmDataset)
 
@@ -85,12 +91,15 @@ def aiod_to_orm(session: Session, aiod: AIoDDataset) -> OrmDataset:
         temporal_coverage_from=aiod.temporal_coverage_from,
         temporal_coverage_to=aiod.temporal_coverage_to,
         version=aiod.version,
-        license=OrmLicense.as_unique(session=session, name=aiod.license) if aiod.license is not
-                                                                            None else None,
+        license=OrmLicense.as_unique(session=session, name=aiod.license)
+        if aiod.license is not None
+        else None,
         has_parts=has_parts,
         is_part=is_part,
-        alternate_names=[OrmAlternateName.as_unique(session=session, name=alias)
-                         for alias in aiod.alternate_names],
+        alternate_names=[
+            OrmAlternateName.as_unique(session=session, name=alias)
+            for alias in aiod.alternate_names
+        ],
         citations=citations,
         distributions=[
             AIoDDistribution(
@@ -98,19 +107,17 @@ def aiod_to_orm(session: Session, aiod: AIoDDataset) -> OrmDataset:
                 content_size_kb=orm_distr.content_size_kb,
                 description=orm_distr.description,
                 name=orm_distr.name,
-                encoding_format=orm_distr.encoding_format
+                encoding_format=orm_distr.encoding_format,
             )
             for orm_distr in aiod.distributions
         ],
         keywords=[OrmKeyword.as_unique(session=session, name=keyword) for keyword in aiod.keywords],
         measured_values=[
             OrmMeasuredValue.as_unique(
-                session=session,
-                variable=mv.variable,
-                technique=mv.technique
+                session=session, variable=mv.variable, technique=mv.technique
             )
             for mv in aiod.measured_values
-        ]
+        ],
     )
     orm.id = aiod.id
     return orm
@@ -119,7 +126,13 @@ def aiod_to_orm(session: Session, aiod: AIoDDataset) -> OrmDataset:
 T = TypeVar("T", bound=Base)
 
 
-def _retrieve_related_objects_by_ids(session: Session, ids: Set[str], cls: Type[T]) -> List[T]:
+def _retrieve_related_objects_by_ids(
+    session: Session, ids_or_objects: Set[str] | List[T], cls: Type[T]
+) -> List[T]:
+    if isinstance(ids_or_objects, List):
+        related_objects: List[T] = ids_or_objects
+        return related_objects
+    ids: Set[str] = ids_or_objects
     related_objects = []
     if len(ids) > 0:
         query = select(cls).where(cls.id.in_(ids))

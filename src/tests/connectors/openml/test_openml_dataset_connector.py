@@ -27,7 +27,7 @@ def test_fetch_happy_path():
     assert dataset.node_specific_identifier == id_
     assert dataset.same_as == "https://archive.ics.uci.edu/ml/datasets/Annealing"
     assert len(dataset.citations) == 0
-    assert dataset.license.name == "Public"
+    assert dataset.license == "Public"
     assert dataset.version == "1"
     assert dataset.is_accessible_for_free
     assert dataset.size == 898
@@ -38,7 +38,7 @@ def test_fetch_happy_path():
     assert distribution.content_url == "https://api.openml.org/data/v1/download/1666876/anneal.arff"
 
     assert len(dataset.keywords) == 9
-    assert {k.name for k in dataset.keywords} == {
+    assert dataset.keywords == {
         "study_1",
         "study_14",
         "study_34",

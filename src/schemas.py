@@ -11,7 +11,7 @@ easier.
 
 
 from datetime import datetime
-from typing import Set
+from typing import Set, List
 
 from pydantic import BaseModel, Field
 
@@ -19,14 +19,23 @@ from pydantic import BaseModel, Field
 class AIoDDistribution(BaseModel):
     content_url: str = Field(max_length=150)
     content_size_kb: int | None
-    description: str = Field(max_length=5000)
-    name: str = Field(max_length=150)
-    encoding_format: str = Field(max_length=150)
+    description: str | None = Field(max_length=5000)
+    name: str | None = Field(max_length=150)
+    encoding_format: str | None = Field(max_length=150)
 
 
 class AIoDMeasurementValue(BaseModel):
     variable: str | None
     technique: str | None
+
+
+class AIoDPublication(BaseModel):
+    """The complete metadata of a publication. For now, only a couple of fields are shown,
+    we have to decide which fields to use."""
+
+    id: int | None
+    title: str | None = Field(max_length=250)
+    url: str | None = Field(max_length=250)
 
 
 class AIoDDataset(BaseModel):
@@ -64,18 +73,11 @@ class AIoDDataset(BaseModel):
         description="Identifiers of datasets this dataset is part of.", default_factory=set
     )
     alternate_names: Set[str] = Field(default_factory=set)
-    citations: Set[str] = Field(
-        description="Identifiers of publications linked to this dataset", default_factory=set
+    citations: Set[str] | List[AIoDPublication] = Field(
+        description="Identifiers of publications linked to this dataset, or the actual "
+        "publications",
+        default_factory=set,
     )
-    distributions: Set[AIoDDistribution] = Field(default_factory=set)
+    distributions: List[AIoDDistribution] = Field(default_factory=list)
     keywords: Set[str] = Field(default_factory=set)
-    measured_values: Set[AIoDMeasurementValue] = Field(default_factory=set)
-
-
-class AIoDPublication(BaseModel):
-    """The complete metadata of a publication. For now, only a couple of fields are shown,
-    we have to decide which fields to use."""
-
-    title: str = Field(max_length=250)
-    url: str = Field(max_length=250)
-    id: int | None
+    measured_values: List[AIoDMeasurementValue] = Field(default_factory=list)

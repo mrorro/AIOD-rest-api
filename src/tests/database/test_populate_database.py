@@ -23,5 +23,5 @@ def test_example_happy_path(engine: Engine):
         publications = session.scalars(select(OrmPublication)).all()
         assert len(datasets) == 5
         assert len(publications) == 2
-        assert {len(d.citations) for d in datasets} == {0, 1, 2}
-        assert {len(p.datasets) for p in publications} == {1, 2}
+        assert {len(d.citations) for d in datasets} == {0}
+        assert {len(p.datasets) for p in publications} == {0}

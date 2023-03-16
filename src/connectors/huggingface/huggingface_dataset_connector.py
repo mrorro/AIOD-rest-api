@@ -7,11 +7,11 @@ import dateutil.parser
 import requests
 
 from connectors import DatasetConnector
-from database.models import OrmDataset, OrmDataDownload, OrmKeyword, OrmPublication, OrmLicense
+from schemas import AIoDDataset, AIoDPublication, AIoDDistribution
 
 
 class HuggingFaceDatasetConnector(DatasetConnector):
-    def fetch(self, node_specific_identifier: str) -> OrmDataset:
+    def fetch(self, node_specific_identifier: str) -> AIoDDataset:
         raise NotImplementedError()
 
     @staticmethod
@@ -29,18 +29,18 @@ class HuggingFaceDatasetConnector(DatasetConnector):
             return []
         return response_json["parquet_files"]
 
-    def fetch_all(self, limit: int | None = None) -> typing.Iterator[OrmDataset]:
+    def fetch_all(self, limit: int | None = None) -> typing.Iterator[AIoDDataset]:
         ds = datasets.list_datasets(with_details=True)[:limit]
         for dataset in ds:
             citations = []
             if dataset.citation is not None:
                 parsed_citations = bibtexparser.loads(dataset.citation).entries
                 if len(parsed_citations) == 0:
-                    citations = [OrmPublication(title=dataset.citation)]
+                    citations = [AIoDPublication(title=dataset.citation)]
                 elif len(parsed_citations) == 1:
                     citation = parsed_citations[0]
                     citations = [
-                        OrmPublication(
+                        AIoDPublication(
                             title=citation["title"],
                             url=citation["link"] if "link" in citation else None,
                         )
@@ -55,7 +55,7 @@ class HuggingFaceDatasetConnector(DatasetConnector):
                 url="https://datasets-server.huggingface.co/parquet", dataset_id=dataset.id
             )
             distributions = [
-                OrmDataDownload(
+                AIoDDistribution(
                     name=pq_file["filename"],
                     description=f"{pq_file['dataset']}. Config: {pq_file['config']}. Split: "
                     f"{pq_file['split']}",
@@ -77,7 +77,7 @@ class HuggingFaceDatasetConnector(DatasetConnector):
                         split["num_examples"]
                         for split in dataset.cardData["dataset_info"]["splits"]
                     )
-            yield OrmDataset(
+            yield AIoDDataset(
                 description=dataset.description,
                 name=dataset.id,
                 node_specific_identifier=dataset.id,
@@ -86,9 +86,9 @@ class HuggingFaceDatasetConnector(DatasetConnector):
                 creator=dataset.author,
                 date_modified=dateutil.parser.parse(dataset.lastModified),
                 citations=citations,
-                license=OrmLicense(name=ds_license) if ds_license is not None else None,
+                license=ds_license,
                 distributions=distributions,
                 is_accessible_for_free=True,
                 size=size,
-                keywords=[OrmKeyword(name=tag) for tag in dataset.tags],
+                keywords=dataset.tags,
             )
