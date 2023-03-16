@@ -5,27 +5,27 @@ from sqlalchemy import Engine, select, func
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from database.models import DatasetDescription
+from database.models import OrmDataset
 
 
 @pytest.mark.parametrize("identifier", ["1", "2", "3"])
 def test_happy_path(client: TestClient, engine: Engine, identifier: str):
     datasets = [
-        DatasetDescription(
+        OrmDataset(
             name="dset1",
             description="",
             node="openml",
             same_as="url_openml",
             node_specific_identifier="1",
         ),
-        DatasetDescription(
+        OrmDataset(
             name="dset1",
             description="",
             node="other_node",
             same_as="url_other_node_1",
             node_specific_identifier="1",
         ),
-        DatasetDescription(
+        OrmDataset(
             name="dset2",
             description="",
             node="other_node",
@@ -47,21 +47,21 @@ def test_happy_path(client: TestClient, engine: Engine, identifier: str):
 @pytest.mark.parametrize("identifier", ["4", "5"])
 def test_nonexistent_dataset(client: TestClient, engine: Engine, identifier: str):
     datasets = [
-        DatasetDescription(
+        OrmDataset(
             name="dset1",
             node="openml",
             description="",
             same_as="openml.eu/1",
             node_specific_identifier="1",
         ),
-        DatasetDescription(
+        OrmDataset(
             name="dset1",
             node="other_node",
             description="",
             same_as="other_node.eu/1",
             node_specific_identifier="1",
         ),
-        DatasetDescription(
+        OrmDataset(
             name="dset2",
             node="other_node",
             description="",
@@ -83,5 +83,5 @@ def test_nonexistent_dataset(client: TestClient, engine: Engine, identifier: str
 
 def _n_datasets(engine: Engine) -> int:
     with Session(engine) as session:
-        statement = select(func.count()).select_from(DatasetDescription)
+        statement = select(func.count()).select_from(OrmDataset)
         return session.execute(statement).scalar()

@@ -4,13 +4,13 @@ from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from database.models import DatasetDescription
+from database.models import OrmDataset
 
 OPENML_URL = "https://www.openml.org/api/v1/json"
 
 
 def test_happy_path(client: TestClient, engine: Engine):
-    dataset_description = DatasetDescription(
+    dataset_description = OrmDataset(
         name="anneal",
         node="openml",
         description="description text",
@@ -33,7 +33,7 @@ def test_happy_path(client: TestClient, engine: Engine):
 
 
 def test_dataset_not_found_in_local_db(client: TestClient, engine: Engine):
-    dataset_description = DatasetDescription(
+    dataset_description = OrmDataset(
         name="anneal", node="openml", description="", same_as="", node_specific_identifier="1"
     )
     with Session(engine) as session:
@@ -46,7 +46,7 @@ def test_dataset_not_found_in_local_db(client: TestClient, engine: Engine):
 
 
 def test_wrong_node(client: TestClient, engine: Engine):
-    dataset_description = DatasetDescription(
+    dataset_description = OrmDataset(
         name="anneal", node="example", description="", same_as="", node_specific_identifier="1"
     )
     with Session(engine) as session:
@@ -59,7 +59,7 @@ def test_wrong_node(client: TestClient, engine: Engine):
 
 
 def test_unexisting_node(client: TestClient, engine: Engine):
-    dataset_description = DatasetDescription(
+    dataset_description = OrmDataset(
         name="anneal",
         node="openml",
         description="",

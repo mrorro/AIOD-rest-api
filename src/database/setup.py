@@ -10,12 +10,12 @@ from sqlalchemy.orm import Session
 from connectors import DatasetConnector, PublicationConnector
 from .models import (
     Base,
-    DatasetDescription,
-    Publication,
-    License,
-    Keyword,
-    AlternateName,
-    MeasuredValue,
+    OrmDataset,
+    OrmPublication,
+    OrmLicense,
+    OrmKeyword,
+    OrmAlternateName,
+    OrmMeasuredValue,
 )
 
 
@@ -83,33 +83,33 @@ def populate_database(
             *[c.fetch_all(limit=limit_publications) for c in publications_connectors]
         )
 
-    datasets: List[DatasetDescription] = list(datasets_iterable)
-    publications: List[Publication] = list(publications_iterable)
+    datasets: List[OrmDataset] = list(datasets_iterable)
+    publications: List[OrmPublication] = list(publications_iterable)
     # For now, we cannot make use of generators, because we have to link the datasets with the
     # publications. This is a temporary setup though, so it makes sense to let the fetch_all()
     # return an iterator for future benefits.
     _link_datasets_with_publications(datasets, publications)
     with Session(engine) as session:
         data_exists = (
-            session.scalars(select(Publication)).first()
-            or session.scalars(select(DatasetDescription)).first()
+            session.scalars(select(OrmPublication)).first()
+            or session.scalars(select(OrmDataset)).first()
         )
         if only_if_empty and data_exists:
             return
 
         for dataset in datasets:
             if dataset.license is not None:
-                dataset.license = License.as_unique(session=session, name=dataset.license.name)
+                dataset.license = OrmLicense.as_unique(session=session, name=dataset.license.name)
             dataset.alternate_names = [
-                AlternateName.as_unique(session=session, name=alias.name)
+                OrmAlternateName.as_unique(session=session, name=alias.name)
                 for alias in dataset.alternate_names
             ]
             dataset.keywords = [
-                Keyword.as_unique(session=session, name=keyword.name)
+                OrmKeyword.as_unique(session=session, name=keyword.name)
                 for keyword in dataset.keywords
             ]
             dataset.measured_values = [
-                MeasuredValue.as_unique(
+                OrmMeasuredValue.as_unique(
                     session=session, technique=measured_value.technique, value=measured_value.value
                 )
                 for measured_value in dataset.measured_values

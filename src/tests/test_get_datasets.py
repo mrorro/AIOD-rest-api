@@ -2,26 +2,26 @@ from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from database.models import DatasetDescription
+from database.models import OrmDataset
 
 
 def test_happy_path(client: TestClient, engine: Engine):
     datasets = [
-        DatasetDescription(
+        OrmDataset(
             name="dset1",
             node="openml",
             description="a",
             same_as="openml.eu/1",
             node_specific_identifier="1",
         ),
-        DatasetDescription(
+        OrmDataset(
             name="dset1",
             node="other_node",
             description="b",
             same_as="other_node.eu/1",
             node_specific_identifier="1",
         ),
-        DatasetDescription(
+        OrmDataset(
             name="dset2",
             node="other_node",
             description="c",
@@ -49,4 +49,4 @@ def test_happy_path(client: TestClient, engine: Engine):
         "other_node.eu/2",
     }
     for ds in response_json:
-        assert len(ds) == 6
+        assert len(ds) == 13

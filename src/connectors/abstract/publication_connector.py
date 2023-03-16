@@ -2,7 +2,7 @@ import abc
 from typing import Iterator
 
 from connectors.node_names import NodeName
-from database.models import Publication
+from database.models import OrmPublication
 
 
 class PublicationConnector(abc.ABC):
@@ -14,6 +14,6 @@ class PublicationConnector(abc.ABC):
         return NodeName.from_class(self.__class__)
 
     @abc.abstractmethod
-    def fetch_all(self, limit: int | None) -> Iterator[Publication]:
+    def fetch_all(self, limit: int | None) -> Iterator[OrmPublication]:
         """Retrieve all publications"""
         pass

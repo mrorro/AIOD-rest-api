@@ -2,7 +2,7 @@ import abc
 from typing import Iterator
 
 from connectors.node_names import NodeName
-from database.models import DatasetDescription
+from database.models import OrmDataset
 
 
 class DatasetConnector(abc.ABC):
@@ -14,11 +14,11 @@ class DatasetConnector(abc.ABC):
         return NodeName.from_class(self.__class__)
 
     @abc.abstractmethod
-    def fetch(self, node_specific_identifier: str) -> DatasetDescription:
+    def fetch(self, node_specific_identifier: str) -> OrmDataset:
         """Retrieve information of specific dataset"""
         pass
 
     @abc.abstractmethod
-    def fetch_all(self, limit: int | None = None) -> Iterator[DatasetDescription]:
+    def fetch_all(self, limit: int | None = None) -> Iterator[OrmDataset]:
         """Retrieve information of all datasets"""
         pass

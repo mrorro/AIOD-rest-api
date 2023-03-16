@@ -5,26 +5,26 @@ from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from database.models import DatasetDescription
+from database.models import OrmDataset
 
 
 def test_happy_path(client: TestClient, engine: Engine):
     datasets = [
-        DatasetDescription(
+        OrmDataset(
             name="dset1",
             node="openml",
             description="",
             same_as="non-existing-url/1",
             node_specific_identifier="1",
         ),
-        DatasetDescription(
+        OrmDataset(
             name="dset1",
             node="other_node",
             description="",
             same_as="non-existing-url/2",
             node_specific_identifier="1",
         ),
-        DatasetDescription(
+        OrmDataset(
             name="dset2",
             node="other_node",
             description="",
@@ -55,7 +55,7 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["node"] == "openml"
     assert response_json["node_specific_identifier"] == "2"
     assert response_json["id"] == 4
-    assert len(response_json) == 6
+    assert len(response_json) == 13
 
 
 @pytest.mark.parametrize(
@@ -80,7 +80,7 @@ def test_unicode(client: TestClient, engine: Engine, name):
 
 def test_duplicated_dataset(client: TestClient, engine: Engine):
     datasets = [
-        DatasetDescription(
+        OrmDataset(
             name="dset1",
             node="openml",
             node_specific_identifier="1",

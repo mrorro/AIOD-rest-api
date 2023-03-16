@@ -115,7 +115,7 @@ dataset_measuredValue_relationship = Table(
 )
 
 
-class DatasetDescription(Base):
+class OrmDataset(Base):
     """Keeps track of which dataset is stored where."""
 
     __tablename__ = "datasets"
@@ -157,51 +157,51 @@ class DatasetDescription(Base):
     version: Mapped[str] = mapped_column(String(150), default=None, nullable=True)
 
     # Relations
-    license: Mapped["License"] = relationship(
+    license: Mapped["OrmLicense"] = relationship(
         back_populates="datasets", secondary=dataset_license_relationship, default=None
     )
-    has_parts: Mapped[list["DatasetDescription"]] = relationship(
+    has_parts: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list,
         back_populates="is_part",
         primaryjoin=dataset_dataset_relationship.c.parent_id == id,
         secondary=dataset_dataset_relationship,
         secondaryjoin=dataset_dataset_relationship.c.child_id == id,
     )
-    is_part: Mapped[list["DatasetDescription"]] = relationship(
+    is_part: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list,
         back_populates="has_parts",
         primaryjoin=dataset_dataset_relationship.c.child_id == id,
         secondary=dataset_dataset_relationship,
         secondaryjoin=dataset_dataset_relationship.c.parent_id == id,
     )
-    alternate_names: Mapped[list["AlternateName"]] = relationship(
+    alternate_names: Mapped[list["OrmAlternateName"]] = relationship(
         default_factory=list,
         back_populates="datasets",
         secondary=dataset_alternateName_relationship,
     )
-    citations: Mapped[list["Publication"]] = relationship(
+    citations: Mapped[list["OrmPublication"]] = relationship(
         default_factory=list,
         back_populates="datasets",
         secondary=dataset_publication_relationship,
     )
-    distributions: Mapped[list["DataDownload"]] = relationship(
+    distributions: Mapped[list["OrmDataDownload"]] = relationship(
         default_factory=list,
         back_populates="dataset",
         secondary=dataset_distribution_relationship,
     )
-    keywords: Mapped[list["Keyword"]] = relationship(
+    keywords: Mapped[list["OrmKeyword"]] = relationship(
         default_factory=list,
         back_populates="datasets",
         secondary=dataset_keyword_relationship,
     )
-    measured_values: Mapped[list["MeasuredValue"]] = relationship(
+    measured_values: Mapped[list["OrmMeasuredValue"]] = relationship(
         default_factory=list,
         back_populates="datasets",
         secondary=dataset_measuredValue_relationship,
     )
 
 
-class DataDownload(Base):
+class OrmDataDownload(Base):
     """All or part of a Dataset in downloadable form"""
 
     __tablename__ = "data_downloads"
@@ -211,12 +211,12 @@ class DataDownload(Base):
     description: Mapped[str] = mapped_column(String(5000), default=None, nullable=True)
     encoding_format: Mapped[str] = mapped_column(String(255), default=None, nullable=True)
     name: Mapped[str] = mapped_column(String(150), default=None, nullable=True)
-    dataset: Mapped["DatasetDescription"] = relationship(
+    dataset: Mapped["OrmDataset"] = relationship(
         back_populates="distributions", secondary=dataset_distribution_relationship, init=False
     )
 
 
-class AlternateName(UniqueMixin, Base):
+class OrmAlternateName(UniqueMixin, Base):
     """An alias for an item"""
 
     @classmethod
@@ -230,14 +230,14 @@ class AlternateName(UniqueMixin, Base):
     __tablename__ = "alternate_names"
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(String(150), unique=True)
-    datasets: Mapped[list["DatasetDescription"]] = relationship(
+    datasets: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list,
         back_populates="alternate_names",
         secondary=dataset_alternateName_relationship,
     )
 
 
-class License(UniqueMixin, Base):
+class OrmLicense(UniqueMixin, Base):
     """A license document that applies to this content, indicated by URL."""
 
     @classmethod
@@ -251,14 +251,14 @@ class License(UniqueMixin, Base):
     __tablename__ = "licenses"
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(String(150), unique=True)
-    datasets: Mapped[list["DatasetDescription"]] = relationship(
+    datasets: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list,
         back_populates="license",
         secondary=dataset_license_relationship,
     )
 
 
-class Keyword(UniqueMixin, Base):
+class OrmKeyword(UniqueMixin, Base):
     """Keywords or tags used to describe some item"""
 
     @classmethod
@@ -272,14 +272,14 @@ class Keyword(UniqueMixin, Base):
     __tablename__ = "keywords"
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(String(150), unique=True)
-    datasets: Mapped[list["DatasetDescription"]] = relationship(
+    datasets: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list,
         back_populates="keywords",
         secondary=dataset_keyword_relationship,
     )
 
 
-class MeasuredValue(UniqueMixin, Base):
+class OrmMeasuredValue(UniqueMixin, Base):
     """The variable that this dataset measures. For example, temperature or pressure, including the
     technique, technology, or methodology used in a dataset"""
 
@@ -302,14 +302,14 @@ class MeasuredValue(UniqueMixin, Base):
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     variable: Mapped[str] = mapped_column(String(150))
     technique: Mapped[str] = mapped_column(String(150))
-    datasets: Mapped[list["DatasetDescription"]] = relationship(
+    datasets: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list,
         back_populates="measured_values",
         secondary=dataset_measuredValue_relationship,
     )
 
 
-class Publication(Base):
+class OrmPublication(Base):
     """Any publication."""
 
     __tablename__ = "publications"
@@ -323,7 +323,7 @@ class Publication(Base):
     title: Mapped[str] = mapped_column(String(250), nullable=False)
     url: Mapped[str] = mapped_column(String(250), nullable=True, default=None)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    datasets: Mapped[list["DatasetDescription"]] = relationship(
+    datasets: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list,
         back_populates="citations",
         secondary=dataset_publication_relationship,
