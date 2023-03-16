@@ -5,7 +5,8 @@ from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from database.models import OrmPublication, OrmDataset
+from database.model.publication import OrmPublication
+from database.model.dataset import OrmDataset
 
 
 @pytest.mark.parametrize("publication_id", [1, 2])

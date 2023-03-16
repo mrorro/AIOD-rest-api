@@ -2,7 +2,7 @@ import abc
 from typing import Iterator
 
 from connectors.node_names import NodeName
-from database.models import OrmPublication
+from database.model.publication import OrmPublication
 
 
 class PublicationConnector(abc.ABC):

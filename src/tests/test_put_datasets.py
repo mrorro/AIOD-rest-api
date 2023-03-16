@@ -5,7 +5,7 @@ from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from database.models import OrmDataset
+from database.model.dataset import OrmDataset
 
 
 @pytest.mark.parametrize(

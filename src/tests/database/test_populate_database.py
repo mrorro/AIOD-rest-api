@@ -5,7 +5,8 @@ from connectors import (
     ExampleDatasetConnector,
     ExamplePublicationConnector,
 )
-from database.models import OrmPublication, OrmDataset
+from database.model.publication import OrmPublication
+from database.model.dataset import OrmDataset
 from database.setup import populate_database
 
 OPENML_URL = "https://www.openml.org/api/v1/json"

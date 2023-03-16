@@ -1,7 +1,7 @@
 from typing import Iterator
 
 from connectors.abstract.publication_connector import PublicationConnector
-from database.models import OrmPublication
+from database.model.publication import OrmPublication
 
 
 class ExamplePublicationConnector(PublicationConnector):

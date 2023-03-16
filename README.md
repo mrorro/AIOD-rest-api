@@ -198,31 +198,7 @@ start-up work (e.g., populating the database).
 
 #### Database Structure
 
-The Python classes that define the database tables are found in [src/database/models.py](src/database/models.py).
-Additionally, a relationship table between the Dataset and Publication is made to allow for their many-to-many
-relationship.
+The Python classes that define the database tables are found in [src/database/model/](src/database/model/). 
+The structure is based on the 
+[metadata schema](https://docs.google.com/spreadsheets/d/1n2DdSmzyljvTFzQzTLMAmuo3IVNx8yposdPLItBta68/edit?usp=sharing).
 
-**Dataset**: stores simple meta-data for datasets with different data providers
-
-| Attribute                    | Description                                                                     |
-|------------------------------|---------------------------------------------------------------------------------|
-| id                           | a unique identifier                                                             |
-| name                         | name of the dataset                                                             |
-| platform                     | identifies the platform on which the dataset is stored                          |
-| platform_specific_identifier | the identifier with which the dataset is uniquely identified at the `platform`. |
-
-**Publication**: stores simple meta-data for publications
-
-| Attribute | Description                                    |
-|-----------|------------------------------------------------|
-| id        | a unique identifier                            |
-| title     | title of the publication                       |
-| url       | link to a page where the paper can be accessed |
-
-**dataset_publication**: stores which datasets are related to which publications
-
-| Attribute      | Description                              |
-|----------------|------------------------------------------|
-| publication_id | refers to an id in the publication table |
-| dataset_id     | refers to an id in the dataset table     |
- 

@@ -21,7 +21,8 @@ import connectors
 import schemas
 from connectors import NodeName
 from converters import dataset_converter
-from database.models import OrmDataset, OrmPublication
+from database.model.publication import OrmPublication
+from database.model.dataset import OrmDataset
 from database.setup import connect_to_database, populate_database
 
 

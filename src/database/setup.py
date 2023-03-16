@@ -10,11 +10,9 @@ from sqlalchemy.orm import Session
 from connectors import DatasetConnector, PublicationConnector
 from converters import dataset_converter
 from schemas import AIoDDataset
-from .models import (
-    Base,
-    OrmDataset,
-    OrmPublication,
-)
+from .model.base import Base
+from .model.publication import OrmPublication
+from .model.dataset import OrmDataset
 
 
 def connect_to_database(

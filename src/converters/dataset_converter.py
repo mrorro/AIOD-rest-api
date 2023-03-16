@@ -8,16 +8,13 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from database.models import (
-    OrmDataset,
+from database.model.general import (
     OrmLicense,
-    OrmAlternateName,
-    OrmMeasuredValue,
     OrmKeyword,
-    OrmPublication,
-    Base,
-    OrmDataDownload,
 )
+from database.model.base import Base
+from database.model.publication import OrmPublication
+from database.model.dataset import OrmDataset, OrmDataDownload, OrmMeasuredValue, OrmAlternateName
 from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue
 
 
