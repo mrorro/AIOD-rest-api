@@ -1,3 +1,7 @@
+"""
+Converting between different dataset representations
+"""
+
 from typing import List, TypeVar, Type, Set
 
 from fastapi import HTTPException
@@ -11,7 +15,8 @@ from database.models import (
     OrmMeasuredValue,
     OrmKeyword,
     OrmPublication,
-    Base, OrmDataDownload,
+    Base,
+    OrmDataDownload,
 )
 from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue
 
@@ -69,7 +74,7 @@ def aiod_to_orm(session: Session, aiod: AIoDDataset) -> OrmDataset:
     """
 
     if isinstance(aiod.citations, List):
-        # TODO: retrieve OrmPublication from AIoDPublication
+        # TODO(issue 7): retrieve OrmPublication from AIoDPublication
         citations = []
     else:
         citations = _retrieve_related_objects_by_ids(session, aiod.citations, OrmPublication)
@@ -128,9 +133,7 @@ def aiod_to_orm(session: Session, aiod: AIoDDataset) -> OrmDataset:
 T = TypeVar("T", bound=Base)
 
 
-def _retrieve_related_objects_by_ids(
-    session: Session, ids: Set[str], cls: Type[T]
-) -> List[T]:
+def _retrieve_related_objects_by_ids(session: Session, ids: Set[str], cls: Type[T]) -> List[T]:
     related_objects = []
     if len(ids) > 0:
         query = select(cls).where(cls.id.in_(ids))

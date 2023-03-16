@@ -52,7 +52,6 @@ class OpenMlDatasetConnector(DatasetConnector):
             description=dataset_json["description"],
             date_published=dateutil.parser.parse(dataset_json["upload_date"]),
             date_modified=dateutil.parser.parse(dataset_json["processing_date"]),
-            # TODO(Jos): check if processing_date is updated on update; check if it's UTC
             distributions=[
                 AIoDDistribution(
                     content_url=dataset_json["url"], encoding_format=dataset_json["format"]

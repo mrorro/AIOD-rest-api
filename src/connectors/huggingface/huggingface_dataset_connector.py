@@ -73,7 +73,7 @@ class HuggingFaceDatasetConnector(DatasetConnector):
                     else:
                         (ds_license,) = dataset.cardData["license"]
 
-                    # TODO: implement
+                    # TODO(issue 8): implement
                     # if "dataset_info" in dataset.cardData:
                     #     size = sum(
                     #         split["num_examples"]
@@ -95,5 +95,6 @@ class HuggingFaceDatasetConnector(DatasetConnector):
                     keywords=dataset.tags,
                 )
             except Exception as e:
-                logging.error(f"Error while fetching huggingface dataset with id {dataset.id}: "
-                              f"{str(e)}")
+                logging.error(
+                    f"Error while fetching huggingface dataset with id {dataset.id}: " f"{str(e)}"
+                )

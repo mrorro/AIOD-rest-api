@@ -87,7 +87,7 @@ def populate_database(
     # publications. This is a temporary setup though, so it makes sense to let the fetch_all()
     # return an iterator for future benefits.
 
-    # TODO: return AIoDPublication instead of OrmPublication, and link them again
+    # TODO(issue 7): return AIoDPublication instead of OrmPublication, and link them again
     # _link_datasets_with_publications(datasets, publications)
 
     with Session(engine) as session:

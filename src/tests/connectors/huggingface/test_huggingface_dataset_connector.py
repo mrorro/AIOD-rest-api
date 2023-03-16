@@ -38,9 +38,7 @@ def test_fetch_all_happy_path():
     assert ids == ids_expected
     assert names == ids_expected
     assert {len(d.citations) for d in datasets} == {1}
-
-    # TODO: improve test, after discussion what to do with HuggingFace datasets: do we indeed want
-    # a single dataset with multiple distributions, one distribution for each file?
+    # TODO(issue 8): improve test, after discussion what to do with HuggingFace datasets
 
 
 def mock_parquet(mocked_requests: responses.RequestsMock, dataset_id: str):
