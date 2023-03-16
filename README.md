@@ -120,6 +120,17 @@ source venv/bin/activate
 python -m pip install ".[dev]"
 ```
 
+Moreover, you are encouraged to install the pre-commit hooks, so that black, mypy and the unittests
+run before every commit:
+```bash
+pre-commit install
+```
+Alternatively, you can run 
+```bash
+precommit run --all-files
+```
+To run pre-commit manually.
+
 After installing the dependencies you can start the server:
 
 ```bash
