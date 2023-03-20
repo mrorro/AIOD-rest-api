@@ -415,6 +415,14 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
+    @app.get(url_prefix + "/nodes/{node}/publications")
+    def get_node_publications(
+        node: str, pagination: Pagination = Depends(Pagination)
+    ) -> list[dict]:
+        """Retrieve all meta-data of the publications of a single node."""
+        raise HTTPException(status_code=501, detail="Unimplemented error")
+        # TODO: Zenodo API doesnt work well so this endpoint will be implemented in the future
+
     @app.get(url_prefix + "/nodes/{node}/publications/{identifier}")
     def get_node_publication(node: str, identifier: str) -> dict:
         """Retrieve all meta-data for a specific publication identified by the
