@@ -56,8 +56,13 @@ class News(BaseModel):
     """The complete metadata for news entity"""
 
     title: str = Field(max_length=500)
-    date: datetime.date
+    date_modified: datetime.date
     body: str = Field(max_length=2000)
+    headline: str = Field(max_length=500)
+    alternative_headline: Optional[str] = Field(max_length=500)
+    section: str = Field(max_length=500)
+    word_count: int | None
+
     media: Optional[MediaEnum]
     source: Optional[str]
     news_categories: Optional[list[str]]

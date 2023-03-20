@@ -10,7 +10,7 @@ import dataclasses
 from sqlite3 import Date
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 from sqlalchemy.sql import func
-from sqlalchemy import ForeignKey, Table, Column, String, UniqueConstraint, DateTime
+from sqlalchemy import ForeignKey, Table, Column, String, Integer, UniqueConstraint, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, MappedAsDataclass, relationship
 
 
@@ -186,9 +186,14 @@ class News(Base):
     __tablename__ = "news"
 
     title: Mapped[str] = mapped_column(String(500), nullable=False)
-    date: Mapped[Date] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    date_modified: Mapped[Date] = mapped_column(DateTime(timezone=True), server_default=func.now())
     body: Mapped[str] = mapped_column(String(2000), nullable=False)
+    section: Mapped[str] = mapped_column(String(500), nullable=False)
+    headline: Mapped[str] = mapped_column(String(500), nullable=False)
+    word_count: Mapped[int] = mapped_column(Integer, nullable=False)
     source: Mapped[str] = mapped_column(String(500), nullable=True)
+    alternative_headline: Mapped[str] = mapped_column(String(500), nullable=True)
+
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
     business_categories = relationship(
