@@ -535,6 +535,32 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
+    @app.put(url_prefix + "/news/{identifier}")
+    def put_news(identifier: str, news: schemas.News) -> dict:
+        """Update existing news."""
+        try:
+            with Session(engine) as session:
+                _retrieve_news(session, identifier)  # Raise error if dataset does not exist
+                statement = (
+                    update(News)
+                    .values(
+                        title=news.title,
+                        date_modified=news.date_modified,
+                        body=news.body,
+                        source=news.source,
+                        headline=news.headline,
+                        alternative_headline=news.alternative_headline,
+                        section=news.section,
+                        word_count=news.word_count,
+                    )
+                    .where(News.id == identifier)
+                )
+                session.execute(statement)
+                session.commit()
+                return _retrieve_news(session, identifier).to_dict(depth=1)
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
 
 def create_app() -> FastAPI:
     """Create the FastAPI application, complete with routes."""
