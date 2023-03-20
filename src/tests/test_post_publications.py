@@ -10,9 +10,15 @@ from database.models import PublicationDescription
 
 def test_happy_path(client: TestClient, engine: Engine):
     publications = [
-        PublicationDescription(title="pub1", doi="doi1", node="zenodo", node_specific_identifier="1"),
-        PublicationDescription(title="pub1", doi="doi1",node="other_node", node_specific_identifier="1"),
-        PublicationDescription(title="pub2", doi="doi2",node="other_node", node_specific_identifier="2"),
+        PublicationDescription(
+            title="pub1", doi="doi1", node="zenodo", node_specific_identifier="1"
+        ),
+        PublicationDescription(
+            title="pub1", doi="doi1", node="other_node", node_specific_identifier="1"
+        ),
+        PublicationDescription(
+            title="pub2", doi="doi2", node="other_node", node_specific_identifier="2"
+        ),
     ]
     with Session(engine) as session:
         # Populate database
@@ -21,7 +27,7 @@ def test_happy_path(client: TestClient, engine: Engine):
 
     response = client.post(
         "/publications",
-        json={"title": "pub2","doi":"doi2", "node": "zenodo", "node_specific_identifier": "2"},
+        json={"title": "pub2", "doi": "doi2", "node": "zenodo", "node_specific_identifier": "2"},
     )
     assert response.status_code == 200
     response_json = response.json()
@@ -40,36 +46,43 @@ def test_happy_path(client: TestClient, engine: Engine):
 )
 def test_unicode(client: TestClient, engine: Engine, title):
     response = client.post(
-        "/publications", json={"title": title,"doi":"doi2", "node": "zenodo", "node_specific_identifier": "2"},
+        "/publications",
+        json={"title": title, "doi": "doi2", "node": "zenodo", "node_specific_identifier": "2"},
     )
     assert response.status_code == 200
     response_json = response.json()
     assert response_json["title"] == title
 
 
-def test_duplicated_dataset(client: TestClient, engine: Engine):
-    datasets = [PublicationDescription(title="pub1", doi="doi1", node="zenodo", node_specific_identifier="1")]
+def test_duplicated_publication(client: TestClient, engine: Engine):
+    publications = [
+        PublicationDescription(
+            title="pub1", doi="doi1", node="zenodo", node_specific_identifier="1"
+        )
+    ]
     with Session(engine) as session:
         # Populate database
-        session.add_all(datasets)
+        session.add_all(publications)
         session.commit()
     response = client.post(
         "/publications",
-        json={"title": "pub1","doi":"doi1", "node": "zenodo", "node_specific_identifier": "1"},
+        json={"title": "pub1", "doi": "doi1", "node": "zenodo", "node_specific_identifier": "1"},
     )
     assert response.status_code == 409
     assert (
-        response.json()["detail"] == "There already exists a dataset with the same node "
+        response.json()["detail"] == "There already exists a publication with the same node "
         "and name, with id=1."
     )
 
-#Test if the api allows creating publications with not all fields
-@pytest.mark.parametrize("field", ["title", "node","doi", "node_specific_identifier"])
+
+# Test if the api allows creating publications with not all fields
+@pytest.mark.parametrize("field", ["title", "node", "doi", "node_specific_identifier"])
 def test_missing_value(client: TestClient, engine: Engine, field: str):
-    data = {"title": "pub2",
-    "doi":"doi2",
-    "node": "zenodo",
-    "node_specific_identifier": "2"
+    data = {
+        "title": "pub2",
+        "doi": "doi2",
+        "node": "zenodo",
+        "node_specific_identifier": "2",
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
     response = client.post("/publications", json=data)
@@ -79,13 +92,13 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
     ]
 
 
-@pytest.mark.parametrize("field", ["title","doi", "node", "node_specific_identifier"])
+@pytest.mark.parametrize("field", ["title", "doi", "node", "node_specific_identifier"])
 def test_null_value(client: TestClient, engine: Engine, field: str):
     data = {
-    "title": "pub2",
-    "doi":"doi2",
-    "node": "zenodo",
-    "node_specific_identifier": "2"
+        "title": "pub2",
+        "doi": "doi2",
+        "node": "zenodo",
+        "node_specific_identifier": "2",
     }  # type: typing.Dict[str, typing.Any]
     data[field] = None
     response = client.post("/publications", json=data)

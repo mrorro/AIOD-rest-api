@@ -361,7 +361,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                     existing_dataset = session.scalars(query).first()
                     raise HTTPException(
                         status_code=409,
-                        detail="There already exists a dataset with the same "
+                        detail="There already exists a publication with the same "
                         f"node and name, with id={existing_dataset.id}.",
                     )
                 return new_publication.to_dict(depth=1)
