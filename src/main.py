@@ -492,10 +492,6 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                     section = news.section,
                     word_count = news.word_count
                 )
-    #                 headline: str = Field(max_length=500)
-    # alternative_headline: Optional[str] = Field(max_length=500)
-    # section: str = Field(max_length=500)
-    # word_count: int | None
 
                 new_news.tags = tags
                 new_news.business_categories = business_categories
@@ -513,6 +509,16 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 query = select(News).offset(pagination.offset).limit(pagination.limit)
                 return session.scalars(query).all()
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+    
+    @app.get(url_prefix + "/news/{identifier}")
+    def get_news(identifier: str) -> dict:
+        """Retrieve all meta-data for specific news entity."""
+        try:
+            with Session(engine) as session:
+                news = _retrieve_news(session, identifier)
+                return news
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
