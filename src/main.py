@@ -458,7 +458,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                                 detail=f"Tag '{t}' not found in the database.",
                             )
                         tags.append(tag)
-                
+
                 business_categories = []
                 if news.business_categories:
                     for c in news.business_categories:
@@ -470,7 +470,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                                 detail=f"Business category '{c}' not found in the database.",
                             )
                         business_categories.append(category)
-                news_categories = []        
+                news_categories = []
                 if news.news_categories:
                     for c in news.news_categories:
                         query = select(NewsCategory).where(NewsCategory.category == c)
@@ -483,14 +483,14 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                         news_categories.append(category)
 
                 new_news = News(
-                    title=news.title, 
-                    date_modified=news.date_modified, 
-                    body=news.body, 
+                    title=news.title,
+                    date_modified=news.date_modified,
+                    body=news.body,
                     source=news.source,
-                    headline = news.headline,
-                    alternative_headline = news.alternative_headline,
-                    section = news.section,
-                    word_count = news.word_count
+                    headline=news.headline,
+                    alternative_headline=news.alternative_headline,
+                    section=news.section,
+                    word_count=news.word_count,
                 )
 
                 new_news.tags = tags
@@ -511,7 +511,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 return session.scalars(query).all()
         except Exception as e:
             raise _wrap_as_http_exception(e)
-    
+
     @app.get(url_prefix + "/news/{identifier}")
     def get_news(identifier: str) -> dict:
         """Retrieve all meta-data for specific news entity."""

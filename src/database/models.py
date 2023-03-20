@@ -141,13 +141,8 @@ class BusinessCategory(Base):
     """Any business category"""
 
     __tablename__ = "business_categories"
-    __table_args__ = (
-        UniqueConstraint(
-            "category",
-            name="business_categories_unique_category",
-        ),
-    )
-    category: Mapped[str] = mapped_column(String(250), nullable=False)
+
+    category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
 
@@ -155,13 +150,8 @@ class NewsCategory(Base):
     """Any news category"""
 
     __tablename__ = "news_categories"
-    __table_args__ = (
-        UniqueConstraint(
-            "category",
-            name="news_categories_unique_category",
-        ),
-    )
-    category: Mapped[str] = mapped_column(String(250), nullable=False)
+
+    category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     parent_id: Mapped[int] = mapped_column(ForeignKey("news_categories.id"), nullable=True)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
@@ -170,13 +160,8 @@ class Tag(Base):
     """Any tag"""
 
     __tablename__ = "tags"
-    __table_args__ = (
-        UniqueConstraint(
-            "tag",
-            name="tag_unique_tag",
-        ),
-    )
-    tag: Mapped[str] = mapped_column(String(250), nullable=False)
+
+    tag: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
 
