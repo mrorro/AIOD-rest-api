@@ -5,7 +5,6 @@ Note: order matters for overloaded paths
 (https://fastapi.tiangolo.com/tutorial/path-params/#order-matters).
 """
 import argparse
-from unicodedata import category
 import tomllib
 import traceback
 from typing import Dict
@@ -21,7 +20,14 @@ from sqlalchemy.orm import Session
 import connectors
 import schemas
 from connectors import NodeName
-from database.models import *#DatasetDescription, Publication, News
+from database.models import (
+    DatasetDescription,
+    Publication,
+    News,
+    NewsCategory,
+    BusinessCategory,
+    Tag,
+)
 from database.setup import connect_to_database, populate_database
 
 
@@ -136,7 +142,8 @@ def _retrieve_publication(session, identifier) -> Publication:
         )
     return publication
 
-def _retrieve_news(session,identifier) -> News:
+
+def _retrieve_news(session, identifier) -> News:
     query = select(News).where(News.id == identifier)
     news = session.scalars(query).first()
     if not news:
@@ -145,6 +152,7 @@ def _retrieve_news(session,identifier) -> News:
             detail=f"News '{identifier}' not found in the database.",
         )
     return news
+
 
 def _wrap_as_http_exception(exception: Exception) -> HTTPException:
     if isinstance(exception, HTTPException):
@@ -439,40 +447,44 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         """Add news."""
         try:
             with Session(engine) as session:
-                tags = []
-                for t in news.tags:
-                    query = select(Tag).where(Tag.tag == t)
-                    tag = session.scalars(query).first()
-                    if not tag:
-                        raise HTTPException(
-                            status_code=404,
-                            detail=f"Tag '{t}' not found in the database.",
-                        )
-                    tags.append(tag)
-                business_categories = []
-                for c in news.business_categories:
-                    query = select(BusinessCategory).where(BusinessCategory.category == c)
-                    category = session.scalars(query).first()
-                    if not category:
-                        raise HTTPException(
-                            status_code=404,
-                            detail=f"Business category '{c}' not found in the database.",
-                        )
-                    business_categories.append(category)
+                if news.tags:
+                    tags = []
+                    for t in news.tags:
+                        query = select(Tag).where(Tag.tag == t)
+                        tag = session.scalars(query).first()
+                        if not tag:
+                            raise HTTPException(
+                                status_code=404,
+                                detail=f"Tag '{t}' not found in the database.",
+                            )
+                        tags.append(tag)
 
-                news_categories = []
-                for c in news.news_categories:
-                    query = select(NewsCategory).where(NewsCategory.category == c)
-                    category = session.scalars(query).first()
-                    if not category:
-                        raise HTTPException(
-                            status_code=404,
-                            detail=f"News category '{c}' not found in the database.",
-                        )
-                    news_categories.append(category)
+                if news.business_categories:
+                    business_categories = []
+                    for c in news.business_categories:
+                        query = select(BusinessCategory).where(BusinessCategory.category == c)
+                        category = session.scalars(query).first()
+                        if not category:
+                            raise HTTPException(
+                                status_code=404,
+                                detail=f"Business category '{c}' not found in the database.",
+                            )
+                        business_categories.append(category)
+                if news.news_categories:
+                    news_categories = []
+                    for c in news.news_categories:
+                        query = select(NewsCategory).where(NewsCategory.category == c)
+                        category = session.scalars(query).first()
+                        if not category:
+                            raise HTTPException(
+                                status_code=404,
+                                detail=f"News category '{c}' not found in the database.",
+                            )
+                        news_categories.append(category)
 
-
-                new_news = News(title=news.title, date=news.date, body=news.body,source=news.source)
+                new_news = News(
+                    title=news.title, date=news.date, body=news.body, source=news.source
+                )
                 new_news.tags = tags
                 new_news.business_categories = business_categories
                 new_news.news_categories = news_categories
@@ -504,7 +516,6 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 session.commit()
         except Exception as e:
             raise _wrap_as_http_exception(e)
-
 
 
 def create_app() -> FastAPI:
