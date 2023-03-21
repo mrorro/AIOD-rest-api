@@ -1,7 +1,620 @@
-{
-    "valid": [
-        "04-07-22/wep-probes",
-        "0n1xus/codexglue",
-        "rotten_tomatoes"
-    ]
-}
+[
+        {
+        "_id": "621ffdd236468d709f181d58",
+        "id": "acronym_identification",
+        "cardData": {
+            "annotations_creators": [
+                "expert-generated"
+            ],
+            "language_creators": [
+                "found"
+            ],
+            "language": [
+                "en"
+            ],
+            "license": [
+                "mit"
+            ],
+            "multilinguality": [
+                "monolingual"
+            ],
+            "size_categories": [
+                "10K<n<100K"
+            ],
+            "source_datasets": [
+                "original"
+            ],
+            "task_categories": [
+                "token-classification"
+            ],
+            "task_ids": [],
+            "paperswithcode_id": "acronym-identification",
+            "pretty_name": "Acronym Identification Dataset",
+            "tags": [
+                "acronym-identification"
+            ],
+            "dataset_info": {
+                "features": [
+                    {
+                        "name": "id",
+                        "dtype": "string"
+                    },
+                    {
+                        "name": "tokens",
+                        "sequence": "string"
+                    },
+                    {
+                        "name": "labels",
+                        "sequence": {
+                            "class_label": {
+                                "names": {
+                                    "0": "B-long",
+                                    "1": "B-short",
+                                    "2": "I-long",
+                                    "3": "I-short",
+                                    "4": "O"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "splits": [
+                    {
+                        "name": "train",
+                        "num_bytes": 7792803,
+                        "num_examples": 14006
+                    },
+                    {
+                        "name": "validation",
+                        "num_bytes": 952705,
+                        "num_examples": 1717
+                    },
+                    {
+                        "name": "test",
+                        "num_bytes": 987728,
+                        "num_examples": 1750
+                    }
+                ],
+                "download_size": 8556464,
+                "dataset_size": 9733236
+            },
+            "train-eval-index": [
+                {
+                    "config": "default",
+                    "task": "token-classification",
+                    "task_id": "entity_extraction",
+                    "splits": {
+                        "eval_split": "test"
+                    },
+                    "col_mapping": {
+                        "tokens": "tokens",
+                        "labels": "tags"
+                    }
+                }
+            ]
+        },
+        "disabled": false,
+        "gated": false,
+        "lastModified": "2023-01-25T14:18:28.000Z",
+        "likes": 10,
+        "private": false,
+        "sha": "c3c245a18bbd57b1682b099e14460eebf154cbdf",
+        "citation": "@inproceedings{veyseh-et-al-2020-what,\n   title={{What Does This Acronym Mean? Introducing a New Dataset for Acronym Identification and Disambiguation}},\n   author={Amir Pouran Ben Veyseh and Franck Dernoncourt and Quan Hung Tran and Thien Huu Nguyen},\n   year={2020},\n   booktitle={Proceedings of COLING},\n   link={https://arxiv.org/pdf/2010.14678v1.pdf}\n}",
+        "description": "Acronym identification training and development sets for the acronym identification task at SDU@AAAI-21.",
+        "downloads": 6011,
+        "paperswithcode_id": "acronym-identification",
+        "tags": [
+            "task_categories:token-classification",
+            "annotations_creators:expert-generated",
+            "language_creators:found",
+            "multilinguality:monolingual",
+            "size_categories:10K<n<100K",
+            "source_datasets:original",
+            "language:en",
+            "license:mit",
+            "acronym-identification",
+            "arxiv:2010.14678"
+        ],
+        "siblings": null,
+        "key": ""
+    },
+    {
+        "_id": "621ffdd236468d709f181f5f",
+        "id": "rotten_tomatoes",
+        "cardData": {
+            "annotations_creators": [
+                "crowdsourced"
+            ],
+            "language_creators": [
+                "crowdsourced"
+            ],
+            "language": [
+                "en"
+            ],
+            "license": [
+                "unknown"
+            ],
+            "multilinguality": [
+                "monolingual"
+            ],
+            "size_categories": [
+                "1K<n<10K"
+            ],
+            "source_datasets": [
+                "original"
+            ],
+            "task_categories": [
+                "text-classification"
+            ],
+            "task_ids": [
+                "sentiment-classification"
+            ],
+            "paperswithcode_id": "mr",
+            "pretty_name": "RottenTomatoes - MR Movie Review Data",
+            "dataset_info": {
+                "features": [
+                    {
+                        "name": "text",
+                        "dtype": "string"
+                    },
+                    {
+                        "name": "label",
+                        "dtype": {
+                            "class_label": {
+                                "names": {
+                                    "0": "neg",
+                                    "1": "pos"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "splits": [
+                    {
+                        "name": "train",
+                        "num_bytes": 1074810,
+                        "num_examples": 8530
+                    },
+                    {
+                        "name": "validation",
+                        "num_bytes": 134679,
+                        "num_examples": 1066
+                    },
+                    {
+                        "name": "test",
+                        "num_bytes": 135972,
+                        "num_examples": 1066
+                    }
+                ],
+                "download_size": 487770,
+                "dataset_size": 1345461
+            },
+            "train-eval-index": [
+                {
+                    "config": "default",
+                    "task": "text-classification",
+                    "task_id": "binary_classification",
+                    "splits": {
+                        "train_split": "train",
+                        "eval_split": "test"
+                    },
+                    "col_mapping": {
+                        "text": "text",
+                        "label": "target"
+                    },
+                    "metrics": [
+                        {
+                            "type": "accuracy",
+                            "name": "Accuracy"
+                        },
+                        {
+                            "type": "f1",
+                            "name": "F1",
+                            "args": {
+                                "average": "binary"
+                            }
+                        },
+                        {
+                            "type": "f1",
+                            "name": "F1 micro",
+                            "args": {
+                                "average": "micro"
+                            }
+                        },
+                        {
+                            "type": "f1",
+                            "name": "F1 weighted",
+                            "args": {
+                                "average": "weighted"
+                            }
+                        },
+                        {
+                            "type": "precision",
+                            "name": "Precision macro",
+                            "args": {
+                                "average": "macro"
+                            }
+                        },
+                        {
+                            "type": "precision",
+                            "name": "Precision micro",
+                            "args": {
+                                "average": "micro"
+                            }
+                        },
+                        {
+                            "type": "precision",
+                            "name": "Precision weighted",
+                            "args": {
+                                "average": "weighted"
+                            }
+                        },
+                        {
+                            "type": "recall",
+                            "name": "Recall macro",
+                            "args": {
+                                "average": "macro"
+                            }
+                        },
+                        {
+                            "type": "recall",
+                            "name": "Recall micro",
+                            "args": {
+                                "average": "micro"
+                            }
+                        },
+                        {
+                            "type": "recall",
+                            "name": "Recall weighted",
+                            "args": {
+                                "average": "weighted"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "disabled": false,
+        "gated": false,
+        "lastModified": "2023-01-25T14:43:24.000Z",
+        "likes": 11,
+        "private": false,
+        "sha": "c33cbf965006dba64f134f7bef69c53d5d0d285d",
+        "citation": "@InProceedings{Pang+Lee:05a,\n  author =       {Bo Pang and Lillian Lee},\n  title =        {Seeing stars: Exploiting class relationships for sentiment\n                  categorization with respect to rating scales},\n  booktitle =    {Proceedings of the ACL},\n  year =         2005\n}",
+        "description": "Movie Review Dataset.\nThis is a dataset of containing 5,331 positive and 5,331 negative processed\nsentences from Rotten Tomatoes movie reviews. This data was first used in Bo\nPang and Lillian Lee, ``Seeing stars: Exploiting class relationships for\nsentiment categorization with respect to rating scales.'', Proceedings of the\nACL, 2005.",
+        "downloads": 68254,
+        "paperswithcode_id": "mr",
+        "tags": [
+            "task_categories:text-classification",
+            "task_ids:sentiment-classification",
+            "annotations_creators:crowdsourced",
+            "language_creators:crowdsourced",
+            "multilinguality:monolingual",
+            "size_categories:1K<n<10K",
+            "source_datasets:original",
+            "language:en",
+            "license:unknown"
+        ],
+        "siblings": null,
+        "key": ""
+    },
+    {
+        "_id": "621ffdd236468d709f18203a",
+        "id": "0n1xus/codexglue",
+        "author": "0n1xus",
+        "disabled": false,
+        "gated": false,
+        "lastModified": "2021-11-18T08:45:46.000Z",
+        "likes": 1,
+        "private": false,
+        "sha": "e4604616235cdfa7398d489ba1f95d44a18d2f5d",
+        "citation": "@article{Lu2021,\nauthor = {Lu, Shuai and Guo, Daya and Ren, Shuo and Huang, Junjie and Svyatkovskiy, Alexey and Blanco, Ambrosio and Clement, Colin B. and Drain, Dawn and Jiang, Daxin and Tang, Duyu and Li, Ge and Zhou, Lidong and Shou, Linjun and Zhou, Long and Tufano, Michele and Gong, Ming and Zhou, Ming and Duan, Nan and Sundaresan, Neel and Deng, Shao Kun and Fu, Shengyu and Liu, Shujie},\nyear = {2021},\nbooktitle = {arXiv},\ntitle = {CodeXGLUE - A Machine Learning Benchmark Dataset for Code Understanding and Generation}\n}",
+        "description": "CodeXGLUE is a benchmark dataset to foster machine learning research for program understanding and generation. \nCodeXGLUE includes a collection of 10 tasks across 14 datasets and a platform for model evaluation and comparison.",
+        "downloads": 295,
+        "tags": [],
+        "siblings": null,
+        "key": ""
+    },
+    {
+        "_id": "62cd5fa83e5ba89c40f22b0d",
+        "id": "04-07-22/wep-probes",
+        "author": "04-07-22",
+        "cardData": {
+            "license": "apache-2.0"
+        },
+        "disabled": false,
+        "gated": false,
+        "lastModified": "2022-07-12T16:26:46.000Z",
+        "likes": 0,
+        "private": false,
+        "sha": "0681013e6518c8d53cac727b2ca4dc821ffd954c",
+        "citation": "Probing neural language models for understanding of words of estimative probability\nAnonymous submission",
+        "description": "Probing neural language models for understanding of words of estimative probability\nAnonymous submission",
+        "downloads": 0,
+        "tags": [
+            "license:apache-2.0"
+        ],
+        "siblings": null,
+        "key": ""
+    },
+     {
+        "_id": "621ffdd236468d709f181d5f",
+        "id": "air_dialogue",
+        "cardData": {
+            "pretty_name": "AirDialogue",
+            "annotations_creators": [
+                "crowdsourced"
+            ],
+            "language_creators": [
+                "machine-generated"
+            ],
+            "language": [
+                "en"
+            ],
+            "license": [
+                "cc-by-nc-4.0"
+            ],
+            "multilinguality": [
+                "monolingual"
+            ],
+            "size_categories": [
+                "100K<n<1M"
+            ],
+            "source_datasets": [
+                "original"
+            ],
+            "task_categories": [
+                "conversational",
+                "text-generation",
+                "fill-mask"
+            ],
+            "task_ids": [
+                "dialogue-generation",
+                "dialogue-modeling",
+                "language-modeling",
+                "masked-language-modeling"
+            ],
+            "paperswithcode_id": null,
+            "dataset_info": [
+                {
+                    "config_name": "air_dialogue_data",
+                    "features": [
+                        {
+                            "name": "action",
+                            "struct": [
+                                {
+                                    "name": "status",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "name",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "flight",
+                                    "sequence": "int32"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "intent",
+                            "struct": [
+                                {
+                                    "name": "return_month",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "return_day",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "max_price",
+                                    "dtype": "int32"
+                                },
+                                {
+                                    "name": "departure_airport",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "max_connections",
+                                    "dtype": "int32"
+                                },
+                                {
+                                    "name": "departure_day",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "goal",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "departure_month",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "name",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "return_airport",
+                                    "dtype": "string"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "timestamps",
+                            "sequence": "int64"
+                        },
+                        {
+                            "name": "dialogue",
+                            "sequence": "string"
+                        },
+                        {
+                            "name": "expected_action",
+                            "struct": [
+                                {
+                                    "name": "status",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "name",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "flight",
+                                    "sequence": "int32"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "search_info",
+                            "list": [
+                                {
+                                    "name": "button_name",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "field_name",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "field_value",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "timestmamp",
+                                    "dtype": "int64"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "correct_sample",
+                            "dtype": "bool_"
+                        }
+                    ],
+                    "splits": [
+                        {
+                            "name": "train",
+                            "num_bytes": 353721137,
+                            "num_examples": 321459
+                        },
+                        {
+                            "name": "validation",
+                            "num_bytes": 44442238,
+                            "num_examples": 40363
+                        }
+                    ],
+                    "download_size": 272898923,
+                    "dataset_size": 398163375
+                },
+                {
+                    "config_name": "air_dialogue_kb",
+                    "features": [
+                        {
+                            "name": "kb",
+                            "list": [
+                                {
+                                    "name": "airline",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "class",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "departure_airport",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "departure_day",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "departure_month",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "departure_time_num",
+                                    "dtype": "int32"
+                                },
+                                {
+                                    "name": "flight_number",
+                                    "dtype": "int32"
+                                },
+                                {
+                                    "name": "num_connections",
+                                    "dtype": "int32"
+                                },
+                                {
+                                    "name": "price",
+                                    "dtype": "int32"
+                                },
+                                {
+                                    "name": "return_airport",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "return_day",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "return_month",
+                                    "dtype": "string"
+                                },
+                                {
+                                    "name": "return_time_num",
+                                    "dtype": "int32"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "reservation",
+                            "dtype": "int32"
+                        }
+                    ],
+                    "splits": [
+                        {
+                            "name": "train",
+                            "num_bytes": 782592158,
+                            "num_examples": 321459
+                        },
+                        {
+                            "name": "validation",
+                            "num_bytes": 98269789,
+                            "num_examples": 40363
+                        }
+                    ],
+                    "download_size": 272898923,
+                    "dataset_size": 880861947
+                }
+            ]
+        },
+        "disabled": false,
+        "gated": false,
+        "lastModified": "2022-11-03T16:31:11.000Z",
+        "likes": 1,
+        "private": false,
+        "sha": "3ef284c2b1ca63cebd46335641fa31b09763f4e5",
+        "citation": "@inproceedings{wei-etal-2018-airdialogue,\n    title = \"{A}ir{D}ialogue: An Environment for Goal-Oriented Dialogue Research\",\n    author = \"Wei, Wei  and\n      Le, Quoc  and\n      Dai, Andrew  and\n      Li, Jia\",\n    booktitle = \"Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing\",\n    month = oct # \"-\" # nov,\n    year = \"2018\",\n    address = \"Brussels, Belgium\",\n    publisher = \"Association for Computational Linguistics\",\n    url = \"https://www.aclweb.org/anthology/D18-1419\",\n    doi = \"10.18653/v1/D18-1419\",\n    pages = \"3844--3854\",\n    abstract = \"Recent progress in dialogue generation has inspired a number of studies on dialogue systems that are capable of accomplishing tasks through natural language interactions. A promising direction among these studies is the use of reinforcement learning techniques, such as self-play, for training dialogue agents. However, current datasets are limited in size, and the environment for training agents and evaluating progress is relatively unsophisticated. We present AirDialogue, a large dataset that contains 301,427 goal-oriented conversations. To collect this dataset, we create a context-generator which provides travel and flight restrictions. We then ask human annotators to play the role of a customer or an agent and interact with the goal of successfully booking a trip given the restrictions. Key to our environment is the ease of evaluating the success of the dialogue, which is achieved by using ground-truth states (e.g., the flight being booked) generated by the restrictions. Any dialogue agent that does not generate the correct states is considered to fail. Our experimental results indicate that state-of-the-art dialogue models can only achieve a score of 0.17 while humans can reach a score of 0.91, which suggests significant opportunities for future improvement.\",\n}",
+        "description": "AirDialogue, is a large dataset that contains 402,038 goal-oriented conversations. To collect this dataset, we create a contextgenerator which provides travel and flight restrictions. Then the human annotators are asked to play the role of a customer or an agent and interact with the goal of successfully booking a trip given the restrictions.",
+        "downloads": 422,
+        "tags": [
+            "task_categories:conversational",
+            "task_categories:text-generation",
+            "task_categories:fill-mask",
+            "task_ids:dialogue-generation",
+            "task_ids:dialogue-modeling",
+            "task_ids:language-modeling",
+            "task_ids:masked-language-modeling",
+            "annotations_creators:crowdsourced",
+            "language_creators:machine-generated",
+            "multilinguality:monolingual",
+            "size_categories:100K<n<1M",
+            "source_datasets:original",
+            "language:en",
+            "license:cc-by-nc-4.0"
+        ],
+        "siblings": null,
+        "key": ""
+    }
+]
