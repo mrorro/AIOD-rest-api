@@ -5,6 +5,7 @@ Note: order matters for overloaded paths
 (https://fastapi.tiangolo.com/tutorial/path-params/#order-matters).
 """
 import argparse
+from sqlite3 import OperationalError
 import tomllib
 import traceback
 from typing import Dict
@@ -497,7 +498,14 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 new_news.business_categories = business_categories
                 new_news.news_categories = news_categories
                 session.add(new_news)
-                session.commit()
+                try:
+                    session.commit()  
+                except: 
+                    session.rollback()
+                    raise HTTPException(
+                        status_code=422,
+                    )
+
                 return new_news.to_dict(depth=1)
         except Exception as e:
             raise _wrap_as_http_exception(e)
@@ -555,6 +563,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                     )
                     .where(News.id == identifier)
                 )
+                # TODO update categories (business,news) and tags
                 session.execute(statement)
                 session.commit()
                 return _retrieve_news(session, identifier).to_dict(depth=1)
