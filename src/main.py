@@ -5,6 +5,7 @@ Note: order matters for overloaded paths
 (https://fastapi.tiangolo.com/tutorial/path-params/#order-matters).
 """
 import argparse
+import os
 import tomllib
 import traceback
 from typing import Dict
@@ -12,18 +13,20 @@ from typing import Dict
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Json
 from sqlalchemy import select, Engine, and_, delete, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 import connectors
 import schemas
+from authentication import get_current_user
 from connectors import NodeName
 from converters import dataset_converter
 from database.model.publication import OrmPublication
 from database.model.dataset import OrmDataset
 from database.setup import connect_to_database, populate_database
+from dotenv import load_dotenv
 
 
 def _parse_args() -> argparse.Namespace:
@@ -180,6 +183,13 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
     class Pagination(BaseModel):
         offset: int = 0
         limit: int = 100
+
+    @app.get(url_prefix + "/authorization_test")
+    def test_authorization(user: Json = Depends(get_current_user)) -> dict:
+        """
+        Returns the user, if authenticated correctly.
+        """
+        return {"msg": "success", "user": user}
 
     @app.get(url_prefix + "/datasets/", response_model_exclude_none=True)
     def list_datasets(
@@ -419,7 +429,16 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
 
 def create_app() -> FastAPI:
     """Create the FastAPI application, complete with routes."""
-    app = FastAPI()
+    app = FastAPI(
+        swagger_ui_init_oauth={
+            "clientId": os.getenv("KEYCLOAK_CLIENT_ID"),
+            "clientSecret": os.getenv("KEYCLOAK_CLIENT_SECRET"),
+            "realm": "dev",
+            "appName": "AIoD API",
+            "usePkceWithAuthorizationCodeGrant": True,
+            "scopes": "openid profile",
+        }
+    )
     args = _parse_args()
 
     dataset_connectors = [
@@ -447,6 +466,7 @@ def create_app() -> FastAPI:
 def main():
     """Run the application. Placed in a separate function, to avoid having global variables"""
     args = _parse_args()
+    load_dotenv()
     uvicorn.run("main:create_app", host="0.0.0.0", reload=args.reload, factory=True)
 
 
