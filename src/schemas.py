@@ -1,6 +1,3 @@
-from typing import Optional
-from enum import Enum
-
 """
 Schemas of the AIoD resources.
 
@@ -11,13 +8,12 @@ which should be a separate object inside a separate table in the database (so th
 search for all datasets having the same keyword). In the external schema, a set of strings is
 easier.
 """
-
+from enum import Enum
 
 from datetime import datetime
-from typing import Set, List
+from typing import Set, List, Optional
 
 from pydantic import BaseModel, Field
-import datetime
 
 
 class AIoDDistribution(BaseModel):
@@ -37,54 +33,6 @@ class AIoDPublication(BaseModel):
     """The complete metadata of a publication. For now, only a couple of fields are shown,
     we have to decide which fields to use."""
 
-    id: int | None
-
-
-class Tag(BaseModel):
-    """The complete metadata for tags"""
-
-    tag: str = Field(max_length=250)
-    id: int | None
-
-
-class BusinessCategory(BaseModel):
-    """The complete metadata of a business category"""
-
-    category: str = Field(max_length=250)
-    id: int | None
-
-
-class NewsCategory(BaseModel):
-    """The complete metadata of a news category"""
-
-    category: str = Field(max_length=250)
-    parent_id: int | None
-    id: int | None
-
-
-class MediaEnum(str, Enum):
-    books = "books"
-    Eclipse = "Eclipse"
-    education = "education"
-    library = "library"
-
-
-class News(BaseModel):
-    """The complete metadata for news entity"""
-
-    title: str = Field(max_length=500)
-    date_modified: datetime.date
-    body: str = Field(max_length=2000)
-    headline: str = Field(max_length=500)
-    alternative_headline: Optional[str] = Field(max_length=500)
-    section: str = Field(max_length=500)
-    word_count: int
-
-    media: Optional[MediaEnum]
-    source: Optional[str]
-    news_categories: Optional[list[str]]
-    business_categories: Optional[list[str]]
-    tags: Optional[list[str]]
     id: int | None
     title: str | None = Field(max_length=250)
     url: str | None = Field(max_length=250)
@@ -133,3 +81,51 @@ class AIoDDataset(BaseModel):
     distributions: List[AIoDDistribution] = []
     keywords: Set[str] = Field(default_factory=set)
     measured_values: List[AIoDMeasurementValue] = Field(default_factory=list)
+
+
+class Tag(BaseModel):
+    """The complete metadata for tags"""
+
+    tag: str = Field(max_length=250)
+    id: int | None
+
+
+class BusinessCategory(BaseModel):
+    """The complete metadata of a business category"""
+
+    category: str = Field(max_length=250)
+    id: int | None
+
+
+class NewsCategory(BaseModel):
+    """The complete metadata of a news category"""
+
+    category: str = Field(max_length=250)
+    parent_id: int | None
+    id: int | None
+
+
+class MediaEnum(str, Enum):
+    books = "books"
+    Eclipse = "Eclipse"
+    education = "education"
+    library = "library"
+
+
+class News(BaseModel):
+    """The complete metadata for news entity"""
+
+    title: str = Field(max_length=500)
+    date_modified: datetime
+    body: str = Field(max_length=2000)
+    headline: str = Field(max_length=500)
+    alternative_headline: Optional[str] = Field(max_length=500)
+    section: str = Field(max_length=500)
+    word_count: int
+
+    media: Optional[MediaEnum]
+    source: Optional[str]
+    news_categories: Optional[list[str]]
+    business_categories: Optional[list[str]]
+    tags: Optional[list[str]]
+    id: int | None

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 from datetime import datetime
 
-from database.models import News
+from database.model.news import News
 
 
 def test_happy_path_for_all(client: TestClient, engine: Engine):

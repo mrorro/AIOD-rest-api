@@ -7,7 +7,7 @@ from starlette.testclient import TestClient
 from datetime import datetime
 
 
-from database.models import News
+from database.model.news import News
 
 
 def test_happy_path(client: TestClient, engine: Engine):
@@ -58,7 +58,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             "section": "s3",
             "headline": "h5",
             "source": "s1",
-            "date_modified": "2023-03-21",
+            "date_modified": "2023-03-21T00:00:00",
             "alternative_headline": "ah1",
             "word_count": 10,
         },
@@ -89,7 +89,7 @@ def test_unicode(client: TestClient, engine: Engine, title):
             "section": "s3",
             "headline": "h5",
             "source": "s1",
-            "date_modified": "2023-03-21",
+            "date_modified": "2023-03-21T00:00:00",
             "alternative_headline": "ah1",
             "word_count": 10,
         },
@@ -116,7 +116,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "body": "b4",
         "section": "s3",
         "headline": "h5",
-        "date_modified": "2023-03-21",
+        "date_modified": "2023-03-21T00:00:00",
         "word_count": 10,
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
@@ -144,7 +144,7 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "body": "b4",
         "section": "s3",
         "headline": "h5",
-        "date_modified": "2023-03-21",
+        "date_modified": "2023-03-21T00:00:00",
         "word_count": 10,
     }  # type: typing.Dict[str, typing.Any]
     data[field] = None
