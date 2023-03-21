@@ -8,8 +8,6 @@ which should be a separate object inside a separate table in the database (so th
 search for all datasets having the same keyword). In the external schema, a set of strings is
 easier.
 """
-from enum import Enum
-
 from datetime import datetime
 from typing import Set, List, Optional
 
@@ -105,13 +103,6 @@ class NewsCategory(BaseModel):
     id: int | None
 
 
-class MediaEnum(str, Enum):
-    books = "books"
-    Eclipse = "Eclipse"
-    education = "education"
-    library = "library"
-
-
 class News(BaseModel):
     """The complete metadata for news entity"""
 
@@ -123,7 +114,7 @@ class News(BaseModel):
     section: str = Field(max_length=500)
     word_count: int
 
-    media: Optional[MediaEnum]
+    media: Optional[list[str]]
     source: Optional[str]
     news_categories: Optional[list[str]]
     business_categories: Optional[list[str]]
