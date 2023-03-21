@@ -153,6 +153,7 @@ class NewsCategory(Base):
 
     category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     parent_id: Mapped[int] = mapped_column(ForeignKey("news_categories.id"), nullable=True)
+    parent_category = relationship("NewsCategory")
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
 
