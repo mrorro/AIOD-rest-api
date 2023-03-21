@@ -2,27 +2,20 @@
 This module knows how to load an OpenML object based on its AIoD implementation,
 and how to convert the OpenML response to some agreed AIoD format.
 """
+import logging
 from typing import Iterator
 
+import dateutil.parser
 import requests
 from fastapi import HTTPException
-from pydantic import Extra
-from pydantic_schemaorg.DataCatalog import DataCatalog
-from pydantic_schemaorg.DataDownload import DataDownload
-from pydantic_schemaorg.Dataset import Dataset
-from pydantic_schemaorg.QuantitativeValue import QuantitativeValue
 
 from connectors.abstract.dataset_connector import DatasetConnector
-from database.models import DatasetDescription
-
-for obj in (DataCatalog, DataDownload, Dataset, QuantitativeValue):
-    obj.Config.extra = Extra.forbid  # Throw exception on unrecognized fields
+from schemas import AIoDDataset, AIoDDistribution
 
 
 class OpenMlDatasetConnector(DatasetConnector):
-    def fetch(self, dataset: DatasetDescription) -> Dataset:
-        identifier = dataset.node_specific_identifier
-        url_data = f"https://www.openml.org/api/v1/json/data/{identifier}"
+    def fetch(self, node_specific_identifier: str) -> AIoDDataset:
+        url_data = f"https://www.openml.org/api/v1/json/data/{node_specific_identifier}"
         response = requests.get(url_data)
         if not response.ok:
             code = response.status_code
@@ -31,19 +24,19 @@ class OpenMlDatasetConnector(DatasetConnector):
             msg = response.json()["error"]["message"]
             raise HTTPException(
                 status_code=code,
-                detail=f"Error while fetching data from OpenML: '{msg}'",
+                detail=f"Error while fetching data from OpenML: '{msg}'.",
             )
         dataset_json = response.json()["data_set_description"]
 
         # Here we can format the response into some standardized way, maybe this includes some
         # dataset characteristics. These need to be retrieved separately from OpenML:
-        url_qualities = f"https://www.openml.org/api/v1/json/data/qualities/{identifier}"
-        response = requests.get(url_qualities)
+        url_qual = f"https://www.openml.org/api/v1/json/data/qualities/{node_specific_identifier}"
+        response = requests.get(url_qual)
         if not response.ok:
             msg = response.json()["error"]["message"]
             raise HTTPException(
                 status_code=response.status_code,
-                detail=f"Error while fetching data qualities from OpenML: '{msg}'",
+                detail=f"Error while fetching data qualities from OpenML: '{msg}'.",
             )
 
         qualities_json = {
@@ -51,28 +44,27 @@ class OpenMlDatasetConnector(DatasetConnector):
             for quality in response.json()["data_qualities"]["quality"]
         }
 
-        # TODO: should we add those qualities as well? Schema.org does not have a place for it.
-        # number_of_features=_as_int(qualities_json["NumberOfFeatures"]),
-        # number_of_classes=_as_int(qualities_json["NumberOfClasses"]),
-
-        result = Dataset(
+        return AIoDDataset(
+            node=self.node_name,
+            node_specific_identifier=node_specific_identifier,
             name=dataset_json["name"],
-            url=url_data,
+            same_as=url_data,
             description=dataset_json["description"],
-            dateCreated=dataset_json["upload_date"],
-            identifier=dataset.node_specific_identifier,
-            distribution=DataDownload(
-                contentUrl=dataset_json["url"], encodingFormat=dataset_json["format"]
-            ),
-            size=QuantitativeValue(value=_as_int(qualities_json["NumberOfInstances"])),
-            isAccessibleForFree=True,
-            includedInDataCatalog=DataCatalog(name="OpenML"),
+            date_published=dateutil.parser.parse(dataset_json["upload_date"]),
+            date_modified=dateutil.parser.parse(dataset_json["processing_date"]),
+            distributions=[
+                AIoDDistribution(
+                    content_url=dataset_json["url"], encoding_format=dataset_json["format"]
+                )
+            ],
+            size=_as_int(qualities_json["NumberOfInstances"]),
+            is_accessible_for_free=True,
+            keywords=set(dataset_json["tag"]),
+            license=dataset_json["licence"],
+            version=dataset_json["version"],
         )
-        if "language" in dataset_json:
-            setattr(result, "inLanguage", dataset_json["language"])
-        return result
 
-    def fetch_all(self, limit=None) -> Iterator[DatasetDescription]:
+    def fetch_all(self, limit: int | None = None) -> Iterator[AIoDDataset]:
         url = "https://www.openml.org/api/v1/json/data/list"
         if limit is not None:
             url = f"{url}/limit/{limit}"
@@ -82,14 +74,15 @@ class OpenMlDatasetConnector(DatasetConnector):
             msg = response_json["error"]["message"]
             raise HTTPException(
                 status_code=response.status_code,
-                detail=f"Error while fetching data from OpenML: '{msg}'",
+                detail=f"Error while fetching data list from OpenML: '{msg}'.",
             )
         for dataset_json in response_json["data"]["dataset"]:
-            yield DatasetDescription(
-                name=dataset_json["name"],
-                node=self.node_name,
-                node_specific_identifier=str(dataset_json["did"]),
-            )
+            try:
+                yield self.fetch(dataset_json["did"])
+            except Exception as e:
+                logging.error(
+                    f"Error while fetching openml  dataset {dataset_json['did']}: '{str(e)}'"
+                )
 
 
 def _as_int(v: str) -> int:

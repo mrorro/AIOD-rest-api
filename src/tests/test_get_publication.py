@@ -5,18 +5,31 @@ from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from database.models import Publication, DatasetDescription
+from database.model.publication import OrmPublication
+from database.model.dataset import OrmDataset
 
 
 @pytest.mark.parametrize("publication_id", [1, 2])
 def test_happy_path(client: TestClient, engine: Engine, publication_id: int):
     datasets = [
-        DatasetDescription(name="dset1", node="openml", node_specific_identifier="1"),
-        DatasetDescription(name="dset1", node="other_node", node_specific_identifier="1"),
+        OrmDataset(
+            name="dset1",
+            node="openml",
+            description="",
+            same_as="openml.eu/1",
+            node_specific_identifier="1",
+        ),
+        OrmDataset(
+            name="dset1",
+            node="other_node",
+            description="",
+            same_as="other_node.eu/1",
+            node_specific_identifier="1",
+        ),
     ]
     publications = [
-        Publication(title="Title 1", url="https://test.test", datasets=datasets),
-        Publication(title="Title 2", url="https://test.test2", datasets=datasets),
+        OrmPublication(title="Title 1", url="https://test.test", datasets=datasets),
+        OrmPublication(title="Title 2", url="https://test.test2", datasets=datasets),
     ]
     with Session(engine) as session:
         # Populate database
@@ -46,7 +59,7 @@ def test_empty_db(client: TestClient, engine: Engine, publication_id):
 
 @pytest.mark.parametrize("publication_id", [-1, 2, 3])
 def test_publication_not_found(client: TestClient, engine: Engine, publication_id):
-    publications = [Publication(title="Title 1", url="https://test.test", datasets=[])]
+    publications = [OrmPublication(title="Title 1", url="https://test.test", datasets=[])]
     with Session(engine) as session:
         # Populate database
         session.add_all(publications)
