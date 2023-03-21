@@ -5,7 +5,7 @@ Note: order matters for overloaded paths
 (https://fastapi.tiangolo.com/tutorial/path-params/#order-matters).
 """
 import argparse
-from sqlite3 import OperationalError
+
 import tomllib
 import traceback
 from typing import Dict
@@ -15,7 +15,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from sqlalchemy import select, Engine, and_, delete, update
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 
 import connectors
@@ -499,11 +499,12 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 new_news.news_categories = news_categories
                 session.add(new_news)
                 try:
-                    session.commit()  
-                except: 
+                    session.commit()
+                except (OperationalError, IntegrityError):
                     session.rollback()
                     raise HTTPException(
                         status_code=422,
+                        detail="Missing required non null values",
                     )
 
                 return new_news.to_dict(depth=1)

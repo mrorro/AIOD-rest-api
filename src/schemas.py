@@ -61,7 +61,7 @@ class News(BaseModel):
     headline: str = Field(max_length=500)
     alternative_headline: Optional[str] = Field(max_length=500)
     section: str = Field(max_length=500)
-    word_count: int | None
+    word_count: int
 
     media: Optional[MediaEnum]
     source: Optional[str]
