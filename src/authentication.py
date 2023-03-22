@@ -8,11 +8,11 @@ from keycloak import KeycloakOpenID
 from pydantic import Json
 
 oidc = OpenIdConnect(
-    openIdConnectUrl="http://keycloak:8989/realms/dev/.well-known/openid-configuration"
+    openIdConnectUrl="https://test.openml.org/aiod-auth/realms/dev/.well-known/openid-configuration"
 )
 
 keycloak_openid = KeycloakOpenID(
-    server_url="http://keycloak:8989/",
+    server_url="https://test.openml.org/aiod-auth/",
     client_id=os.getenv("KEYCLOAK_CLIENT_ID"),
     client_secret_key=os.getenv("KEYCLOAK_CLIENT_SECRET"),
     realm_name="dev",
