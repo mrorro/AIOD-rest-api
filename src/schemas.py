@@ -167,6 +167,8 @@ class EducationalResource(BaseModel):
     """The complete metadata for educational resource"""
 
     title: str = Field(max_length=500)
+    date_modified: datetime | None
+
     educational_use: str | List[str] = Field(
         description="The intended educational use of the resource, such as lecture, lab exercise"
         ", or homework assignment",
