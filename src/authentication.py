@@ -4,7 +4,6 @@ import os
 from fastapi import HTTPException, Security
 from fastapi.security import OpenIdConnect
 from keycloak import KeycloakOpenID, KeycloakError
-from pydantic import Json
 
 oidc = OpenIdConnect(
     openIdConnectUrl="https://test.openml.org/aiod-auth/realms/dev/.well-known/openid-configuration"
@@ -19,7 +18,7 @@ keycloak_openid = KeycloakOpenID(
 )
 
 
-async def get_current_user(token=Security(oidc)) -> Json:
+async def get_current_user(token=Security(oidc)) -> dict:
     try:
         token = token.replace("Bearer ", "")
         return keycloak_openid.userinfo(token)
