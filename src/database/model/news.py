@@ -1,9 +1,10 @@
-import dataclasses
-from sqlite3 import Date
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
+from sqlite3 import Date
+
+from sqlalchemy import ForeignKey, Table, Column, String, Integer, DateTime
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
-from sqlalchemy import ForeignKey, Table, Column, String, Integer, UniqueConstraint, DateTime
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, MappedAsDataclass, relationship
+
 from database.model.base import Base
 
 news_business_category_relationship = Table(
@@ -41,18 +42,18 @@ news_media_relationship = Table(
     "news_media",
     Base.metadata,
     Column("news_id", ForeignKey("news.id", ondelete="CASCADE"), primary_key=True),
-    Column(
-        "media_id", ForeignKey("media.id", ondelete="CASCADE"), primary_key=True
-    ),
+    Column("media_id", ForeignKey("media.id", ondelete="CASCADE"), primary_key=True),
 )
 
 
 class Media(Base):
     """Any media"""
+
     __tablename__ = "media"
 
     name: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
+
 
 class BusinessCategory(Base):
     """Any business category"""
@@ -117,4 +118,4 @@ class News(Base):
 
     media = relationship(
         "Media", secondary=news_media_relationship, backref="news", passive_deletes=True
-    ) 
+    )
