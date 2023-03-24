@@ -167,6 +167,8 @@ class EducationalResource(BaseModel):
     """The complete metadata for educational resource"""
 
     title: str = Field(max_length=500)
+    body: str = Field(max_length=500)
+    website_url: str = Field(max_length=500)
     date_modified: datetime | None
 
     educational_use: str | List[str] = Field(
@@ -175,7 +177,7 @@ class EducationalResource(BaseModel):
         default_factory=str,
     )
     website_link: str = Field(max_length=200)
-    typical_age_range: str = Field(max_length=100)
+    typical_age_range: str | None = Field(max_length=100)
 
     interactivity_type: str | None = Field(max_length=100)
     accessibility_api: str | None = Field(max_length=100)
@@ -206,12 +208,11 @@ class EducationalResource(BaseModel):
     educatonal_type: EducationalTypeEnum
     country: Optional[CountryEnum]
     pace: PaceEnum
-    language: list[LanguageEnum]
+    languages: list[LanguageEnum]
     target_audience: list[TargetAudienceEnum]
 
     technical_categories: Optional[list[str]]
     business_categories: Optional[list[str]]
     tags: Optional[list[str]]
-    reviews: Optional[list[str]]
 
     id: int | None

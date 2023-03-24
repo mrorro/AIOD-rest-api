@@ -9,6 +9,7 @@ import argparse
 import tomllib
 import traceback
 from typing import Dict
+from database.model.educational_resource import EducationalResource
 
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
@@ -23,7 +24,10 @@ import schemas
 from connectors import NodeName
 
 from converters import dataset_converter
-from database.model.news import News, NewsCategory, BusinessCategory, Tag
+from database.model.base import BusinessCategory, Language, Tag, TargetAudience, TechnicalCategory
+from database.model.news import News, NewsCategory
+
+# from database.model.educational_resource import EducationalResource
 from database.model.publication import OrmPublication
 from database.model.dataset import OrmDataset
 from database.setup import connect_to_database, populate_database
@@ -150,6 +154,17 @@ def _retrieve_news(session, identifier) -> News:
         raise HTTPException(
             status_code=404,
             detail=f"News '{identifier}' not found in the database.",
+        )
+    return news
+
+
+def _retrieve_educational_resource(session, identifier) -> EducationalResource:
+    query = select(EducationalResource).where(EducationalResource.id == identifier)
+    news = session.scalars(query).first()
+    if not news:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Educational resource '{identifier}' not found in the database.",
         )
     return news
 
@@ -555,6 +570,190 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 session.execute(statement)
                 session.commit()
                 return _retrieve_news(session, identifier).to_dict(depth=1)
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
+    @app.post(url_prefix + "/educational_resource")
+    def register_educational_resource(educational_resource: schemas.EducationalResource) -> dict:
+        """Add educational resource."""
+        try:
+            with Session(engine) as session:
+                tags = []
+                if educational_resource.tags:
+                    for t in educational_resource.tags:
+                        query = select(Tag).where(Tag.tag == t)
+                        tag = session.scalars(query).first()
+                        if not tag:
+                            raise HTTPException(
+                                status_code=404,
+                                detail=f"Tag '{t}' not found in the database.",
+                            )
+                        tags.append(tag)
+
+                business_categories = []
+                if educational_resource.business_categories:
+                    for c in educational_resource.business_categories:
+                        query = select(BusinessCategory).where(BusinessCategory.category == c)
+                        category = session.scalars(query).first()
+                        if not category:
+                            raise HTTPException(
+                                status_code=404,
+                                detail=f"Business category '{c}' not found in the database.",
+                            )
+                        business_categories.append(category)
+
+                technical_categories = []
+                if educational_resource.technical_categories:
+                    for c in educational_resource.technical_categories:
+                        query = select(TechnicalCategory).where(TechnicalCategory.category == c)
+                        category = session.scalars(query).first()
+                        if not category:
+                            raise HTTPException(
+                                status_code=404,
+                                detail=f"News category '{c}' not found in the database.",
+                            )
+                        technical_categories.append(category)
+                target_audience = []
+                if educational_resource.target_audience:
+                    for a in educational_resource.target_audience:
+                        query = select(TargetAudience).where(TargetAudience.audience == a)
+                        audience = session.scalars(query).first()
+                        if not audience:
+                            raise HTTPException(
+                                status_code=404,
+                                detail=f"Target audience '{a}' not found in the database.",
+                            )
+                        target_audience.append(audience)
+                languages = []
+                if educational_resource.language:
+                    for la in educational_resource.language:
+                        query = select(Language).where(Language.language == la)
+                        language = session.scalars(query).first()
+                        if not language:
+                            raise HTTPException(
+                                status_code=404,
+                                detail=f"language '{la}' not found in the database.",
+                            )
+                        languages.append(language)
+
+                new_educational_resource = EducationalResource(
+                    title=educational_resource.title,
+                    date_modified=educational_resource.date_modified,
+                    body=educational_resource.body,
+                    website_url=educational_resource.website_url,
+                    educational_role=educational_resource.educational_role,
+                    educational_level=educational_resource.educational_level,
+                    educatonal_type=educational_resource.educatonal_type,
+                    interactivity_type=educational_resource.interactivity_type,
+                    accessibility_api=educational_resource.accessibility_api,
+                    accessibility_control=educational_resource.accessibility_control,
+                    access_mode=educational_resource.access_mode,
+                    access_restrictions=educational_resource.access_restrictions,
+                    citation=educational_resource.citation,
+                    version=educational_resource.version,
+                    field_prerequisites=educational_resource.field_prerequisites,
+                    short_summary=educational_resource.short_summary,
+                    duration_minutes_and_hours=educational_resource.duration_minutes_and_hours,
+                    hours_per_week=educational_resource.hours_per_week,
+                    country=educational_resource.country,
+                    is_accessible_for_free=educational_resource.is_accessible_for_free,
+                    duration_in_years=educational_resource.duration_in_years,
+                )
+
+                new_educational_resource.tags = tags
+                new_educational_resource.business_categories = business_categories
+                new_educational_resource.technical_categories = technical_categories
+                new_educational_resource.target_audience = target_audience
+                new_educational_resource.languages = languages
+                session.add(new_educational_resource)
+                try:
+                    session.commit()
+                except (OperationalError, IntegrityError):
+                    session.rollback()
+                    raise HTTPException(
+                        status_code=422,
+                        detail="Missing required non null values",
+                    )
+                return new_educational_resource.to_dict(depth=1)
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
+    @app.get(url_prefix + "/educational_resource")
+    def list_all_educational_resources(pagination: Pagination = Depends(Pagination)) -> list[News]:
+        """Lists all educational resources registered with AIoD."""
+        try:
+            with Session(engine) as session:
+                query = (
+                    select(EducationalResource).offset(pagination.offset).limit(pagination.limit)
+                )
+                return session.scalars(query).all()
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
+    @app.get(url_prefix + "/educational_resource/{identifier}")
+    def get_educational_resource(identifier: str) -> dict:
+        """Retrieve all meta-data for specific educational resource entity."""
+        try:
+            with Session(engine) as session:
+                educational_resource = _retrieve_educational_resource(session, identifier)
+                return educational_resource
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
+    @app.delete(url_prefix + "/educational_resource/{identifier}")
+    def delete_educational_resource(identifier: str):
+        """Delete this educational resource from AIoD."""
+        try:
+            with Session(engine) as session:
+                _retrieve_educational_resource(
+                    session, identifier
+                )  # Raise error if it does not exist
+
+                statement = delete(EducationalResource).where(EducationalResource.id == identifier)
+                session.execute(statement)
+                session.commit()
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
+    @app.put(url_prefix + "/educational_resource/{identifier}")
+    def put_educational_resource(
+        identifier: str, educational_resource: schemas.EducationalResource
+    ) -> dict:
+        """Update existing educational resource."""
+        try:
+            with Session(engine) as session:
+                _retrieve_news(session, identifier)  # Raise error if dataset does not exist
+                statement = (
+                    update(News)
+                    .values(
+                        title=educational_resource.title,
+                        date_modified=educational_resource.date_modified,
+                        body=educational_resource.body,
+                        website_url=educational_resource.website_url,
+                        educational_role=educational_resource.educational_role,
+                        educational_level=educational_resource.educational_level,
+                        educatonal_type=educational_resource.educatonal_type,
+                        interactivity_type=educational_resource.interactivity_type,
+                        accessibility_api=educational_resource.accessibility_api,
+                        accessibility_control=educational_resource.accessibility_control,
+                        access_mode=educational_resource.access_mode,
+                        access_restrictions=educational_resource.access_restrictions,
+                        citation=educational_resource.citation,
+                        version=educational_resource.version,
+                        field_prerequisites=educational_resource.field_prerequisites,
+                        short_summary=educational_resource.short_summary,
+                        duration_minutes_and_hours=educational_resource.duration_minutes_and_hours,
+                        hours_per_week=educational_resource.hours_per_week,
+                        country=educational_resource.country,
+                        is_accessible_for_free=educational_resource.is_accessible_for_free,
+                        duration_in_years=educational_resource.duration_in_years,
+                    )
+                    .where(EducationalResource.id == identifier)
+                )
+                # TODO update categories (business,news) and tags
+                session.execute(statement)
+                session.commit()
+                return _retrieve_educational_resource(session, identifier).to_dict(depth=1)
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
