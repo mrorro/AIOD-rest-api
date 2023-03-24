@@ -12,7 +12,7 @@ docker run \
 	-v $SRC_PATH:/app \
 	ai4eu_server_demo \
 	--rebuild-db only-if-empty \
-	--populate-datasets example \
+	--populate-datasets openml huggingface \
 	--populate-publications example \
 	--limit-number-of-datasets 10 \
 	--url-prefix ""
