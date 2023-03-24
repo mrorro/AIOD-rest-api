@@ -11,11 +11,12 @@ import traceback
 from typing import Dict
 
 import uvicorn
+from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Json
 from sqlalchemy import select, Engine, and_, delete, update
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 
 import connectors
@@ -23,10 +24,10 @@ import schemas
 from authentication import get_current_user
 from connectors import NodeName
 from converters import dataset_converter
-from database.model.publication import OrmPublication
 from database.model.dataset import OrmDataset
+from database.model.news import News, NewsCategory, BusinessCategory, Tag
+from database.model.publication import OrmPublication
 from database.setup import connect_to_database, populate_database
-from dotenv import load_dotenv
 
 
 def _parse_args() -> argparse.Namespace:
@@ -141,6 +142,17 @@ def _retrieve_publication(session, identifier) -> OrmPublication:
             detail=f"Publication '{identifier}' not found in the database.",
         )
     return publication
+
+
+def _retrieve_news(session, identifier) -> News:
+    query = select(News).where(News.id == identifier)
+    news = session.scalars(query).first()
+    if not news:
+        raise HTTPException(
+            status_code=404,
+            detail=f"News '{identifier}' not found in the database.",
+        )
+    return news
 
 
 def _wrap_as_http_exception(exception: Exception) -> HTTPException:
@@ -423,6 +435,134 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                     )
                 dataset.citations = [p for p in dataset.citations if p != publication]
                 session.commit()
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
+    @app.post(url_prefix + "/news")
+    def register_news(news: schemas.News) -> dict:
+        """Add news."""
+        try:
+            with Session(engine) as session:
+                tags = []
+                if news.tags:
+                    for t in news.tags:
+                        query = select(Tag).where(Tag.tag == t)
+                        tag = session.scalars(query).first()
+                        if not tag:
+                            raise HTTPException(
+                                status_code=404,
+                                detail=f"Tag '{t}' not found in the database.",
+                            )
+                        tags.append(tag)
+
+                business_categories = []
+                if news.business_categories:
+                    for c in news.business_categories:
+                        query = select(BusinessCategory).where(BusinessCategory.category == c)
+                        category = session.scalars(query).first()
+                        if not category:
+                            raise HTTPException(
+                                status_code=404,
+                                detail=f"Business category '{c}' not found in the database.",
+                            )
+                        business_categories.append(category)
+                news_categories = []
+                if news.news_categories:
+                    for c in news.news_categories:
+                        query = select(NewsCategory).where(NewsCategory.category == c)
+                        category = session.scalars(query).first()
+                        if not category:
+                            raise HTTPException(
+                                status_code=404,
+                                detail=f"News category '{c}' not found in the database.",
+                            )
+                        news_categories.append(category)
+
+                new_news = News(
+                    title=news.title,
+                    date_modified=news.date_modified,
+                    body=news.body,
+                    source=news.source,
+                    headline=news.headline,
+                    alternative_headline=news.alternative_headline,
+                    section=news.section,
+                    word_count=news.word_count,
+                )
+
+                new_news.tags = tags
+                new_news.business_categories = business_categories
+                new_news.news_categories = news_categories
+                session.add(new_news)
+                try:
+                    session.commit()
+                except (OperationalError, IntegrityError):
+                    session.rollback()
+                    raise HTTPException(
+                        status_code=422,
+                        detail="Missing required non null values",
+                    )
+
+                return new_news.to_dict(depth=1)
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
+    @app.get(url_prefix + "/news")
+    def list_all_news(pagination: Pagination = Depends(Pagination)) -> list[News]:
+        """Lists all news registered with AIoD."""
+        try:
+            with Session(engine) as session:
+                query = select(News).offset(pagination.offset).limit(pagination.limit)
+                return session.scalars(query).all()
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
+    @app.get(url_prefix + "/news/{identifier}")
+    def get_news(identifier: str) -> dict:
+        """Retrieve all meta-data for specific news entity."""
+        try:
+            with Session(engine) as session:
+                news = _retrieve_news(session, identifier)
+                return news
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
+    @app.delete(url_prefix + "/news/{identifier}")
+    def delete_news(identifier: str):
+        """Delete this news from AIoD."""
+        try:
+            with Session(engine) as session:
+                _retrieve_news(session, identifier)  # Raise error if it does not exist
+
+                statement = delete(News).where(News.id == identifier)
+                session.execute(statement)
+                session.commit()
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
+
+    @app.put(url_prefix + "/news/{identifier}")
+    def put_news(identifier: str, news: schemas.News) -> dict:
+        """Update existing news."""
+        try:
+            with Session(engine) as session:
+                _retrieve_news(session, identifier)  # Raise error if dataset does not exist
+                statement = (
+                    update(News)
+                    .values(
+                        title=news.title,
+                        date_modified=news.date_modified,
+                        body=news.body,
+                        source=news.source,
+                        headline=news.headline,
+                        alternative_headline=news.alternative_headline,
+                        section=news.section,
+                        word_count=news.word_count,
+                    )
+                    .where(News.id == identifier)
+                )
+                # TODO update categories (business,news) and tags
+                session.execute(statement)
+                session.commit()
+                return _retrieve_news(session, identifier).to_dict(depth=1)
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
