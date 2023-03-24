@@ -8,10 +8,11 @@ which should be a separate object inside a separate table in the database (so th
 search for all datasets having the same keyword). In the external schema, a set of strings is
 easier.
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Set, List, Optional
 
 from pydantic import BaseModel, Field
+from enum import Enum
 
 
 class AIoDDistribution(BaseModel):
@@ -81,28 +82,6 @@ class AIoDDataset(BaseModel):
     measured_values: List[AIoDMeasurementValue] = Field(default_factory=list)
 
 
-class Tag(BaseModel):
-    """The complete metadata for tags"""
-
-    tag: str = Field(max_length=250)
-    id: int | None
-
-
-class BusinessCategory(BaseModel):
-    """The complete metadata of a business category"""
-
-    category: str = Field(max_length=250)
-    id: int | None
-
-
-class NewsCategory(BaseModel):
-    """The complete metadata of a news category"""
-
-    category: str = Field(max_length=250)
-    parent_id: int | None
-    id: int | None
-
-
 class News(BaseModel):
     """The complete metadata for news entity"""
 
@@ -119,4 +98,118 @@ class News(BaseModel):
     news_categories: Optional[list[str]]
     business_categories: Optional[list[str]]
     tags: Optional[list[str]]
+    id: int | None
+
+
+class DurationMinutesHoursEnum(str, Enum):
+    option_1 = "Less than 1 hour"
+    option_2 = "1-3 hours"
+    option_3 = "4-10 hours"
+    option_4 = "10+ hours"
+
+
+class HoursPerWeekEnum(str, Enum):
+    option_1 = "1-3 hours (lower-paced)"
+    option_2 = "4-10 hours (quarter-speed)"
+    option_3 = "11-24 hours (Part-time)"
+    option_4 = "25-40 hours (intensive courses)"
+
+
+class EducationalRoleEnum(str, Enum):
+    option_1 = "Student"
+    option_2 = "Teacher"
+
+
+class EducationalLevelEnum(str, Enum):
+    option_1 = "Basic"
+    option_2 = "Advanced"
+    option_3 = "Bachelor Programme"
+    option_4 = "Master's Programme"
+
+
+class EducationalTypeEnum(str, Enum):
+    option_1 = "Distance Learning"
+    option_2 = "Blended Learning"
+    option_3 = "MOOC"
+    option_4 = "On-site"
+    option_5 = "Tutorial"
+
+
+class CountryEnum(str, Enum):
+    opyion_1 = "Sweeden"
+
+
+class PaceEnum(str, Enum):
+    option_1 = "Full-time"
+    option_2 = "Part-time (scheduled)"
+    option_3 = " Self-paced"
+
+
+class LanguageEnum(str, Enum):
+    option_1 = "International"
+    option_2 = "Czech"
+    option_3 = "Croatian"
+    option_4 = "Danish"
+    option_5 = "Dutch"
+    option_6 = "English"
+    option_7 = "Bulgarian"
+
+    # TODO add the remaining languages mentioned in cms description
+
+
+class TargetAudienceEnum(str, Enum):
+    option_1 = "Working professionals"
+    option_2 = "Students in Higher Education"
+    option_3 = "Teachers in Secondary School"
+
+
+class EducationalResource(BaseModel):
+    """The complete metadata for educational resource"""
+
+    title: str = Field(max_length=500)
+    educational_use: str | List[str] = Field(
+        description="The intended educational use of the resource, such as lecture, lab exercise"
+        ", or homework assignment",
+        default_factory=str,
+    )
+    website_link: str = Field(max_length=200)
+    typical_age_range: str = Field(max_length=100)
+
+    interactivity_type: str | None = Field(max_length=100)
+    accessibility_api: str | None = Field(max_length=100)
+    accessibility_control: str | None = Field(max_length=100)
+    access_mode: str | None = Field(max_length=100)
+
+    access_mode_sufficient: str | List[str] = Field(
+        description="The set of access modes required to access the educational resource,"
+        " such as textual and visual.",
+        default_factory=str,
+    )
+    access_restrictions: str | None = Field(max_length=100)
+    is_accessible_for_free: bool | None
+    time_required: timedelta | None
+    citation: str | None = Field(max_length=200)
+
+    version: str | int | None
+    credits: bool | None
+    number_of_weeks: int | None
+    field_prerequisites: str | None = Field(max_length=500)
+    short_summary: str | None = Field(max_length=500)
+    duration_in_years: int | None
+
+    duration_minutes_and_hours: Optional[DurationMinutesHoursEnum]
+    hours_per_week: Optional[HoursPerWeekEnum]
+    educational_role: EducationalRoleEnum
+    educational_level: EducationalLevelEnum
+    educatonal_type: EducationalTypeEnum
+    country: Optional[CountryEnum]
+    pace: PaceEnum
+    language: list[LanguageEnum]
+    target_audience: list[TargetAudienceEnum]
+
+    technical_categories: Optional[list[str]]
+    business_categories: Optional[list[str]]
+    tags: Optional[list[str]]
+    reviews: Optional[list[str]]
+
     id: int | None
