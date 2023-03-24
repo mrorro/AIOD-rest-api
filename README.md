@@ -1,19 +1,38 @@
-# FastAPI + Database (MySQL) Server Demo
+# AIoD API 
 
-This repository contains an example of how to provide a REST API built with [FastAPI](https://fastapi.tiangolo.com/)
+This repository contains the AI on Demand (AIoD) REST API. It is built with 
+[FastAPI](https://fastapi.tiangolo.com/)
 that interacts with a database ([MySQL](https://hub.docker.com/_/mysql))
 and [OpenML's REST API](https://www.openml.org/apis).
 Both the database and the REST API are run from docker in separate containers.
 
-The REST API demonstrates an example simplified AIoD application of providing information on datasets and publications.
-It has its own database in which to store meta-data,
-but can also access additional meta-data from data providers (only OpenML in the demo).
-An example flow of a user requesting a list of datasets, and then obtaining detailed meta-data for the dataset is shown
-below.
+The AIoD REST API will allow any kind of service to interact with the AIoD portal to discover, 
+retrieve, and share AI resources. It forms the connection between user-facing components, such 
+as the AIoD website or Python Client API, and the backend. The metadata for datasets, models 
+and other resources can be accessed, added, updated and deleted through this API. 
 
-![Flowchart of the program.](flowchart.png)
+## Architecture
+All metadata is stored in the AIoD metadata database. For every instance of the API (there will 
+be multiple running instances, for reliability and performance), an instance of this database 
+will run on the same machine (on the same node). The type of database is not yet determined, for 
+now we use a simple MySQL database.
 
-*Tested and developed on `MacOS 12.4`, `Docker 20.10.17`.*
+The metadata is stored in AIoD format. When the user requests an item, such as a dataset, it can 
+be returned in AIoD format, or converted to any supported format, as requested by the user. For 
+datasets, we will for instance support schema.org and DCAT-AP.
+
+Requesting a dataset will therefore be simply:
+
+![asdf](media/GetDatasetUML.png)
+
+To fill the database, a synchronization process must be running continuously for every platform 
+(e.g. HuggingFace or OpenML). This synchronization service of a platform will be deployed at a 
+single node. The synchronization service queries its platform for updates, converts the metadata 
+to the AIoD format and updates the database.
+
+Note that this synchronization process between the platform and the database, is different from 
+the synchronization between database instances. The latter is under discussion in the AIoD 
+Synchronization Meetings. 
 
 ## Installation
 
