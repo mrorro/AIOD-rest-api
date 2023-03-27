@@ -5,20 +5,20 @@ from sqlalchemy import Engine, select, func
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from database.models import PublicationDescription
+from database.model.publication import OrmPublication
 
 
 @pytest.mark.parametrize("identifier", ["1", "2"])
 def test_happy_path(client: TestClient, engine: Engine, identifier: str):
     publications = [
-        PublicationDescription(
+        OrmPublication(
             title="title 1",
             doi="10.5281/zenodo.121",
             node="zenodo",
             node_specific_identifier="121",
             datasets=[],
         ),
-        PublicationDescription(
+        OrmPublication(
             title="title 2",
             doi="10.5281/zenodo.122",
             node="zenodo",
@@ -41,14 +41,14 @@ def test_happy_path(client: TestClient, engine: Engine, identifier: str):
 @pytest.mark.parametrize("identifier", ["4", "5"])
 def test_nonexistent_dataset(client: TestClient, engine: Engine, identifier: str):
     publications = [
-        PublicationDescription(
+        OrmPublication(
             title="title 1",
             doi="10.5281/zenodo.121",
             node="zenodo",
             node_specific_identifier="121",
             datasets=[],
         ),
-        PublicationDescription(
+        OrmPublication(
             title="title 2",
             doi="10.5281/zenodo.122",
             node="zenodo",
@@ -70,5 +70,5 @@ def test_nonexistent_dataset(client: TestClient, engine: Engine, identifier: str
 
 def _n_datasets(engine: Engine) -> int:
     with Session(engine) as session:
-        statement = select(func.count()).select_from(PublicationDescription)
+        statement = select(func.count()).select_from(OrmPublication)
         return session.execute(statement).scalar()

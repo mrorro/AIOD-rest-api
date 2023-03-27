@@ -5,19 +5,19 @@ from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from database.models import PublicationDescription
+from database.model.publication import OrmPublication
 
 
 def test_happy_path(client: TestClient, engine: Engine):
     publications = [
-        PublicationDescription(
-            title="pub1", doi="doi1", node="zenodo", node_specific_identifier="1"
+        OrmPublication(
+            title="pub1", doi="doi1", url="url1", node="zenodo", node_specific_identifier="1"
         ),
-        PublicationDescription(
-            title="pub1", doi="doi1", node="other_node", node_specific_identifier="1"
+        OrmPublication(
+            title="pub1", doi="doi1",url="url1", node="other_node", node_specific_identifier="1"
         ),
-        PublicationDescription(
-            title="pub2", doi="doi2", node="other_node", node_specific_identifier="2"
+        OrmPublication(
+            title="pub2", doi="doi2",url="url2", node="other_node", node_specific_identifier="2"
         ),
     ]
     with Session(engine) as session:
@@ -27,7 +27,7 @@ def test_happy_path(client: TestClient, engine: Engine):
 
     response = client.post(
         "/publications",
-        json={"title": "pub2", "doi": "doi2", "node": "zenodo", "node_specific_identifier": "2"},
+        json={"title": "pub2", "doi": "doi2","url":"url2", "node": "zenodo", "node_specific_identifier": "2"},
     )
     assert response.status_code == 200
     response_json = response.json()
@@ -36,7 +36,6 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["node"] == "zenodo"
     assert response_json["node_specific_identifier"] == "2"
     assert response_json["id"] == 4
-    assert response_json["datasets"] == []
     assert len(response_json) == 6
 
 
@@ -56,7 +55,7 @@ def test_unicode(client: TestClient, engine: Engine, title):
 
 def test_duplicated_publication(client: TestClient, engine: Engine):
     publications = [
-        PublicationDescription(
+        OrmPublication(
             title="pub1", doi="doi1", node="zenodo", node_specific_identifier="1"
         )
     ]

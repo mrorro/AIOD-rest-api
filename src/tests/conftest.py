@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from sqlalchemy import create_engine, Engine
 from starlette.testclient import TestClient
 
-from database.models import Base
+from database.model.base import Base
 from main import add_routes
 
 

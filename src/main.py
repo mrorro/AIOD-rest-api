@@ -20,7 +20,9 @@ from sqlalchemy.orm import Session
 import connectors
 import schemas
 from connectors import NodeName
-from database.models import DatasetDescription, PublicationDescription
+from converters import dataset_converter
+from database.model.publication import OrmPublication
+from database.model.dataset import OrmDataset
 from database.setup import connect_to_database, populate_database
 
 
@@ -105,14 +107,16 @@ def _connector_from_node_name(connector_type: str, connector_dict: Dict, node_na
     return connector
 
 
-def _retrieve_dataset(session, identifier, node=None) -> DatasetDescription:
+def _retrieve_dataset(session, identifier, node=None) -> OrmDataset:
     if node is None:
-        query = select(DatasetDescription).where(DatasetDescription.id == identifier)
+        query = select(OrmDataset).where(OrmDataset.id == identifier)
     else:
-        query = select(DatasetDescription).where(
+        if node not in {n.name for n in NodeName}:
+            raise HTTPException(status_code=400, detail=f"Node '{node}' not recognized.")
+        query = select(OrmDataset).where(
             and_(
-                DatasetDescription.node_specific_identifier == identifier,
-                DatasetDescription.node == node,
+                OrmDataset.node_specific_identifier == identifier,
+                OrmDataset.node == node,
             )
         )
     dataset = session.scalars(query).first()
@@ -125,16 +129,8 @@ def _retrieve_dataset(session, identifier, node=None) -> DatasetDescription:
     return dataset
 
 
-def _retrieve_publication(session, identifier, node=None) -> PublicationDescription:
-    if node is None:
-        query = select(PublicationDescription).where(PublicationDescription.id == identifier)
-    else:
-        query = select(PublicationDescription).where(
-            and_(
-                PublicationDescription.node_specific_identifier == identifier,
-                PublicationDescription.node == node,
-            )
-        )
+def _retrieve_publication(session, identifier, node=None) -> OrmPublication:
+    query = select(OrmPublication).where(OrmPublication.id == identifier)
     publication = session.scalars(query).first()
     if not publication:
         if node is None:
@@ -186,10 +182,10 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         offset: int = 0
         limit: int = 100
 
-    @app.get(url_prefix + "/datasets/")
+    @app.get(url_prefix + "/datasets/", response_model_exclude_none=True)
     def list_datasets(
         pagination: Pagination = Depends(Pagination),
-    ) -> list[dict]:
+    ) -> list[schemas.AIoDDataset]:
         """Lists all datasets registered with AIoD.
 
         Query Parameter
@@ -200,26 +196,21 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         # https://docs.sqlalchemy.org/en/20/orm/queryguide/index.html
         try:
             with Session(engine) as session:
-                query = select(DatasetDescription).offset(pagination.offset).limit(pagination.limit)
-                return [dataset.to_dict(depth=0) for dataset in session.scalars(query).all()]
+                query = select(OrmDataset).offset(pagination.offset).limit(pagination.limit)
+                return [
+                    dataset_converter.orm_to_aiod(dataset)
+                    for dataset in session.scalars(query).all()
+                ]
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
-    @app.get(url_prefix + "/datasets/{identifier}")
-    def get_dataset(identifier: str) -> dict:
+    @app.get(url_prefix + "/datasets/{identifier}", response_model_exclude_none=True)
+    def get_dataset(identifier: str) -> schemas.AIoDDataset:
         """Retrieve all meta-data for a specific dataset."""
         try:
             with Session(engine) as session:
                 dataset = _retrieve_dataset(session, identifier)
-            node = dataset.node
-            connector = connectors.dataset_connectors.get(node, None)
-            if connector is None:
-                raise HTTPException(
-                    status_code=501,
-                    detail=f"No connector for node '{node}' available.",
-                )
-            dataset_meta = connector.fetch(dataset)
-            return dataset_meta.dict()
+                return dataset_converter.orm_to_aiod(dataset)
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
@@ -228,53 +219,52 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         """Retrieve information about all known nodes"""
         return list(NodeName)
 
-    @app.get(url_prefix + "/nodes/{node}/datasets")
-    def get_node_datasets(node: str, pagination: Pagination = Depends(Pagination)) -> list[dict]:
+    @app.get(url_prefix + "/nodes/{node}/datasets", response_model_exclude_none=True)
+    def get_node_datasets(
+        node: str, pagination: Pagination = Depends(Pagination)
+    ) -> list[schemas.AIoDDataset]:
         """Retrieve all meta-data of the datasets of a single node."""
         try:
             with Session(engine) as session:
                 query = (
-                    select(DatasetDescription)
-                    .where(DatasetDescription.node == node)
+                    select(OrmDataset)
+                    .where(OrmDataset.node == node)
                     .offset(pagination.offset)
                     .limit(pagination.limit)
                 )
-                return [dataset.to_dict(depth=0) for dataset in session.scalars(query).all()]
+                return [
+                    dataset_converter.orm_to_aiod(dataset)
+                    for dataset in session.scalars(query).all()
+                ]
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
-    @app.get(url_prefix + "/nodes/{node}/datasets/{identifier}")
-    def get_node_dataset(node: str, identifier: str) -> dict:
+    @app.get(url_prefix + "/nodes/{node}/datasets/{identifier}", response_model_exclude_none=True)
+    def get_node_dataset(node: str, identifier: str) -> schemas.AIoDDataset:
         """Retrieve all meta-data for a specific dataset identified by the
         node-specific-identifier."""
         try:
-            connector = _connector_from_node_name("dataset", connectors.dataset_connectors, node)
             with Session(engine) as session:
                 dataset = _retrieve_dataset(session, identifier, node)
-            dataset_meta = connector.fetch(dataset)
-            return dataset_meta.dict()
+                return dataset_converter.orm_to_aiod(dataset)
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
-    @app.post(url_prefix + "/datasets/")
-    def register_dataset(dataset: schemas.Dataset) -> dict:
+    @app.post(url_prefix + "/datasets/", response_model_exclude_none=True)
+    def register_dataset(dataset: schemas.AIoDDataset) -> schemas.AIoDDataset:
         """Register a dataset with AIoD."""
         try:
             with Session(engine) as session:
-                new_dataset = DatasetDescription(
-                    name=dataset.name,
-                    node=dataset.node,
-                    node_specific_identifier=dataset.node_specific_identifier,
-                )
-                session.add(new_dataset)
+                dataset_orm = dataset_converter.aiod_to_orm(session, dataset)
+                session.add(dataset_orm)
                 try:
                     session.commit()
                 except IntegrityError:
                     session.rollback()
-                    query = select(DatasetDescription).where(
+                    query = select(OrmDataset).where(
                         and_(
-                            DatasetDescription.node == dataset.node,
-                            DatasetDescription.name == dataset.name,
+                            OrmDataset.node == dataset.node,
+                            OrmDataset.name == dataset.name,
                         )
                     )
                     existing_dataset = session.scalars(query).first()
@@ -283,28 +273,22 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                         detail="There already exists a dataset with the same "
                         f"node and name, with id={existing_dataset.id}.",
                     )
-                return new_dataset.to_dict(depth=1)
+                return dataset_converter.orm_to_aiod(dataset_orm)
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
-    @app.put(url_prefix + "/datasets/{identifier}")
-    def put_dataset(identifier: str, dataset: schemas.Dataset) -> dict:
+    @app.put(url_prefix + "/datasets/{identifier}", response_model_exclude_none=True)
+    def put_dataset(identifier: str, dataset: schemas.AIoDDataset) -> schemas.AIoDDataset:
         """Update an existing dataset."""
         try:
             with Session(engine) as session:
-                _retrieve_dataset(session, identifier)  # Raise error if dataset does not exist
-                statement = (
-                    update(DatasetDescription)
-                    .values(
-                        node=dataset.node,
-                        name=dataset.name,
-                        node_specific_identifier=dataset.node_specific_identifier,
-                    )
-                    .where(DatasetDescription.id == identifier)
-                )
-                session.execute(statement)
+                _retrieve_dataset(session, identifier)  # Raise error if it does not exist
+                dataset_orm = dataset_converter.aiod_to_orm(session, dataset)
+                dataset_orm.id = identifier
+                session.merge(dataset_orm)
                 session.commit()
-                return _retrieve_dataset(session, identifier).to_dict(depth=1)
+                new_dataset = _retrieve_dataset(session, identifier)
+                return dataset_converter.orm_to_aiod(new_dataset)
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
@@ -314,7 +298,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 _retrieve_dataset(session, identifier)  # Raise error if it does not exist
 
-                statement = delete(DatasetDescription).where(DatasetDescription.id == identifier)
+                statement = delete(OrmDataset).where(OrmDataset.id == identifier)
                 session.execute(statement)
                 session.commit()
         except Exception as e:
@@ -328,34 +312,33 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 return [
                     publication.to_dict(depth=0)
                     for publication in session.scalars(
-                        select(PublicationDescription)
-                        .offset(pagination.offset)
-                        .limit(pagination.limit)
+                        select(OrmPublication).offset(pagination.offset).limit(pagination.limit)
                     ).all()
                 ]
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
     @app.post(url_prefix + "/publications")
-    def register_publication(publication: schemas.Publication) -> dict:
+    def register_publication(publication: schemas.AIoDPublication) -> dict:
         """Add a publication."""
         try:
             with Session(engine) as session:
-                new_publication = PublicationDescription(
+                new_publication = OrmPublication(
                     title=publication.title,
                     doi=publication.doi,
+                    url=publication.url,
                     node=publication.node,
-                    node_specific_identifier=publication.node_specific_identifier,
-                )
+                    node_specific_identifier=publication.node_specific_identifier
+                    )
                 session.add(new_publication)
                 try:
                     session.commit()
                 except IntegrityError:
                     session.rollback()
-                    query = select(PublicationDescription).where(
+                    query = select(OrmPublication).where(
                         and_(
-                            PublicationDescription.doi == publication.doi,
-                            PublicationDescription.node == publication.node,
+                            OrmPublication.node_specific_identifier == publication.node_specific_identifier,
+                            OrmPublication.node == publication.node,
                         )
                     )
                     existing_dataset = session.scalars(query).first()
@@ -379,20 +362,21 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             raise _wrap_as_http_exception(e)
 
     @app.put(url_prefix + "/publications/{identifier}")
-    def update_publication(identifier: str, publication: schemas.Publication) -> dict:
+    def update_publication(identifier: str, publication: schemas.AIoDPublication) -> dict:
         """Update this publication"""
         try:
             with Session(engine) as session:
                 _retrieve_publication(session, identifier)  # Raise error if dataset does not exist
                 statement = (
-                    update(PublicationDescription)
+                    update(OrmPublication)
                     .values(
                         title=publication.title,
                         doi=publication.doi,
+                        url=publication.url,
                         node=publication.node,
                         node_specific_identifier=publication.node_specific_identifier,
                     )
-                    .where(PublicationDescription.id == identifier)
+                    .where(OrmPublication.id == identifier)
                 )
                 session.execute(statement)
                 session.commit()
@@ -407,9 +391,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 _retrieve_publication(session, identifier)  # Raise error if it does not exist
 
-                statement = delete(PublicationDescription).where(
-                    PublicationDescription.id == identifier
-                )
+                statement = delete(OrmPublication).where(OrmPublication.id == identifier)
                 session.execute(statement)
                 session.commit()
         except Exception as e:
@@ -429,13 +411,8 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         node-specific-identifier."""
 
         try:
-            connector = _connector_from_node_name(
-                "publication", connectors.publication_connectors, node
-            )
-            with Session(engine) as session:
-                publication = _retrieve_publication(session, identifier, node)
 
-            publication_meta = connector.fetch(publication)
+            publication_meta = connector.fetch(identifier)
             return publication_meta.dict()
         except Exception as e:
             raise _wrap_as_http_exception(e)
@@ -446,7 +423,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         try:
             with Session(engine) as session:
                 dataset = _retrieve_dataset(session, identifier)
-                return [publication.to_dict(depth=0) for publication in dataset.publications]
+                return [publication.to_dict(depth=0) for publication in dataset.citations]
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
@@ -456,13 +433,13 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 dataset = _retrieve_dataset(session, dataset_id)
                 publication = _retrieve_publication(session, publication_id)
-                if publication in dataset.publications:
+                if publication in dataset.citations:
                     raise HTTPException(
                         status_code=409,
                         detail=f"Dataset {dataset_id} is already linked to publication "
                         f"{publication_id}.",
                     )
-                dataset.publications.append(publication)
+                dataset.citations.append(publication)
                 session.commit()
         except Exception as e:
             raise _wrap_as_http_exception(e)
@@ -473,13 +450,13 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 dataset = _retrieve_dataset(session, dataset_id)
                 publication = _retrieve_publication(session, publication_id)
-                if publication not in dataset.publications:
+                if publication not in dataset.citations:
                     raise HTTPException(
                         status_code=404,
                         detail=f"Dataset {dataset_id} is not linked to publication "
                         f"{publication_id}.",
                     )
-                dataset.publications = [p for p in dataset.publications if p != publication]
+                dataset.citations = [p for p in dataset.citations if p != publication]
                 session.commit()
         except Exception as e:
             raise _wrap_as_http_exception(e)

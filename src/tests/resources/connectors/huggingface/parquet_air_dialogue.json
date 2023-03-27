@@ -1,0 +1,46 @@
+{
+    "parquet_files": [
+        {
+            "dataset": "air_dialogue",
+            "config": "air_dialogue_data",
+            "split": "train",
+            "url": "https://huggingface.co/datasets/air_dialogue/resolve/refs%2Fconvert%2Fparquet/air_dialogue_data/air_dialogue-train.parquet",
+            "filename": "air_dialogue-train.parquet",
+            "size": 125924076
+        },
+        {
+            "dataset": "air_dialogue",
+            "config": "air_dialogue_data",
+            "split": "validation",
+            "url": "https://huggingface.co/datasets/air_dialogue/resolve/refs%2Fconvert%2Fparquet/air_dialogue_data/air_dialogue-validation.parquet",
+            "filename": "air_dialogue-validation.parquet",
+            "size": 15843754
+        },
+        {
+            "dataset": "air_dialogue",
+            "config": "air_dialogue_kb",
+            "split": "train",
+            "url": "https://huggingface.co/datasets/air_dialogue/resolve/refs%2Fconvert%2Fparquet/air_dialogue_kb/air_dialogue-train-00000-of-00002.parquet",
+            "filename": "air_dialogue-train-00000-of-00002.parquet",
+            "size": 32628935
+        },
+        {
+            "dataset": "air_dialogue",
+            "config": "air_dialogue_kb",
+            "split": "train",
+            "url": "https://huggingface.co/datasets/air_dialogue/resolve/refs%2Fconvert%2Fparquet/air_dialogue_kb/air_dialogue-train-00001-of-00002.parquet",
+            "filename": "air_dialogue-train-00001-of-00002.parquet",
+            "size": 18782105
+        },
+        {
+            "dataset": "air_dialogue",
+            "config": "air_dialogue_kb",
+            "split": "validation",
+            "url": "https://huggingface.co/datasets/air_dialogue/resolve/refs%2Fconvert%2Fparquet/air_dialogue_kb/air_dialogue-validation.parquet",
+            "filename": "air_dialogue-validation.parquet",
+            "size": 6461341
+        }
+    ],
+    "pending": [],
+    "failed": []
+}

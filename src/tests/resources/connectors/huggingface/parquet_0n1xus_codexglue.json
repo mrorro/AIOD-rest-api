@@ -1,0 +1,54 @@
+{
+    "parquet_files": [
+        {
+            "dataset": "0n1xus/codexglue",
+            "config": "code-completion-token-py150",
+            "split": "test",
+            "url": "https://huggingface.co/datasets/0n1xus/codexglue/resolve/refs%2Fconvert%2Fparquet/code-completion-token-py150/codexglue-test.parquet",
+            "filename": "codexglue-test.parquet",
+            "size": 58763574
+        },
+        {
+            "dataset": "0n1xus/codexglue",
+            "config": "code-completion-token-py150",
+            "split": "train",
+            "url": "https://huggingface.co/datasets/0n1xus/codexglue/resolve/refs%2Fconvert%2Fparquet/code-completion-token-py150/codexglue-train.parquet",
+            "filename": "codexglue-train.parquet",
+            "size": 112751107
+        },
+        {
+            "dataset": "0n1xus/codexglue",
+            "config": "code-completion-token-py150",
+            "split": "validation",
+            "url": "https://huggingface.co/datasets/0n1xus/codexglue/resolve/refs%2Fconvert%2Fparquet/code-completion-token-py150/codexglue-validation.parquet",
+            "filename": "codexglue-validation.parquet",
+            "size": 6889037
+        },
+        {
+            "dataset": "0n1xus/codexglue",
+            "config": "code-to-code-trans",
+            "split": "test",
+            "url": "https://huggingface.co/datasets/0n1xus/codexglue/resolve/refs%2Fconvert%2Fparquet/code-to-code-trans/codexglue-test.parquet",
+            "filename": "codexglue-test.parquet",
+            "size": 163062
+        },
+        {
+            "dataset": "0n1xus/codexglue",
+            "config": "code-to-code-trans",
+            "split": "train",
+            "url": "https://huggingface.co/datasets/0n1xus/codexglue/resolve/refs%2Fconvert%2Fparquet/code-to-code-trans/codexglue-train.parquet",
+            "filename": "codexglue-train.parquet",
+            "size": 1733754
+        },
+        {
+            "dataset": "0n1xus/codexglue",
+            "config": "code-to-code-trans",
+            "split": "validation",
+            "url": "https://huggingface.co/datasets/0n1xus/codexglue/resolve/refs%2Fconvert%2Fparquet/code-to-code-trans/codexglue-validation.parquet",
+            "filename": "codexglue-validation.parquet",
+            "size": 86511
+        }
+    ],
+    "pending": [],
+    "failed": []
+}

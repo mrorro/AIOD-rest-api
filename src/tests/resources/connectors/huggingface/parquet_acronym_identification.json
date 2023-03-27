@@ -1,0 +1,30 @@
+{
+    "parquet_files": [
+        {
+            "dataset": "acronym_identification",
+            "config": "default",
+            "split": "test",
+            "url": "https://huggingface.co/datasets/acronym_identification/resolve/refs%2Fconvert%2Fparquet/default/acronym_identification-test.parquet",
+            "filename": "acronym_identification-test.parquet",
+            "size": 206099
+        },
+        {
+            "dataset": "acronym_identification",
+            "config": "default",
+            "split": "train",
+            "url": "https://huggingface.co/datasets/acronym_identification/resolve/refs%2Fconvert%2Fparquet/default/acronym_identification-train.parquet",
+            "filename": "acronym_identification-train.parquet",
+            "size": 1657990
+        },
+        {
+            "dataset": "acronym_identification",
+            "config": "default",
+            "split": "validation",
+            "url": "https://huggingface.co/datasets/acronym_identification/resolve/refs%2Fconvert%2Fparquet/default/acronym_identification-validation.parquet",
+            "filename": "acronym_identification-validation.parquet",
+            "size": 206915
+        }
+    ],
+    "pending": [],
+    "failed": []
+}

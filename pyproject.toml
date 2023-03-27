@@ -8,18 +8,22 @@ authors = [
 ]
 dependencies = [
     "sqlalchemy==2.0.0b4",
+    "bibtexparser",
+    "datasets",
     "fastapi",
     "uvicorn",
     "requests",
     "mysqlclient",
     "pydantic",
     "pydantic_schemaorg",
+    "python-dateutil",
     "httpx"
 ]
 readme = "README.md"
 
 [project.optional-dependencies]
 dev = [
+    "types-python-dateutil",
     "pytest",
     "pre-commit",
     "responses",

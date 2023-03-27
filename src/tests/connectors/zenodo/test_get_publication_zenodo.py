@@ -6,7 +6,7 @@ from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from database.models import PublicationDescription
+from database.model.publication import OrmPublication
 from tests.testutils.paths import path_test_resources
 
 
@@ -15,7 +15,7 @@ ZENODO_URL = "https://zenodo.org/api"
 
 def test_happy_path(client: TestClient, engine: Engine):
 
-    publication_description = PublicationDescription(
+    publication_description = OrmPublication(
         title="Student-Centred Studio Environments: A Deep Dive into Architecture Students' Needs",
         doi="10.5281/zenodo.7712947",
         node="zenodo",
@@ -28,15 +28,8 @@ def test_happy_path(client: TestClient, engine: Engine):
         session.add(copy.deepcopy(publication_description))
         session.commit()
 
-    with responses.RequestsMock() as mocked_requests:
-        _mock_normal_responses(mocked_requests, publication_description)
-        response = client.get("/nodes/zenodo/publications/7712947")
 
-    assert response.status_code == 200
-    response_json = response.json()
 
-    with open(path_test_resources() / "connectors" / "zenodo" / "data_1.json", "r") as f:
-        expected_info = json.load(f)
 
     assert response_json["doi"] == expected_info["doi"]
     assert response_json["title"] == expected_info["metadata"]["title"]
@@ -44,7 +37,7 @@ def test_happy_path(client: TestClient, engine: Engine):
 
 def test_publication_not_found_in_local_db(client: TestClient, engine: Engine):
 
-    publication_description = PublicationDescription(
+    publication_description = OrmPublication(
         title="Student-Centred Studio Environments: A Deep Dive into Architecture Students' Needs",
         doi="10.5281/zenodo.7712947",
         node="zenodo",
@@ -63,7 +56,7 @@ def test_publication_not_found_in_local_db(client: TestClient, engine: Engine):
 
 
 def test_publication_not_found_in_zenodo(client: TestClient, engine: Engine):
-    publication_description = PublicationDescription(
+    publication_description = OrmPublication(
         title="Student-Centred Studio Environments: A Deep Dive into Architecture Students' Needs",
         doi="10.5281/zenodo.7712947",
         node="zenodo",
@@ -91,7 +84,7 @@ def test_publication_not_found_in_zenodo(client: TestClient, engine: Engine):
 
 
 def _mock_normal_responses(
-    mocked_requests: responses.RequestsMock, publication_description: PublicationDescription
+    mocked_requests: responses.RequestsMock, publication_description: OrmPublication
 ):
     """
     Mocking requests to the OpenML dependency, so that we test only our own services

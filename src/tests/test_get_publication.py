@@ -5,29 +5,34 @@ from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from database.models import PublicationDescription, DatasetDescription
+from database.model.publication import OrmPublication
+from database.model.dataset import OrmDataset
 
 
 @pytest.mark.parametrize("publication_id", [1, 2])
 def test_happy_path(client: TestClient, engine: Engine, publication_id: int):
     datasets = [
-        DatasetDescription(name="dset1", node="zenodo", node_specific_identifier="1"),
-        DatasetDescription(name="dset1", node="other_node", node_specific_identifier="1"),
+        OrmDataset(
+            name="dset1",
+            node="openml",
+            description="",
+            same_as="openml.eu/1",
+            node_specific_identifier="1",
+        ),
+        OrmDataset(
+            name="dset1",
+            node="other_node",
+            description="",
+            same_as="other_node.eu/1",
+            node_specific_identifier="1",
+        ),
     ]
     publications = [
-        PublicationDescription(
-            title="title 1",
-            doi="10.5281/zenodo.121",
-            node="zenodo",
-            node_specific_identifier="121",
-            datasets=datasets,
+         OrmPublication(
+            title="Title 1", doi="doi1", node="zenodo", node_specific_identifier="1", datasets=datasets
         ),
-        PublicationDescription(
-            title="title 2",
-            doi="10.5281/zenodo.122",
-            node="zenodo",
-            node_specific_identifier="122",
-            datasets=datasets,
+         OrmPublication(
+            title="Title 2", doi="doi2", node="zenodo", node_specific_identifier="2", datasets=datasets
         ),
     ]
     with Session(engine) as session:
@@ -60,15 +65,9 @@ def test_empty_db(client: TestClient, engine: Engine, publication_id):
 
 @pytest.mark.parametrize("publication_id", [-1, 2, 3])
 def test_publication_not_found(client: TestClient, engine: Engine, publication_id):
-    publications = [
-        PublicationDescription(
-            title="title 1",
-            doi="10.5281/zenodo.121",
-            node="zenodo",
-            node_specific_identifier="121",
-            datasets=[],
-        ),
-    ]
+    publications = [OrmPublication(
+            title="Title 1", doi="doi1", node="zenodo", node_specific_identifier="1", datasets=[]
+        )]
     with Session(engine) as session:
         # Populate database
         session.add_all(publications)

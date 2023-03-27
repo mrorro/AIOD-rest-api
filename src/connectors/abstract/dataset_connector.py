@@ -1,10 +1,8 @@
 import abc
 from typing import Iterator
 
-from pydantic_schemaorg.Dataset import Dataset
-
 from connectors.node_names import NodeName
-from database.models import DatasetDescription
+from schemas import AIoDDataset
 
 
 class DatasetConnector(abc.ABC):
@@ -16,11 +14,11 @@ class DatasetConnector(abc.ABC):
         return NodeName.from_class(self.__class__)
 
     @abc.abstractmethod
-    def fetch(self, dataset: DatasetDescription) -> Dataset:
-        """Retrieve extra metadata for this dataset"""
+    def fetch(self, node_specific_identifier: str) -> AIoDDataset:
+        """Retrieve information of specific dataset"""
         pass
 
     @abc.abstractmethod
-    def fetch_all(self, limit: int | None) -> Iterator[DatasetDescription]:
-        """Retrieve basic information of all datasets"""
+    def fetch_all(self, limit: int | None = None) -> Iterator[AIoDDataset]:
+        """Retrieve information of all datasets"""
         pass

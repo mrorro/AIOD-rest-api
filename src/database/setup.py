@@ -8,7 +8,11 @@ from sqlalchemy import Engine, text, create_engine, select
 from sqlalchemy.orm import Session
 
 from connectors import DatasetConnector, PublicationConnector
-from .models import Base, DatasetDescription, PublicationDescription
+from converters import dataset_converter
+from schemas import AIoDDataset
+from .model.base import Base
+from .model.publication import OrmPublication
+from .model.dataset import OrmDataset
 
 
 def connect_to_database(
@@ -75,21 +79,25 @@ def populate_database(
             *[c.fetch_all(limit=limit_publications) for c in publications_connectors]
         )
 
-    datasets = list(datasets_iterable)
-    publications = list(publications_iterable)
+    datasets: List[AIoDDataset] = list(datasets_iterable)
+    publications: List[OrmPublication] = list(publications_iterable)
     # For now, we cannot make use of generators, because we have to link the datasets with the
     # publications. This is a temporary setup though, so it makes sense to let the fetch_all()
     # return an iterator for future benefits.
-    _link_datasets_with_publications(datasets, publications)
+
+    # TODO(issue 7): return AIoDPublication instead of OrmPublication, and link them again
+    # _link_datasets_with_publications(datasets, publications)
+
     with Session(engine) as session:
         data_exists = (
-            session.scalars(select(PublicationDescription)).first()
-            or session.scalars(select(DatasetDescription)).first()
+            session.scalars(select(OrmPublication)).first()
+            or session.scalars(select(OrmDataset)).first()
         )
         if only_if_empty and data_exists:
             return
 
-        session.add_all(datasets)
+        orm_datasets = [dataset_converter.aiod_to_orm(session, dataset) for dataset in datasets]
+        session.add_all(orm_datasets)
         session.add_all(publications)
         session.commit()
 

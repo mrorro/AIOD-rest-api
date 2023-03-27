@@ -5,16 +5,18 @@ from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from database.models import PublicationDescription
+from database.model.publication import OrmPublication
+
+
 
 
 @pytest.mark.parametrize(
-    "identifier,title,doi,node,node_specific_identifier",
+    "identifier,title,url,doi,node,node_specific_identifier",
     [
-        (1, "NEW NAME", "doi1", "zenodo", "1"),
-        (1, "pub1", "doi1", "zenodo", "new-id"),
-        (1, "pub1", "doi1", "other_node", "3"),
-        (3, "pub2", "doi1", "other_node", "3"),
+        (1, "NEW NAME","url1", "doi1", "zenodo", "1"),
+        (1, "pub1","url1", "doi1", "zenodo", "new-id"),
+        (1, "pub1","url1", "doi1", "other_node", "3"),
+        (3, "pub2","url3", "doi1", "other_node", "3"),
     ],
 )
 def test_happy_path(
@@ -22,6 +24,7 @@ def test_happy_path(
     engine: Engine,
     identifier: int,
     title: str,
+    url:str,
     doi: str,
     node: str,
     node_specific_identifier: str,
@@ -31,6 +34,7 @@ def test_happy_path(
         f"/publications/{identifier}",
         json={
             "title": title,
+            "url":url,
             "doi": doi,
             "node": node,
             "node_specific_identifier": node_specific_identifier,
@@ -39,6 +43,7 @@ def test_happy_path(
     assert response.status_code == 200
     response_json = response.json()
     assert response_json["title"] == title
+    assert response_json["url"] == url
     assert response_json["doi"] == doi
     assert response_json["node"] == node
     assert response_json["node_specific_identifier"] == node_specific_identifier
@@ -80,18 +85,18 @@ def test_partial_update(client: TestClient, engine: Engine):
 def test_too_long_name(client: TestClient, engine: Engine):
     _setup(engine)
 
-    title = "a" * 200
+    title = "a" * 300
     response = client.put(
-        "/publications/4",
+        "/publications/3",
         json={"title": title, "doi": "doi2", "node": "node", "node_specific_identifier": "id"},
     )
     assert response.status_code == 422
     response_json = response.json()
     assert response_json["detail"] == [
         {
-            "ctx": {"limit_value": 150},
+            "ctx": {"limit_value": 250},
             "loc": ["body", "title"],
-            "msg": "ensure this value has at most 150 characters",
+            "msg": "ensure this value has at most 250 characters",
             "type": "value_error.any_str.max_length",
         }
     ]
@@ -99,13 +104,13 @@ def test_too_long_name(client: TestClient, engine: Engine):
 
 def _setup(engine):
     datasets = [
-        PublicationDescription(
+        OrmPublication(
             title="pub1", doi="doi1", node="zenodo", node_specific_identifier="1"
         ),
-        PublicationDescription(
+        OrmPublication(
             title="pub1", doi="doi2", node="other", node_specific_identifier="1"
         ),
-        PublicationDescription(
+        OrmPublication(
             title="pub2", doi="doi3", node="zenodo", node_specific_identifier="2"
         ),
     ]

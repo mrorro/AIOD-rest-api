@@ -2,8 +2,8 @@ import abc
 from typing import Iterator
 
 from connectors.node_names import NodeName
-from database.models import PublicationDescription
-from schemas import Publication
+from database.model.publication import OrmPublication
+from schemas import AIoDPublication
 
 
 class PublicationConnector(abc.ABC):
@@ -15,11 +15,11 @@ class PublicationConnector(abc.ABC):
         return NodeName.from_class(self.__class__)
 
     @abc.abstractmethod
-    def fetch_all(self, limit: int | None) -> Iterator[PublicationDescription]:
+    def fetch_all(self, limit: int | None) -> Iterator[OrmPublication]:
         """Retrieve all publications"""
         pass
 
     @abc.abstractmethod
-    def fetch(self, publication: PublicationDescription) -> Publication:
+    def fetch(self, publication: OrmPublication) -> AIoDPublication:
         """Retrieve extra metadata for this dataset"""
         pass

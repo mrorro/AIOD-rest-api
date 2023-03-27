@@ -4,12 +4,13 @@ from fastapi import HTTPException
 import requests
 
 from connectors.abstract.publication_connector import PublicationConnector
-from database.models import PublicationDescription
-from schemas import Publication
+from database.model.publication import OrmPublication
+from schemas import AIoDPublication
+
 
 
 class ZenodoPublicationConnector(PublicationConnector):
-    def fetch(self, publication: PublicationDescription) -> Publication:
+    def fetch(self, publication: OrmPublication) -> AIoDPublication:
         identifier = publication.node_specific_identifier
         url_data = f"https://zenodo.org/api/records/{identifier}"
         response = requests.get(url_data)
@@ -21,7 +22,7 @@ class ZenodoPublicationConnector(PublicationConnector):
                 detail=f"Error while fetching data from Zenodo: '{msg}'",
             )
         publication_json = response.json()
-        result = Publication(
+        result = AIoDPublication(
             doi=publication_json["doi"],
             title=publication_json["metadata"]["title"],
             node=publication.node,
@@ -29,7 +30,7 @@ class ZenodoPublicationConnector(PublicationConnector):
         )
         return result
 
-    def fetch_all(self, limit: int | None) -> Iterator[PublicationDescription]:
+    def fetch_all(self, limit: int | None) -> Iterator[OrmPublication]:
         url_data = "https://zenodo.org/api/records/"
         response = requests.get(url_data, params={"type": "publication"})
         response_json = response.json()
@@ -40,7 +41,7 @@ class ZenodoPublicationConnector(PublicationConnector):
                 detail=f"Error while fetching data from Zenodo: '{msg}'",
             )
         for publication_json in response_json["hits"]["hits"]:
-            yield PublicationDescription(
+            yield OrmPublication(
                 doi=publication_json["doi"],
                 title=publication_json["metadata"]["title"],
                 node=self.node_name,
