@@ -171,6 +171,14 @@ class EducationalResource(BaseModel):
     website_url: str = Field(max_length=500)
     date_modified: datetime | None
 
+    educational_role: EducationalRoleEnum
+    educational_level: EducationalLevelEnum
+    educatonal_type: EducationalTypeEnum
+
+    pace: PaceEnum
+    languages: list[LanguageEnum]
+    target_audience: list[TargetAudienceEnum]
+
     educational_use: str | List[str] = Field(
         description="The intended educational use of the resource, such as lecture, lab exercise"
         ", or homework assignment",
@@ -203,14 +211,7 @@ class EducationalResource(BaseModel):
 
     duration_minutes_and_hours: Optional[DurationMinutesHoursEnum]
     hours_per_week: Optional[HoursPerWeekEnum]
-    educational_role: EducationalRoleEnum
-    educational_level: EducationalLevelEnum
-    educatonal_type: EducationalTypeEnum
     country: Optional[CountryEnum]
-    pace: PaceEnum
-    languages: list[LanguageEnum]
-    target_audience: list[TargetAudienceEnum]
-
     technical_categories: Optional[list[str]]
     business_categories: Optional[list[str]]
     tags: Optional[list[str]]
