@@ -1,6 +1,7 @@
 from typing import Type
 
-from converters import publication_converter
+from converters import publication_converter_instance
+from converters.abstract_converter import AbstractConverter
 from database.model.publication import OrmPublication
 from routers.abstract_router import ResourceRouter, AIOD_CLASS, ORM_CLASS
 from schemas import AIoDPublication
@@ -24,5 +25,5 @@ class PublicationRouter(ResourceRouter[OrmPublication, AIoDPublication]):
         return OrmPublication
 
     @property
-    def converter(self):
-        return publication_converter
+    def converter(self) -> AbstractConverter[AIOD_CLASS, ORM_CLASS]:
+        return publication_converter_instance

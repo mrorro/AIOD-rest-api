@@ -8,11 +8,11 @@ from sqlalchemy import Engine, text, create_engine, select
 from sqlalchemy.orm import Session
 
 from connectors import DatasetConnector, PublicationConnector
-from converters import dataset_converter
+from converters import dataset_converter_instance
 from schemas import AIoDDataset
 from .model.base import Base
-from .model.publication import OrmPublication
 from .model.dataset import OrmDataset
+from .model.publication import OrmPublication
 
 
 def connect_to_database(
@@ -96,7 +96,9 @@ def populate_database(
         if only_if_empty and data_exists:
             return
 
-        orm_datasets = [dataset_converter.aiod_to_orm(session, dataset) for dataset in datasets]
+        orm_datasets = [
+            dataset_converter_instance.aiod_to_orm(session, dataset) for dataset in datasets
+        ]
         session.add_all(orm_datasets)
         session.add_all(publications)
         session.commit()

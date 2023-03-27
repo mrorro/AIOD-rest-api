@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from connectors import NodeName
+from converters.abstract_converter import AbstractConverter
 from database.model.base import Base
 
 
@@ -22,6 +23,19 @@ AIOD_CLASS = TypeVar("AIOD_CLASS", bound=BaseModel)
 
 
 class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
+    """
+    Abstract class for FastAPI resource router.
+
+    It creates the basic endpoints for each resource:
+    - GET /[resource]s/
+    - GET /[resource]s/{identifier}
+    - GET /nodes/{node_name}/[resource]s/
+    - GET /nodes/{node_name}/[resource]s/{identifier}
+    - POST /[resource]s
+    - PUT /[resource]s/{identifier}
+    - DELETE /[resource]s/{identifier}
+    """
+
     @property
     @abc.abstractmethod
     def resource_name(self) -> str:
@@ -34,7 +48,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
 
     @property
     @abc.abstractmethod
-    def converter(self):
+    def converter(self) -> AbstractConverter[AIOD_CLASS, ORM_CLASS]:
         pass
 
     @property
@@ -47,7 +61,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
     def orm_class(self) -> Type[ORM_CLASS]:
         pass
 
-    def add_routes(self, engine: Engine, url_prefix: str):
+    def create(self, engine: Engine, url_prefix: str) -> APIRouter:
         router = APIRouter()
 
         router.add_api_route(
@@ -189,9 +203,9 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
                                 == resource.node_specific_identifier,  # type: ignore
                             )
                         )
-                        # TODO: removing the these type: ignores, by letting the ORM classes inherit
-                        # from a class that contains node and node_specific_identifier (e.g.
-                        # AiResource).
+                        # TODO: removing these "type: ignore"s, by letting the ORM classes inherit
+                        #  from a class that contains node and node_specific_identifier (e.g.
+                        #  AiResource).
                         existing_resource = session.scalars(query).first()
                         raise HTTPException(
                             status_code=409,
