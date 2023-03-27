@@ -130,8 +130,8 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
                 with Session(engine) as session:
                     query = select(self.orm_class).offset(pagination.offset).limit(pagination.limit)
                     return [
-                        self.converter.orm_to_aiod(dataset)
-                        for dataset in session.scalars(query).all()
+                        self.converter.orm_to_aiod(resource)
+                        for resource in session.scalars(query).all()
                     ]
             except Exception as e:
                 raise _wrap_as_http_exception(e)
@@ -150,8 +150,8 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
                         .limit(pagination.limit)
                     )
                     return [
-                        self.converter.orm_to_aiod(dataset)
-                        for dataset in session.scalars(query).all()
+                        self.converter.orm_to_aiod(resource)
+                        for resource in session.scalars(query).all()
                     ]
             except Exception as e:
                 raise _wrap_as_http_exception(e)
@@ -163,8 +163,8 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             f"""Retrieve all meta-data for a specific {self.resource_name}."""
             try:
                 with Session(engine) as session:
-                    dataset = self._retrieve_resource(session, identifier)
-                    return self.converter.orm_to_aiod(dataset)
+                    resource = self._retrieve_resource(session, identifier)
+                    return self.converter.orm_to_aiod(resource)
             except Exception as e:
                 raise _wrap_as_http_exception(e)
 
@@ -176,8 +176,8 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             node-specific-identifier."""
             try:
                 with Session(engine) as session:
-                    dataset = self._retrieve_resource(session, identifier, node=node)
-                    return self.converter.orm_to_aiod(dataset)
+                    resource = self._retrieve_resource(session, identifier, node=node)
+                    return self.converter.orm_to_aiod(resource)
             except Exception as e:
                 raise _wrap_as_http_exception(e)
 
@@ -190,8 +190,8 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             f"""Register a {self.resource_name} with AIoD."""
             try:
                 with Session(engine) as session:
-                    dataset_orm = self.converter.aiod_to_orm(session, resource)
-                    session.add(dataset_orm)
+                    resource = self.converter.aiod_to_orm(session, resource)
+                    session.add(resource)
                     try:
                         session.commit()
                     except IntegrityError:
@@ -212,7 +212,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
                             detail=f"There already exists a {self.resource_name} with the same "
                             f"node and name, with id={existing_resource.id}.",
                         )
-                    return self.converter.orm_to_aiod(dataset_orm)
+                    return self.converter.orm_to_aiod(resource)
             except Exception as e:
                 raise _wrap_as_http_exception(e)
 
@@ -226,12 +226,12 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             try:
                 with Session(engine) as session:
                     self._retrieve_resource(session, identifier)  # Raise error if it does not exist
-                    dataset_orm = self.converter.aiod_to_orm(session, resource)
-                    dataset_orm.id = identifier
-                    session.merge(dataset_orm)
+                    resource_orm = self.converter.aiod_to_orm(session, resource)
+                    resource_orm.id = identifier
+                    session.merge(resource_orm)
                     session.commit()
-                    new_dataset = self._retrieve_resource(session, identifier)
-                    return self.converter.orm_to_aiod(new_dataset)
+                    new_resource = self._retrieve_resource(session, identifier)
+                    return self.converter.orm_to_aiod(new_resource)
             except Exception as e:
                 raise _wrap_as_http_exception(e)
 
@@ -262,8 +262,8 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
                     self.orm_class.node == node,
                 )
             )
-        dataset = session.scalars(query).first()
-        if not dataset:
+        resource = session.scalars(query).first()
+        if not resource:
             if node is None:
                 msg = f"{self.resource_name.capitalize()} '{identifier}' not found in the database."
             else:
@@ -272,7 +272,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
                     "the database."
                 )
             raise HTTPException(status_code=404, detail=msg)
-        return dataset
+        return resource
 
 
 def _wrap_as_http_exception(exception: Exception) -> HTTPException:

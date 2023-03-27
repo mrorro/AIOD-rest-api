@@ -1,8 +1,6 @@
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 
-from connectors.zenodo.zenodo_publication_connector import (
-    ZenodoPublicationConnector,
-)  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
+from connectors.zenodo.zenodo_publication_connector import ZenodoPublicationConnector
 
 from .abstract.dataset_connector import DatasetConnector  # noqa:F401
 from .abstract.publication_connector import PublicationConnector  # noqa:F401

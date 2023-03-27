@@ -8,10 +8,8 @@ which should be a separate object inside a separate table in the database (so th
 search for all datasets having the same keyword). In the external schema, a set of strings is
 easier.
 """
-
-
 from datetime import datetime
-from typing import Set, List
+from typing import Set, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -88,3 +86,24 @@ class AIoDDataset(BaseModel):
     distributions: List[AIoDDistribution] = []
     keywords: Set[str] = Field(default_factory=set)
     measured_values: List[AIoDMeasurementValue] = Field(default_factory=list)
+
+
+class AIoDNews(BaseModel):
+    """The complete metadata for news entity"""
+
+    id: int | None
+
+    title: str = Field(max_length=500)
+    date_modified: datetime
+    body: str = Field(max_length=2000)
+    headline: str = Field(max_length=500)
+    alternative_headline: Optional[str] = Field(max_length=500)
+    section: str = Field(max_length=500)
+    word_count: int
+
+    media: Optional[list[str]]
+    source: Optional[str]
+
+    news_categories: Set[str] = Field(default_factory=set)
+    business_categories: Set[str] = Field(default_factory=set)
+    tags: Set[str] = Field(default_factory=set)
