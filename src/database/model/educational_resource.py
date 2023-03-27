@@ -123,34 +123,34 @@ class EducationalResource(Base):
     business_categories = relationship(
         "BusinessCategory",
         secondary=educational_resource_business_category_relationship,
-        backref="business_categories",
+        backref="educational_resource_business_categories",
         passive_deletes=True,
     )
 
     technical_categories = relationship(
         "TechnicalCategory",
         secondary=educational_resource_technical_category_relationship,
-        backref="technical_categories",
+        backref="educational_resource_technical_categories",
         passive_deletes=True,
     )
 
     tags = relationship(
         "Tag",
         secondary=educational_resource_tag_relationship,
-        backref="tags",
+        backref="educational_resource_tags",
         passive_deletes=True,
     )
 
     target_audience = relationship(
         "TargetAudience",
         secondary=educational_resource_target_audience_relationship,
-        backref="target_audience",
+        backref="educational_resource_target_audience",
         passive_deletes=True,
     )
 
     languages = relationship(
         "Language",
         secondary=educational_resource_language_relationship,
-        backref="languages",
+        backref="educational_resource_languages",
         passive_deletes=True,
     )

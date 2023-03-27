@@ -83,7 +83,7 @@ class News(Base):
     business_categories = relationship(
         "BusinessCategory",
         secondary=news_business_category_relationship,
-        backref="business_categories",
+        backref="news_business_categories",
         passive_deletes=True,
     )
     news_categories = relationship(
@@ -93,9 +93,9 @@ class News(Base):
         passive_deletes=True,
     )
     tags = relationship(
-        "Tag", secondary=news_tag_relationship, backref="news", passive_deletes=True
+        "Tag", secondary=news_tag_relationship, backref="news_tags", passive_deletes=True
     )
 
     media = relationship(
-        "Media", secondary=news_media_relationship, backref="news", passive_deletes=True
+        "Media", secondary=news_media_relationship, backref="news_media", passive_deletes=True
     )
