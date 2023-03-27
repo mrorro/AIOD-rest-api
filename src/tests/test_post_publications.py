@@ -42,7 +42,8 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["node"] == "zenodo"
     assert response_json["node_specific_identifier"] == "2"
     assert response_json["id"] == 4
-    assert len(response_json) == 6
+    assert len(response_json["datasets"]) == 0
+    assert len(response_json) == 7
 
 
 @pytest.mark.parametrize(

@@ -39,6 +39,10 @@ class AIoDPublication(BaseModel):
     id: int | None
     title: str = Field(max_length=250)
     url: str | None = Field(max_length=250)
+    datasets: Set[str] = Field(
+        description="Identifiers of datasets that are connected to this publication",
+        default_factory=list,
+    )
 
 
 class AIoDDataset(BaseModel):

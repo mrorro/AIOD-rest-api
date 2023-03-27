@@ -14,9 +14,8 @@ from tests.testutils.paths import path_test_resources
 ZENODO_URL = "https://zenodo.org/api"
 
 
-@pytest.mark.skip(reason="TODO[arejula27]: implement")
+@pytest.mark.skip(reason="TODO[arejula27]: implement, similar to the dataset connector test?")
 def test_happy_path(client: TestClient, engine: Engine):
-
     publication_description = OrmPublication(
         title="Student-Centred Studio Environments: A Deep Dive into Architecture Students' Needs",
         doi="10.5281/zenodo.7712947",
@@ -35,7 +34,7 @@ def test_happy_path(client: TestClient, engine: Engine):
     # assert response_json["title"] == expected_info["metadata"]["title"]
 
 
-@pytest.mark.skip(reason="TODO[arejula27]: implement")
+@pytest.mark.skip(reason="TODO[arejula27]: implement, similar to the dataset connector test?")
 def test_publication_not_found_in_local_db(client: TestClient, engine: Engine):
 
     publication_description = OrmPublication(
@@ -56,7 +55,7 @@ def test_publication_not_found_in_local_db(client: TestClient, engine: Engine):
     assert response.json()["detail"] == "Publication '2' of 'zenodo' not found in the database."
 
 
-@pytest.mark.skip(reason="TODO[arejula27]: implement")
+@pytest.mark.skip(reason="TODO[arejula27]: implement, similar to the dataset connector test?")
 def test_publication_not_found_in_zenodo(client: TestClient, engine: Engine):
     publication_description = OrmPublication(
         title="Student-Centred Studio Environments: A Deep Dive into Architecture Students' Needs",

@@ -12,6 +12,6 @@ docker run \
 	-v $SRC_PATH:/app \
 	ai4eu_server_demo \
 	--rebuild-db always \
-	--populate-datasets openml huggingface \
+	--populate-datasets example \
 	--populate-publications example \
 	--url-prefix ""

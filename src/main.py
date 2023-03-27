@@ -10,19 +10,16 @@ import traceback
 from typing import Dict
 
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
-from sqlalchemy import select, Engine, and_, delete, update
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select, Engine, and_
 from sqlalchemy.orm import Session
 
 import connectors
-import schemas
+import routers
 from connectors import NodeName
-from converters import dataset_converter
-from database.model.publication import OrmPublication
 from database.model.dataset import OrmDataset
+from database.model.publication import OrmPublication
 from database.setup import connect_to_database, populate_database
 
 
@@ -130,7 +127,17 @@ def _retrieve_dataset(session, identifier, node=None) -> OrmDataset:
 
 
 def _retrieve_publication(session, identifier, node=None) -> OrmPublication:
-    query = select(OrmPublication).where(OrmPublication.id == identifier)
+    if node is None:
+        query = select(OrmDataset).where(OrmDataset.id == identifier)
+    else:
+        if node not in {n.name for n in NodeName}:
+            raise HTTPException(status_code=400, detail=f"Node '{node}' not recognized.")
+        query = select(OrmDataset).where(
+            and_(
+                OrmDataset.node_specific_identifier == identifier,
+                OrmDataset.node == node,
+            )
+        )
     publication = session.scalars(query).first()
     if not publication:
         if node is None:
@@ -159,6 +166,8 @@ def _wrap_as_http_exception(exception: Exception) -> HTTPException:
 
 def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
     """Add routes to the FastAPI application"""
+    for router in routers.routers:
+        app.include_router(router.add_routes(engine, url_prefix))
 
     @app.get(url_prefix + "/", response_class=HTMLResponse)
     def home() -> str:
@@ -175,247 +184,10 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         </html>
         """
 
-    # Multiple endpoints share the same set of parameters, we define a class for easy re-use of
-    # dependencies:
-    # https://fastapi.tiangolo.com/tutorial/dependencies/classes-as-dependencies/?h=depends#classes-as-dependencies # noqa
-    class Pagination(BaseModel):
-        offset: int = 0
-        limit: int = 100
-
-    @app.get(url_prefix + "/datasets/", response_model_exclude_none=True)
-    def list_datasets(
-        pagination: Pagination = Depends(Pagination),
-    ) -> list[schemas.AIoDDataset]:
-        """Lists all datasets registered with AIoD.
-
-        Query Parameter
-        ------
-         * nodes, list[str], optional: if provided, list only datasets from the given node.
-        """
-        # For additional information on querying through SQLAlchemy's ORM:
-        # https://docs.sqlalchemy.org/en/20/orm/queryguide/index.html
-        try:
-            with Session(engine) as session:
-                query = select(OrmDataset).offset(pagination.offset).limit(pagination.limit)
-                return [
-                    dataset_converter.orm_to_aiod(dataset)
-                    for dataset in session.scalars(query).all()
-                ]
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
-
-    @app.get(url_prefix + "/datasets/{identifier}", response_model_exclude_none=True)
-    def get_dataset(identifier: str) -> schemas.AIoDDataset:
-        """Retrieve all meta-data for a specific dataset."""
-        try:
-            with Session(engine) as session:
-                dataset = _retrieve_dataset(session, identifier)
-                return dataset_converter.orm_to_aiod(dataset)
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
-
     @app.get(url_prefix + "/nodes")
     def get_nodes() -> list:
         """Retrieve information about all known nodes"""
         return list(NodeName)
-
-    @app.get(url_prefix + "/nodes/{node}/datasets", response_model_exclude_none=True)
-    def get_node_datasets(
-        node: str, pagination: Pagination = Depends(Pagination)
-    ) -> list[schemas.AIoDDataset]:
-        """Retrieve all meta-data of the datasets of a single node."""
-        try:
-            with Session(engine) as session:
-                query = (
-                    select(OrmDataset)
-                    .where(OrmDataset.node == node)
-                    .offset(pagination.offset)
-                    .limit(pagination.limit)
-                )
-                return [
-                    dataset_converter.orm_to_aiod(dataset)
-                    for dataset in session.scalars(query).all()
-                ]
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
-
-    @app.get(url_prefix + "/nodes/{node}/datasets/{identifier}", response_model_exclude_none=True)
-    def get_node_dataset(node: str, identifier: str) -> schemas.AIoDDataset:
-        """Retrieve all meta-data for a specific dataset identified by the
-        node-specific-identifier."""
-        try:
-            with Session(engine) as session:
-                dataset = _retrieve_dataset(session, identifier, node)
-                return dataset_converter.orm_to_aiod(dataset)
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
-
-    @app.post(url_prefix + "/datasets/", response_model_exclude_none=True)
-    def register_dataset(dataset: schemas.AIoDDataset) -> schemas.AIoDDataset:
-        """Register a dataset with AIoD."""
-        try:
-            with Session(engine) as session:
-                dataset_orm = dataset_converter.aiod_to_orm(session, dataset)
-                session.add(dataset_orm)
-                try:
-                    session.commit()
-                except IntegrityError:
-                    session.rollback()
-                    query = select(OrmDataset).where(
-                        and_(
-                            OrmDataset.node == dataset.node,
-                            OrmDataset.name == dataset.name,
-                        )
-                    )
-                    existing_dataset = session.scalars(query).first()
-                    raise HTTPException(
-                        status_code=409,
-                        detail="There already exists a dataset with the same "
-                        f"node and name, with id={existing_dataset.id}.",
-                    )
-                return dataset_converter.orm_to_aiod(dataset_orm)
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
-
-    @app.put(url_prefix + "/datasets/{identifier}", response_model_exclude_none=True)
-    def put_dataset(identifier: str, dataset: schemas.AIoDDataset) -> schemas.AIoDDataset:
-        """Update an existing dataset."""
-        try:
-            with Session(engine) as session:
-                _retrieve_dataset(session, identifier)  # Raise error if it does not exist
-                dataset_orm = dataset_converter.aiod_to_orm(session, dataset)
-                dataset_orm.id = identifier
-                session.merge(dataset_orm)
-                session.commit()
-                new_dataset = _retrieve_dataset(session, identifier)
-                return dataset_converter.orm_to_aiod(new_dataset)
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
-
-    @app.delete(url_prefix + "/datasets/{identifier}")
-    def delete_dataset(identifier: str):
-        try:
-            with Session(engine) as session:
-                _retrieve_dataset(session, identifier)  # Raise error if it does not exist
-
-                statement = delete(OrmDataset).where(OrmDataset.id == identifier)
-                session.execute(statement)
-                session.commit()
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
-
-    @app.get(url_prefix + "/publications")
-    def list_publications(pagination: Pagination = Depends(Pagination)) -> list[dict]:
-        """Lists all publications registered with AIoD."""
-        try:
-            with Session(engine) as session:
-                return [
-                    publication.to_dict(depth=0)
-                    for publication in session.scalars(
-                        select(OrmPublication).offset(pagination.offset).limit(pagination.limit)
-                    ).all()
-                ]
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
-
-    @app.post(url_prefix + "/publications")
-    def register_publication(publication: schemas.AIoDPublication) -> dict:
-        """Add a publication."""
-        try:
-            with Session(engine) as session:
-                new_publication = OrmPublication(
-                    title=publication.title,
-                    doi=publication.doi,
-                    url=publication.url,
-                    node=publication.node,
-                    node_specific_identifier=publication.node_specific_identifier,
-                )
-                session.add(new_publication)
-                try:
-                    session.commit()
-                except IntegrityError:
-                    session.rollback()
-                    query = select(OrmPublication).where(
-                        and_(
-                            OrmPublication.node_specific_identifier
-                            == publication.node_specific_identifier,
-                            OrmPublication.node == publication.node,
-                        )
-                    )
-                    existing_dataset = session.scalars(query).first()
-                    raise HTTPException(
-                        status_code=409,
-                        detail="There already exists a publication with the same "
-                        f"node and name, with id={existing_dataset.id}.",
-                    )
-                return new_publication.to_dict(depth=1)
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
-
-    @app.get(url_prefix + "/publications/{identifier}")
-    def get_publication(identifier: str) -> dict:
-        """Retrieves all information for a specific publication registered with AIoD."""
-        try:
-            with Session(engine) as session:
-                publication = _retrieve_publication(session, identifier)
-                return publication.to_dict(depth=1)
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
-
-    @app.put(url_prefix + "/publications/{identifier}")
-    def update_publication(identifier: str, publication: schemas.AIoDPublication) -> dict:
-        """Update this publication"""
-        try:
-            with Session(engine) as session:
-                _retrieve_publication(session, identifier)  # Raise error if dataset does not exist
-                statement = (
-                    update(OrmPublication)
-                    .values(
-                        title=publication.title,
-                        doi=publication.doi,
-                        url=publication.url,
-                        node=publication.node,
-                        node_specific_identifier=publication.node_specific_identifier,
-                    )
-                    .where(OrmPublication.id == identifier)
-                )
-                session.execute(statement)
-                session.commit()
-                return _retrieve_publication(session, identifier).to_dict(depth=1)
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
-
-    @app.delete(url_prefix + "/publications/{identifier}")
-    def delete_publication(identifier: str):
-        """Delete this publication from AIoD."""
-        try:
-            with Session(engine) as session:
-                _retrieve_publication(session, identifier)  # Raise error if it does not exist
-
-                statement = delete(OrmPublication).where(OrmPublication.id == identifier)
-                session.execute(statement)
-                session.commit()
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
-
-    @app.get(url_prefix + "/nodes/{node}/publications")
-    def get_node_publications(
-        node: str, pagination: Pagination = Depends(Pagination)
-    ) -> list[dict]:
-        """Retrieve all meta-data of the publications of a single node."""
-        raise HTTPException(status_code=501, detail="Unimplemented error")
-        # TODO: Zenodo API doesnt work well so this endpoint will be implemented in the future
-
-    @app.get(url_prefix + "/nodes/{node}/publications/{identifier}")
-    def get_node_publication(node: str, identifier: str) -> dict:
-        """Retrieve all meta-data for a specific publication identified by the
-        node-specific-identifier."""
-        raise NotImplementedError("TODO[arejula27]: implement")
-        # try:
-        #     publication_meta = connector.fetch(identifier)
-        #     return publication_meta.dict()
-        # except Exception as e:
-        #     raise _wrap_as_http_exception(e)
 
     @app.get(url_prefix + "/datasets/{identifier}/publications")
     def list_publications_related_to_dataset(identifier: str) -> list[dict]:
@@ -424,40 +196,6 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 dataset = _retrieve_dataset(session, identifier)
                 return [publication.to_dict(depth=0) for publication in dataset.citations]
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
-
-    @app.post(url_prefix + "/datasets/{dataset_id}/publications/{publication_id}")
-    def relate_publication_to_dataset(dataset_id: str, publication_id: str):
-        try:
-            with Session(engine) as session:
-                dataset = _retrieve_dataset(session, dataset_id)
-                publication = _retrieve_publication(session, publication_id)
-                if publication in dataset.citations:
-                    raise HTTPException(
-                        status_code=409,
-                        detail=f"Dataset {dataset_id} is already linked to publication "
-                        f"{publication_id}.",
-                    )
-                dataset.citations.append(publication)
-                session.commit()
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
-
-    @app.delete(url_prefix + "/datasets/{dataset_id}/publications/{publication_id}")
-    def delete_relation_publication_to_dataset(dataset_id: str, publication_id: str):
-        try:
-            with Session(engine) as session:
-                dataset = _retrieve_dataset(session, dataset_id)
-                publication = _retrieve_publication(session, publication_id)
-                if publication not in dataset.citations:
-                    raise HTTPException(
-                        status_code=404,
-                        detail=f"Dataset {dataset_id} is not linked to publication "
-                        f"{publication_id}.",
-                    )
-                dataset.citations = [p for p in dataset.citations if p != publication]
-                session.commit()
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
