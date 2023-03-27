@@ -659,7 +659,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                     is_accessible_for_free=educational_resource.is_accessible_for_free,
                     duration_in_years=educational_resource.duration_in_years,
                     pace=educational_resource.pace,
-                    time_required=educational_resource.time_required
+                    time_required=educational_resource.time_required,
                 )
 
                 new_educational_resource.tags = tags
@@ -749,6 +749,8 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                         country=educational_resource.country,
                         is_accessible_for_free=educational_resource.is_accessible_for_free,
                         duration_in_years=educational_resource.duration_in_years,
+                        pace=educational_resource.pace,
+                        time_required=educational_resource.time_required,
                     )
                     .where(EducationalResource.id == identifier)
                 )
