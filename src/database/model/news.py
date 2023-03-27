@@ -1,8 +1,8 @@
 from sqlite3 import Date
-import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
-from sqlalchemy.sql import func
 from sqlalchemy import ForeignKey, Table, Column, String, Integer, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
+
 from database.model.base import Base
 
 news_business_category_relationship = Table(
