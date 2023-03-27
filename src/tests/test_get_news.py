@@ -58,9 +58,9 @@ def test_happy_path_for_all(client: TestClient, engine: Engine):
     assert {ds["headline"] for ds in response_json} == {"h1", "h2", "h3"}
     assert {ds["source"] for ds in response_json} == {"s1", "s2", "s3"}
     assert {ds["date_modified"] for ds in response_json} == {
-        "2023-03-21",
-        "2023-03-21",
-        "2023-03-21",
+        "2023-03-21T00:00:00",
+        "2023-03-21T00:00:00",
+        "2023-03-21T00:00:00",
     }
     assert {ds["alternative_headline"] for ds in response_json} == {"ah1", "ah2", "ah3"}
     assert {ds["word_count"] for ds in response_json} == {10, 10, 10}
