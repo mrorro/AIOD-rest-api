@@ -514,7 +514,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             raise _wrap_as_http_exception(e)
 
     @app.get(url_prefix + "/news")
-    def list_all_news(pagination: Pagination = Depends(Pagination)) -> list[News]:
+    def list_all_news(pagination: Pagination = Depends(Pagination)) -> list[schemas.News]:
         """Lists all news registered with AIoD."""
         try:
             with Session(engine) as session:
@@ -648,9 +648,13 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                     accessibility_api=educational_resource.accessibility_api,
                     accessibility_control=educational_resource.accessibility_control,
                     access_mode=educational_resource.access_mode,
+                    access_mode_sufficient=educational_resource.access_mode_sufficient,
                     access_restrictions=educational_resource.access_restrictions,
                     citation=educational_resource.citation,
+                    typical_age_range=educational_resource.typical_age_range,
                     version=educational_resource.version,
+                    number_of_weeks=educational_resource.number_of_weeks,
+                    credits=educational_resource.credits,
                     field_prerequisites=educational_resource.field_prerequisites,
                     short_summary=educational_resource.short_summary,
                     duration_minutes_and_hours=educational_resource.duration_minutes_and_hours,
@@ -681,7 +685,9 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             raise _wrap_as_http_exception(e)
 
     @app.get(url_prefix + "/educational_resource")
-    def list_all_educational_resources(pagination: Pagination = Depends(Pagination)) -> list[News]:
+    def list_all_educational_resources(
+        pagination: Pagination = Depends(Pagination),
+    ) -> list[schemas.EducationalResource]:
         """Lists all educational resources registered with AIoD."""
         try:
             with Session(engine) as session:

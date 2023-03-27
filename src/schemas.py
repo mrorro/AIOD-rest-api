@@ -184,7 +184,6 @@ class EducationalResource(BaseModel):
         ", or homework assignment",
         default_factory=str,
     )
-    website_link: str = Field(max_length=200)
     typical_age_range: str | None = Field(max_length=100)
 
     interactivity_type: str | None = Field(max_length=100)
