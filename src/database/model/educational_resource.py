@@ -112,7 +112,7 @@ class EducationalResource(Base):
     country: Mapped[str] = mapped_column(String(500), nullable=True)
 
     is_accessible_for_free: Mapped[Boolean] = mapped_column(Boolean, nullable=True)
-    duration_in_years: Mapped[Boolean] = mapped_column(Boolean, nullable=True)
+    duration_in_years: Mapped[int] = mapped_column(nullable=True)
 
     time_required: Mapped[Interval] = mapped_column(Interval, nullable=True)
 

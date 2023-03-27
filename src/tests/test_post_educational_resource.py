@@ -1,5 +1,8 @@
 import typing
-from database.model.base import Language, TargetAudience  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
+from database.model.base import (
+    Language,
+    TargetAudience,
+)  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 
 import pytest
 from sqlalchemy import Engine
@@ -20,7 +23,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             body="str",
             website_url="str",
             educational_role="Student",
-            educational_level="Advanced" ,
+            educational_level="Advanced",
             educatonal_type="MOOC",
             interactivity_type="str",
             accessibility_api="str",
@@ -37,15 +40,15 @@ def test_happy_path(client: TestClient, engine: Engine):
             is_accessible_for_free=True,
             duration_in_years=2,
             pace="Full-time",
-            time_required=0
-        ),    
+            time_required=datetime.today() - datetime.today(),
+        ),
         EducationalResource(
             title="str",
             date_modified=datetime.strptime("2023-03-21", date_format),
             body="str",
             website_url="str",
             educational_role="Student",
-            educational_level="Advanced" ,
+            educational_level="Advanced",
             educatonal_type="MOOC",
             interactivity_type="str",
             accessibility_api="str",
@@ -62,16 +65,15 @@ def test_happy_path(client: TestClient, engine: Engine):
             is_accessible_for_free=True,
             duration_in_years=2,
             pace="Full-time",
-            time_required=0
-        )
-       
+            time_required=datetime.today() - datetime.today(),
+        ),
     ]
     language = Language(language="International")
     audience = TargetAudience(audience="Working professionals")
 
     with Session(engine) as session:
         # Populate database
-        # session.add_all(educational_resources)
+        session.add_all(educational_resources)
         session.add(language)
         session.add(audience)
         session.commit()
@@ -93,7 +95,6 @@ def test_happy_path(client: TestClient, engine: Engine):
             "access_mode_sufficient": "string",
             "access_restrictions": "string",
             "is_accessible_for_free": "true",
-            "time_required": 0,
             "citation": "string",
             "version": "string",
             "credits": "true",
@@ -108,13 +109,9 @@ def test_happy_path(client: TestClient, engine: Engine):
             "educatonal_type": "Distance Learning",
             "country": "Sweeden",
             "pace": "Full-time",
-            "languages": [
-                "International"
-            ],
-            "target_audience": [
-                "Working professionals"
-            ]
-          
+            "languages": ["International"],
+            "target_audience": ["Working professionals"],
+            "time_required": 0,
         },
     )
     assert response.status_code == 200
@@ -122,10 +119,7 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["title"] == "string"
     assert response_json["body"] == "string"
     assert response_json["accessibility_control"] == "string"
-    assert response_json["id"] == 1
-    print(len(response_json))
-
-
+    assert response_json["id"] == 3
 
 
 @pytest.mark.parametrize(
@@ -145,7 +139,7 @@ def test_unicode(client: TestClient, engine: Engine, title):
         "/educational_resource",
         json={
             "title": title,
-           "body": "string",
+            "body": "string",
             "website_url": "string",
             "date_modified": "2023-03-27T08:49:40.261Z",
             "educational_use": "string",
@@ -158,7 +152,6 @@ def test_unicode(client: TestClient, engine: Engine, title):
             "access_mode_sufficient": "string",
             "access_restrictions": "string",
             "is_accessible_for_free": "true",
-            "time_required": 0,
             "citation": "string",
             "version": "string",
             "credits": "true",
@@ -173,17 +166,16 @@ def test_unicode(client: TestClient, engine: Engine, title):
             "educatonal_type": "Distance Learning",
             "country": "Sweeden",
             "pace": "Full-time",
-            "languages": [
-                "International"
-            ],
-            "target_audience": [
-                "Working professionals"
-            ]
+            "languages": ["International"],
+            "target_audience": ["Working professionals"],
+            "time_required": 0,
         },
     )
     assert response.status_code == 200
     response_json = response.json()
     assert response_json["title"] == title
+
+
 @pytest.mark.parametrize(
     "field",
     [
@@ -195,7 +187,7 @@ def test_unicode(client: TestClient, engine: Engine, title):
     ],
 )
 def test_missing_value(client: TestClient, engine: Engine, field: str):
-    data={
+    data = {
         "title": "string",
         "body": "string",
         "website_url": "string",
@@ -210,7 +202,6 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "access_mode_sufficient": "string",
         "access_restrictions": "string",
         "is_accessible_for_free": "true",
-        "time_required": 0,
         "citation": "string",
         "version": "string",
         "credits": "true",
@@ -225,12 +216,9 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "educatonal_type": "Distance Learning",
         "country": "Sweeden",
         "pace": "Full-time",
-        "languages": [
-            "International"
-        ],
-        "target_audience": [
-            "Working professionals"
-        ]
+        "languages": ["International"],
+        "target_audience": ["Working professionals"],
+        "time_required": 0,
     }
     del data[field]
     response = client.post("/educational_resource", json=data)
@@ -238,7 +226,6 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
     assert response.json()["detail"] == [
         {"loc": ["body", field], "msg": "field required", "type": "value_error.missing"}
     ]
-
 
 
 @pytest.mark.parametrize(
@@ -252,7 +239,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
     ],
 )
 def test_null_value(client: TestClient, engine: Engine, field: str):
-    data={
+    data = {
         "title": "string",
         "body": "string",
         "website_url": "string",
@@ -267,7 +254,6 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "access_mode_sufficient": "string",
         "access_restrictions": "string",
         "is_accessible_for_free": "true",
-        "time_required": 0,
         "citation": "string",
         "version": "string",
         "credits": "true",
@@ -282,12 +268,9 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "educatonal_type": "Distance Learning",
         "country": "Sweeden",
         "pace": "Full-time",
-        "languages": [
-            "International"
-        ],
-        "target_audience": [
-            "Working professionals"
-        ]
+        "languages": ["International"],
+        "target_audience": ["Working professionals"],
+        "time_required": 0,
     }
     data[field] = None
     response = client.post("/educational_resource", json=data)
