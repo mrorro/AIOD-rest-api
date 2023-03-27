@@ -98,12 +98,15 @@ class EducationalResource(Base):
 
     # optional fields
     interactivity_type: Mapped[str] = mapped_column(String(500), nullable=True)
+    typical_age_range: Mapped[str] = mapped_column(String(500), nullable=True)
     accessibility_api: Mapped[str] = mapped_column(String(500), nullable=True)
     accessibility_control: Mapped[str] = mapped_column(String(500), nullable=True)
     access_mode: Mapped[str] = mapped_column(String(500), nullable=True)
+    access_mode_sufficient: Mapped[str] = mapped_column(String(500), nullable=True)
     access_restrictions: Mapped[str] = mapped_column(String(500), nullable=True)
     citation: Mapped[str] = mapped_column(String(500), nullable=True)
     version: Mapped[str] = mapped_column(String(500), nullable=True)
+    number_of_weeks: Mapped[int] = mapped_column(nullable=True)
     field_prerequisites: Mapped[str] = mapped_column(String(500), nullable=True)
     short_summary: Mapped[str] = mapped_column(String(500), nullable=True)
 
@@ -112,6 +115,7 @@ class EducationalResource(Base):
     country: Mapped[str] = mapped_column(String(500), nullable=True)
 
     is_accessible_for_free: Mapped[Boolean] = mapped_column(Boolean, nullable=True)
+    credits: Mapped[Boolean] = mapped_column(Boolean, nullable=True)
     duration_in_years: Mapped[int] = mapped_column(nullable=True)
 
     time_required: Mapped[Interval] = mapped_column(Interval, nullable=True)
