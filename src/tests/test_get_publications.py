@@ -7,12 +7,8 @@ from database.model.publication import OrmPublication
 
 def test_happy_path(client: TestClient, engine: Engine):
     publications = [
-        OrmPublication(
-            title="Title 1", doi="doi1", node="zenodo", node_specific_identifier="1"
-        ),
-        OrmPublication(
-            title="Title 2", doi="doi2", node="zenodo", node_specific_identifier="2"
-        ),
+        OrmPublication(title="Title 1", doi="doi1", node="zenodo", node_specific_identifier="1"),
+        OrmPublication(title="Title 2", doi="doi2", node="zenodo", node_specific_identifier="2"),
     ]
     with Session(engine) as session:
         # Populate database

@@ -8,7 +8,6 @@ from database.model.publication import OrmPublication
 from schemas import AIoDPublication
 
 
-
 class ZenodoPublicationConnector(PublicationConnector):
     def fetch(self, publication: OrmPublication) -> AIoDPublication:
         identifier = publication.node_specific_identifier

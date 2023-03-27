@@ -28,11 +28,19 @@ def test_happy_path(client: TestClient, engine: Engine, publication_id: int):
         ),
     ]
     publications = [
-         OrmPublication(
-            title="Title 1", doi="doi1", node="zenodo", node_specific_identifier="1", datasets=datasets
+        OrmPublication(
+            title="Title 1",
+            doi="doi1",
+            node="zenodo",
+            node_specific_identifier="1",
+            datasets=datasets,
         ),
-         OrmPublication(
-            title="Title 2", doi="doi2", node="zenodo", node_specific_identifier="2", datasets=datasets
+        OrmPublication(
+            title="Title 2",
+            doi="doi2",
+            node="zenodo",
+            node_specific_identifier="2",
+            datasets=datasets,
         ),
     ]
     with Session(engine) as session:
@@ -65,9 +73,11 @@ def test_empty_db(client: TestClient, engine: Engine, publication_id):
 
 @pytest.mark.parametrize("publication_id", [-1, 2, 3])
 def test_publication_not_found(client: TestClient, engine: Engine, publication_id):
-    publications = [OrmPublication(
+    publications = [
+        OrmPublication(
             title="Title 1", doi="doi1", node="zenodo", node_specific_identifier="1", datasets=[]
-        )]
+        )
+    ]
     with Session(engine) as session:
         # Populate database
         session.add_all(publications)

@@ -328,8 +328,8 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                     doi=publication.doi,
                     url=publication.url,
                     node=publication.node,
-                    node_specific_identifier=publication.node_specific_identifier
-                    )
+                    node_specific_identifier=publication.node_specific_identifier,
+                )
                 session.add(new_publication)
                 try:
                     session.commit()
@@ -337,7 +337,8 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                     session.rollback()
                     query = select(OrmPublication).where(
                         and_(
-                            OrmPublication.node_specific_identifier == publication.node_specific_identifier,
+                            OrmPublication.node_specific_identifier
+                            == publication.node_specific_identifier,
                             OrmPublication.node == publication.node,
                         )
                     )
@@ -409,13 +410,12 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
     def get_node_publication(node: str, identifier: str) -> dict:
         """Retrieve all meta-data for a specific publication identified by the
         node-specific-identifier."""
-
-        try:
-
-            publication_meta = connector.fetch(identifier)
-            return publication_meta.dict()
-        except Exception as e:
-            raise _wrap_as_http_exception(e)
+        raise NotImplementedError("TODO[arejula27]: implement")
+        # try:
+        #     publication_meta = connector.fetch(identifier)
+        #     return publication_meta.dict()
+        # except Exception as e:
+        #     raise _wrap_as_http_exception(e)
 
     @app.get(url_prefix + "/datasets/{identifier}/publications")
     def list_publications_related_to_dataset(identifier: str) -> list[dict]:

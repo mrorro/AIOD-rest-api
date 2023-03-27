@@ -8,15 +8,13 @@ from starlette.testclient import TestClient
 from database.model.publication import OrmPublication
 
 
-
-
 @pytest.mark.parametrize(
     "identifier,title,url,doi,node,node_specific_identifier",
     [
-        (1, "NEW NAME","url1", "doi1", "zenodo", "1"),
-        (1, "pub1","url1", "doi1", "zenodo", "new-id"),
-        (1, "pub1","url1", "doi1", "other_node", "3"),
-        (3, "pub2","url3", "doi1", "other_node", "3"),
+        (1, "NEW NAME", "url1", "doi1", "zenodo", "1"),
+        (1, "pub1", "url1", "doi1", "zenodo", "new-id"),
+        (1, "pub1", "url1", "doi1", "other_node", "3"),
+        (3, "pub2", "url3", "doi1", "other_node", "3"),
     ],
 )
 def test_happy_path(
@@ -24,7 +22,7 @@ def test_happy_path(
     engine: Engine,
     identifier: int,
     title: str,
-    url:str,
+    url: str,
     doi: str,
     node: str,
     node_specific_identifier: str,
@@ -34,7 +32,7 @@ def test_happy_path(
         f"/publications/{identifier}",
         json={
             "title": title,
-            "url":url,
+            "url": url,
             "doi": doi,
             "node": node,
             "node_specific_identifier": node_specific_identifier,
@@ -104,15 +102,9 @@ def test_too_long_name(client: TestClient, engine: Engine):
 
 def _setup(engine):
     datasets = [
-        OrmPublication(
-            title="pub1", doi="doi1", node="zenodo", node_specific_identifier="1"
-        ),
-        OrmPublication(
-            title="pub1", doi="doi2", node="other", node_specific_identifier="1"
-        ),
-        OrmPublication(
-            title="pub2", doi="doi3", node="zenodo", node_specific_identifier="2"
-        ),
+        OrmPublication(title="pub1", doi="doi1", node="zenodo", node_specific_identifier="1"),
+        OrmPublication(title="pub1", doi="doi2", node="other", node_specific_identifier="1"),
+        OrmPublication(title="pub2", doi="doi3", node="zenodo", node_specific_identifier="2"),
     ]
     with Session(engine) as session:
         # Populate database

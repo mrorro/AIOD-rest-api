@@ -33,7 +33,7 @@ class AIoDPublication(BaseModel):
     """The complete metadata of a publication. For now, only a couple of fields are shown,
     we have to decide which fields to use."""
 
-    doi: str = Field(max_length=150)
+    doi: str | None = Field(max_length=150)
     node_specific_identifier: str = Field(max_length=250)
     node: str = Field(max_length=30)
     id: int | None

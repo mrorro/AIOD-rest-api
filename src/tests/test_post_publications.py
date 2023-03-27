@@ -14,10 +14,10 @@ def test_happy_path(client: TestClient, engine: Engine):
             title="pub1", doi="doi1", url="url1", node="zenodo", node_specific_identifier="1"
         ),
         OrmPublication(
-            title="pub1", doi="doi1",url="url1", node="other_node", node_specific_identifier="1"
+            title="pub1", doi="doi1", url="url1", node="other_node", node_specific_identifier="1"
         ),
         OrmPublication(
-            title="pub2", doi="doi2",url="url2", node="other_node", node_specific_identifier="2"
+            title="pub2", doi="doi2", url="url2", node="other_node", node_specific_identifier="2"
         ),
     ]
     with Session(engine) as session:
@@ -27,7 +27,13 @@ def test_happy_path(client: TestClient, engine: Engine):
 
     response = client.post(
         "/publications",
-        json={"title": "pub2", "doi": "doi2","url":"url2", "node": "zenodo", "node_specific_identifier": "2"},
+        json={
+            "title": "pub2",
+            "doi": "doi2",
+            "url": "url2",
+            "node": "zenodo",
+            "node_specific_identifier": "2",
+        },
     )
     assert response.status_code == 200
     response_json = response.json()
@@ -55,9 +61,7 @@ def test_unicode(client: TestClient, engine: Engine, title):
 
 def test_duplicated_publication(client: TestClient, engine: Engine):
     publications = [
-        OrmPublication(
-            title="pub1", doi="doi1", node="zenodo", node_specific_identifier="1"
-        )
+        OrmPublication(title="pub1", doi="doi1", node="zenodo", node_specific_identifier="1")
     ]
     with Session(engine) as session:
         # Populate database
@@ -75,7 +79,7 @@ def test_duplicated_publication(client: TestClient, engine: Engine):
 
 
 # Test if the api allows creating publications with not all fields
-@pytest.mark.parametrize("field", ["title", "node", "doi", "node_specific_identifier"])
+@pytest.mark.parametrize("field", ["title", "node", "node_specific_identifier"])
 def test_missing_value(client: TestClient, engine: Engine, field: str):
     data = {
         "title": "pub2",
@@ -91,7 +95,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
     ]
 
 
-@pytest.mark.parametrize("field", ["title", "doi", "node", "node_specific_identifier"])
+@pytest.mark.parametrize("field", ["title", "node", "node_specific_identifier"])
 def test_null_value(client: TestClient, engine: Engine, field: str):
     data = {
         "title": "pub2",
