@@ -625,8 +625,8 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                             )
                         target_audience.append(audience)
                 languages = []
-                if educational_resource.language:
-                    for la in educational_resource.language:
+                if educational_resource.languages:
+                    for la in educational_resource.languages:
                         query = select(Language).where(Language.language == la)
                         language = session.scalars(query).first()
                         if not language:
@@ -658,6 +658,8 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                     country=educational_resource.country,
                     is_accessible_for_free=educational_resource.is_accessible_for_free,
                     duration_in_years=educational_resource.duration_in_years,
+                    pace=educational_resource.pace,
+                    time_required=educational_resource.time_required
                 )
 
                 new_educational_resource.tags = tags
