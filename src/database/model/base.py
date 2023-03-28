@@ -57,7 +57,7 @@ class BusinessCategory(Base):
 
 
 class TechnicalCategory(Base):
-    """Any business category"""
+    """Any technical category"""
 
     __tablename__ = "technical_categories"
 
