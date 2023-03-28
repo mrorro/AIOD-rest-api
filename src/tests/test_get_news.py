@@ -65,7 +65,7 @@ def test_happy_path_for_all(client: TestClient, engine: Engine):
     assert {ds["alternative_headline"] for ds in response_json} == {"ah1", "ah2", "ah3"}
     assert {ds["word_count"] for ds in response_json} == {10, 10, 10}
     for ds in response_json:
-        assert len(ds) == 9
+        assert len(ds) == 13
 
 
 @pytest.mark.parametrize("news_id", [1, 2])
