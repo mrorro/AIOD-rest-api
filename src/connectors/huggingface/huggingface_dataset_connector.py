@@ -37,12 +37,20 @@ class HuggingFaceDatasetConnector(DatasetConnector):
                 if dataset.citation is not None:
                     parsed_citations = bibtexparser.loads(dataset.citation).entries
                     if len(parsed_citations) == 0:
-                        citations = [AIoDPublication(title=dataset.citation)]
+                        citations = [
+                            AIoDPublication(
+                                title=dataset.citation,
+                                node=self.node_name,
+                                node_specific_identifier=dataset.citation,
+                            )
+                        ]
                     elif len(parsed_citations) == 1:
                         citation = parsed_citations[0]
                         citations = [
                             AIoDPublication(
                                 title=citation["title"],
+                                node=self.node_name,
+                                node_specific_identifier=citation["ID"],
                                 url=citation["link"] if "link" in citation else None,
                             )
                         ]

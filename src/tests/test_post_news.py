@@ -7,13 +7,13 @@ from starlette.testclient import TestClient
 from datetime import datetime
 
 
-from database.model.news import News
+from database.model.news import OrmNews
 
 
 def test_happy_path(client: TestClient, engine: Engine):
     date_format = "%Y-%m-%d"
     news = [
-        News(
+        OrmNews(
             title="n1",
             body="b1",
             section="s1",
@@ -23,7 +23,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             alternative_headline="ah1",
             word_count=10,
         ),
-        News(
+        OrmNews(
             title="n2",
             body="b2",
             section="s2",
@@ -33,7 +33,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             alternative_headline="ah2",
             word_count=10,
         ),
-        News(
+        OrmNews(
             title="n3",
             body="b3",
             section="s3",
@@ -73,7 +73,7 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["alternative_headline"] == "ah1"
     assert response_json["word_count"] == 10
     assert response_json["id"] == 4
-    assert len(response_json) == 9
+    assert len(response_json) == 12
 
 
 @pytest.mark.parametrize(

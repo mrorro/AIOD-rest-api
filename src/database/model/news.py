@@ -1,90 +1,92 @@
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 from sqlite3 import Date
 
-from sqlalchemy import ForeignKey, Table, Column, String, Integer, DateTime
+from sqlalchemy import ForeignKey, String, Integer, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from database.model.base import Base
-
-news_business_category_relationship = Table(
-    "news_business_category",
-    Base.metadata,
-    Column("news_id", ForeignKey("news.id", ondelete="CASCADE"), primary_key=True),
-    Column(
-        "business_category_id",
-        ForeignKey("business_categories.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
+from database.model.general import OrmKeyword
+from database.model.news_relationships import (
+    news_business_category_relationship,
+    news_news_category_relationship,
+    news_tag_relationship,
+    news_media_relationship,
 )
-
-news_tag_relationship = Table(
-    "news_tag",
-    Base.metadata,
-    Column(
-        "news_id", ForeignKey("news.id", ondelete="CASCADE", onupdate="RESTRICT"), primary_key=True
-    ),
-    Column(
-        "tag_id", ForeignKey("tags.id", ondelete="CASCADE", onupdate="RESTRICT"), primary_key=True
-    ),
-)
-
-news_news_category_relationship = Table(
-    "news_news_category",
-    Base.metadata,
-    Column("news_id", ForeignKey("news.id", ondelete="CASCADE"), primary_key=True),
-    Column(
-        "news_category_id", ForeignKey("news_categories.id", ondelete="CASCADE"), primary_key=True
-    ),
-)
-
-news_media_relationship = Table(
-    "news_media",
-    Base.metadata,
-    Column("news_id", ForeignKey("news.id", ondelete="CASCADE"), primary_key=True),
-    Column("media_id", ForeignKey("media.id", ondelete="CASCADE"), primary_key=True),
-)
+from database.model.unique_model import UniqueMixin
 
 
-class Media(Base):
+class OrmMedia(UniqueMixin, Base):
     """Any media"""
+
+    @classmethod
+    def _unique_hash(cls, name):
+        return name
+
+    @classmethod
+    def _unique_filter(cls, query, name):
+        return query.filter(cls.name == name)
 
     __tablename__ = "media"
 
     name: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    news: Mapped[list["OrmNews"]] = relationship(
+        default_factory=list,
+        back_populates="media",
+        secondary=news_media_relationship,
+    )
 
 
-class BusinessCategory(Base):
+class OrmBusinessCategory(UniqueMixin, Base):
     """Any business category"""
+
+    @classmethod
+    def _unique_hash(cls, name):
+        return name
+
+    @classmethod
+    def _unique_filter(cls, query, category):
+        return query.filter(cls.category == category)
 
     __tablename__ = "business_categories"
 
     category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    news: Mapped[list["OrmNews"]] = relationship(
+        default_factory=list,
+        back_populates="business_categories",
+        secondary=news_business_category_relationship,
+    )
 
 
-class NewsCategory(Base):
+class OrmNewsCategory(UniqueMixin, Base):
     """Any news category"""
+
+    @classmethod
+    def _unique_hash(cls, name):
+        return name
+
+    @classmethod
+    def _unique_filter(cls, query, category):
+        return query.filter(cls.category == category)
 
     __tablename__ = "news_categories"
 
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
     category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    parent_id: Mapped[int] = mapped_column(ForeignKey("news_categories.id"), nullable=True)
-    parent_category = relationship("NewsCategory")
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    parent_id: Mapped[int] = mapped_column(
+        ForeignKey("news_categories.id"), nullable=True, default=None
+    )
+    parent_category = relationship("OrmNewsCategory")
+    news: Mapped[list["OrmNews"]] = relationship(
+        default_factory=list,
+        back_populates="news_categories",
+        secondary=news_news_category_relationship,
+    )
 
 
-class Tag(Base):
-    """Any tag"""
-
-    __tablename__ = "tags"
-
-    tag: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
-
-
-class News(Base):
+class OrmNews(Base):
     """Any news"""
 
     __tablename__ = "news"
@@ -100,22 +102,27 @@ class News(Base):
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
-    business_categories = relationship(
-        "BusinessCategory",
+    business_categories: Mapped[list["OrmBusinessCategory"]] = relationship(
         secondary=news_business_category_relationship,
-        backref="business_categories",
+        back_populates="news",
         passive_deletes=True,
+        default_factory=list,
     )
-    news_categories = relationship(
-        "NewsCategory",
+    news_categories: Mapped[list["OrmNewsCategory"]] = relationship(
         secondary=news_news_category_relationship,
-        backref="news_categories",
+        back_populates="news",
         passive_deletes=True,
+        default_factory=list,
     )
-    tags = relationship(
-        "Tag", secondary=news_tag_relationship, backref="news", passive_deletes=True
+    tags: Mapped[list["OrmKeyword"]] = relationship(
+        secondary=news_tag_relationship,
+        back_populates="news",
+        passive_deletes=True,
+        default_factory=list,
     )
-
-    media = relationship(
-        "Media", secondary=news_media_relationship, backref="news", passive_deletes=True
+    media: Mapped[list["OrmMedia"]] = relationship(
+        secondary=news_media_relationship,
+        back_populates="news",
+        passive_deletes=True,
+        default_factory=list,
     )

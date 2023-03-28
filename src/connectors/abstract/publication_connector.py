@@ -3,6 +3,7 @@ from typing import Iterator
 
 from connectors.node_names import NodeName
 from database.model.publication import OrmPublication
+from schemas import AIoDPublication
 
 
 class PublicationConnector(abc.ABC):
@@ -16,4 +17,9 @@ class PublicationConnector(abc.ABC):
     @abc.abstractmethod
     def fetch_all(self, limit: int | None) -> Iterator[OrmPublication]:
         """Retrieve all publications"""
+        pass
+
+    @abc.abstractmethod
+    def fetch(self, publication: OrmPublication) -> AIoDPublication:
+        """Retrieve extra metadata for this dataset"""
         pass

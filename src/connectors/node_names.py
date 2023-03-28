@@ -6,6 +6,7 @@ class NodeName(str, enum.Enum):
     example = "example"
     openml = "openml"
     huggingface = "huggingface"
+    zenodo = "zenodo"
 
     @staticmethod
     def from_class(clazz: Type):

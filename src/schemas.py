@@ -31,9 +31,16 @@ class AIoDPublication(BaseModel):
     """The complete metadata of a publication. For now, only a couple of fields are shown,
     we have to decide which fields to use."""
 
+    doi: str | None = Field(max_length=150)
+    node_specific_identifier: str = Field(max_length=250)
+    node: str = Field(max_length=30)
     id: int | None
-    title: str | None = Field(max_length=250)
+    title: str = Field(max_length=250)
     url: str | None = Field(max_length=250)
+    datasets: Set[str] = Field(
+        description="Identifiers of datasets that are connected to this publication",
+        default_factory=list,
+    )
 
 
 class AIoDDataset(BaseModel):
@@ -81,30 +88,10 @@ class AIoDDataset(BaseModel):
     measured_values: List[AIoDMeasurementValue] = Field(default_factory=list)
 
 
-class Tag(BaseModel):
-    """The complete metadata for tags"""
-
-    tag: str = Field(max_length=250)
-    id: int | None
-
-
-class BusinessCategory(BaseModel):
-    """The complete metadata of a business category"""
-
-    category: str = Field(max_length=250)
-    id: int | None
-
-
-class NewsCategory(BaseModel):
-    """The complete metadata of a news category"""
-
-    category: str = Field(max_length=250)
-    parent_id: int | None
-    id: int | None
-
-
-class News(BaseModel):
+class AIoDNews(BaseModel):
     """The complete metadata for news entity"""
+
+    id: int | None
 
     title: str = Field(max_length=500)
     date_modified: datetime
@@ -116,7 +103,7 @@ class News(BaseModel):
 
     media: Optional[list[str]]
     source: Optional[str]
-    news_categories: Optional[list[str]]
-    business_categories: Optional[list[str]]
-    tags: Optional[list[str]]
-    id: int | None
+
+    news_categories: Set[str] = Field(default_factory=set)
+    business_categories: Set[str] = Field(default_factory=set)
+    tags: Set[str] = Field(default_factory=set)
