@@ -93,7 +93,7 @@ class OrmEducationalResource(Base):
     website_url: Mapped[str] = mapped_column(String(500), nullable=False)
     educational_role: Mapped[str] = mapped_column(String(500), nullable=False)
     educational_level: Mapped[str] = mapped_column(String(500), nullable=False)
-    educatonal_type: Mapped[str] = mapped_column(String(500), nullable=False)
+    educational_type: Mapped[str] = mapped_column(String(500), nullable=False)
     pace: Mapped[str] = mapped_column(String(500), nullable=False)
 
     # optional fields
