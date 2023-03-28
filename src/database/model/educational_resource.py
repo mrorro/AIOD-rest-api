@@ -81,7 +81,7 @@ educational_resource_language_relationship = Table(
 )
 
 
-class EducationalResource(Base):
+class OrmEducationalResource(Base):
     """Any educational resource"""
 
     __tablename__ = "educational_resources"
@@ -125,35 +125,35 @@ class EducationalResource(Base):
     # relationships
 
     business_categories = relationship(
-        "BusinessCategory",
+        "OrmBusinessCategory",
         secondary=educational_resource_business_category_relationship,
         backref="educational_resource_business_categories",
         passive_deletes=True,
     )
 
     technical_categories = relationship(
-        "TechnicalCategory",
+        "OrmTechnicalCategory",
         secondary=educational_resource_technical_category_relationship,
         backref="educational_resource_technical_categories",
         passive_deletes=True,
     )
 
     tags = relationship(
-        "Tag",
+        "OrmTag",
         secondary=educational_resource_tag_relationship,
         backref="educational_resource_tags",
         passive_deletes=True,
     )
 
     target_audience = relationship(
-        "TargetAudience",
+        "OrmTargetAudience",
         secondary=educational_resource_target_audience_relationship,
         backref="educational_resource_target_audience",
         passive_deletes=True,
     )
 
     languages = relationship(
-        "Language",
+        "OrmLanguage",
         secondary=educational_resource_language_relationship,
         backref="educational_resource_languages",
         passive_deletes=True,

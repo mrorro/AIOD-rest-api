@@ -9,7 +9,6 @@ import os
 import tomllib
 import traceback
 from typing import Dict
-from database.model.educational_resource import EducationalResource
 
 import uvicorn
 from dotenv import load_dotenv
@@ -25,8 +24,15 @@ import schemas
 from authentication import get_current_user
 from connectors import NodeName
 from converters import dataset_converter
-from database.model.base import BusinessCategory, Language, Tag, TargetAudience, TechnicalCategory
-from database.model.news import News, NewsCategory
+from database.model.educational_resource import OrmEducationalResource
+from database.model.base import (
+    OrmBusinessCategory,
+    OrmLanguage,
+    OrmTag,
+    OrmTargetAudience,
+    OrmTechnicalCategory,
+)
+from database.model.news import OrmNews, OrmNewsCategory
 from database.model.dataset import OrmDataset
 from database.model.publication import OrmPublication
 from database.setup import connect_to_database, populate_database
@@ -146,8 +152,8 @@ def _retrieve_publication(session, identifier) -> OrmPublication:
     return publication
 
 
-def _retrieve_news(session, identifier) -> News:
-    query = select(News).where(News.id == identifier)
+def _retrieve_news(session, identifier) -> OrmNews:
+    query = select(OrmNews).where(OrmNews.id == identifier)
     news = session.scalars(query).first()
     if not news:
         raise HTTPException(
@@ -157,8 +163,8 @@ def _retrieve_news(session, identifier) -> News:
     return news
 
 
-def _retrieve_educational_resource(session, identifier) -> EducationalResource:
-    query = select(EducationalResource).where(EducationalResource.id == identifier)
+def _retrieve_educational_resource(session, identifier) -> OrmEducationalResource:
+    query = select(OrmEducationalResource).where(OrmEducationalResource.id == identifier)
     news = session.scalars(query).first()
     if not news:
         raise HTTPException(
@@ -459,7 +465,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 tags = []
                 if news.tags:
                     for t in news.tags:
-                        query = select(Tag).where(Tag.tag == t)
+                        query = select(OrmTag).where(OrmTag.tag == t)
                         tag = session.scalars(query).first()
                         if not tag:
                             raise HTTPException(
@@ -471,7 +477,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 business_categories = []
                 if news.business_categories:
                     for c in news.business_categories:
-                        query = select(BusinessCategory).where(BusinessCategory.category == c)
+                        query = select(OrmBusinessCategory).where(OrmBusinessCategory.category == c)
                         category = session.scalars(query).first()
                         if not category:
                             raise HTTPException(
@@ -482,7 +488,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 news_categories = []
                 if news.news_categories:
                     for c in news.news_categories:
-                        query = select(NewsCategory).where(NewsCategory.category == c)
+                        query = select(OrmNewsCategory).where(OrmNewsCategory.category == c)
                         category = session.scalars(query).first()
                         if not category:
                             raise HTTPException(
@@ -491,7 +497,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                             )
                         news_categories.append(category)
 
-                new_news = News(
+                new_news = OrmNews(
                     title=news.title,
                     date_modified=news.date_modified,
                     body=news.body,
@@ -524,7 +530,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         """Lists all news registered with AIoD."""
         try:
             with Session(engine) as session:
-                query = select(News).offset(pagination.offset).limit(pagination.limit)
+                query = select(OrmNews).offset(pagination.offset).limit(pagination.limit)
                 return session.scalars(query).all()
         except Exception as e:
             raise _wrap_as_http_exception(e)
@@ -546,7 +552,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 _retrieve_news(session, identifier)  # Raise error if it does not exist
 
-                statement = delete(News).where(News.id == identifier)
+                statement = delete(OrmNews).where(OrmNews.id == identifier)
                 session.execute(statement)
                 session.commit()
         except Exception as e:
@@ -559,7 +565,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 _retrieve_news(session, identifier)  # Raise error if dataset does not exist
                 statement = (
-                    update(News)
+                    update(OrmNews)
                     .values(
                         title=news.title,
                         date_modified=news.date_modified,
@@ -570,7 +576,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                         section=news.section,
                         word_count=news.word_count,
                     )
-                    .where(News.id == identifier)
+                    .where(OrmNews.id == identifier)
                 )
                 # TODO update categories (business,news) and tags
                 session.execute(statement)
@@ -587,7 +593,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 tags = []
                 if educational_resource.tags:
                     for t in educational_resource.tags:
-                        query = select(Tag).where(Tag.tag == t)
+                        query = select(OrmTag).where(OrmTag.tag == t)
                         tag = session.scalars(query).first()
                         if not tag:
                             raise HTTPException(
@@ -599,7 +605,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 business_categories = []
                 if educational_resource.business_categories:
                     for c in educational_resource.business_categories:
-                        query = select(BusinessCategory).where(BusinessCategory.category == c)
+                        query = select(OrmBusinessCategory).where(OrmBusinessCategory.category == c)
                         category = session.scalars(query).first()
                         if not category:
                             raise HTTPException(
@@ -611,7 +617,9 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 technical_categories = []
                 if educational_resource.technical_categories:
                     for c in educational_resource.technical_categories:
-                        query = select(TechnicalCategory).where(TechnicalCategory.category == c)
+                        query = select(OrmTechnicalCategory).where(
+                            OrmTechnicalCategory.category == c
+                        )
                         category = session.scalars(query).first()
                         if not category:
                             raise HTTPException(
@@ -622,7 +630,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 target_audience = []
                 if educational_resource.target_audience:
                     for a in educational_resource.target_audience:
-                        query = select(TargetAudience).where(TargetAudience.audience == a)
+                        query = select(OrmTargetAudience).where(OrmTargetAudience.audience == a)
                         audience = session.scalars(query).first()
                         if not audience:
                             raise HTTPException(
@@ -633,7 +641,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                 languages = []
                 if educational_resource.languages:
                     for la in educational_resource.languages:
-                        query = select(Language).where(Language.language == la)
+                        query = select(OrmLanguage).where(OrmLanguage.language == la)
                         language = session.scalars(query).first()
                         if not language:
                             raise HTTPException(
@@ -642,7 +650,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                             )
                         languages.append(language)
 
-                new_educational_resource = EducationalResource(
+                new_educational_resource = OrmEducationalResource(
                     title=educational_resource.title,
                     date_modified=educational_resource.date_modified,
                     body=educational_resource.body,
@@ -698,7 +706,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         try:
             with Session(engine) as session:
                 query = (
-                    select(EducationalResource).offset(pagination.offset).limit(pagination.limit)
+                    select(OrmEducationalResource).offset(pagination.offset).limit(pagination.limit)
                 )
                 return session.scalars(query).all()
         except Exception as e:
@@ -723,7 +731,9 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                     session, identifier
                 )  # Raise error if it does not exist
 
-                statement = delete(EducationalResource).where(EducationalResource.id == identifier)
+                statement = delete(OrmEducationalResource).where(
+                    OrmEducationalResource.id == identifier
+                )
                 session.execute(statement)
                 session.commit()
         except Exception as e:
@@ -738,7 +748,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
             with Session(engine) as session:
                 _retrieve_news(session, identifier)  # Raise error if dataset does not exist
                 statement = (
-                    update(News)
+                    update(OrmEducationalResource)
                     .values(
                         title=educational_resource.title,
                         date_modified=educational_resource.date_modified,
@@ -764,7 +774,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
                         pace=educational_resource.pace,
                         time_required=educational_resource.time_required,
                     )
-                    .where(EducationalResource.id == identifier)
+                    .where(OrmEducationalResource.id == identifier)
                 )
                 # TODO update categories (business,news) and tags
                 session.execute(statement)

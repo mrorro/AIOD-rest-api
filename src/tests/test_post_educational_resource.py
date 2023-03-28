@@ -1,6 +1,6 @@
 from database.model.base import (
-    Language,
-    TargetAudience,
+    OrmLanguage,
+    OrmTargetAudience,
 )  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 
 import pytest
@@ -10,13 +10,13 @@ from starlette.testclient import TestClient
 from datetime import datetime
 
 
-from database.model.educational_resource import EducationalResource
+from database.model.educational_resource import OrmEducationalResource
 
 
 def test_happy_path(client: TestClient, engine: Engine):
     date_format = "%Y-%m-%d"
     educational_resources = [
-        EducationalResource(
+        OrmEducationalResource(
             title="str",
             date_modified=datetime.strptime("2023-03-21", date_format),
             body="str",
@@ -45,7 +45,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             pace="Full-time",
             time_required=datetime.today() - datetime.today(),
         ),
-        EducationalResource(
+        OrmEducationalResource(
             title="str",
             date_modified=datetime.strptime("2023-03-21", date_format),
             body="str",
@@ -75,8 +75,8 @@ def test_happy_path(client: TestClient, engine: Engine):
             time_required=datetime.today() - datetime.today(),
         ),
     ]
-    language = Language(language="International")
-    audience = TargetAudience(audience="Working professionals")
+    language = OrmLanguage(language="International")
+    audience = OrmTargetAudience(audience="Working professionals")
 
     with Session(engine) as session:
         # Populate database
@@ -133,8 +133,8 @@ def test_happy_path(client: TestClient, engine: Engine):
     ["\"'é:?", "!@#$%^&*()`~", "Ω≈ç√∫˜µ≤≥÷", "田中さんにあげて下さい", " أي بعد, ", "𝑻𝒉𝒆 𝐪𝐮𝐢𝐜𝐤", "گچپژ"],
 )
 def test_unicode(client: TestClient, engine: Engine, title):
-    language = Language(language="International")
-    audience = TargetAudience(audience="Working professionals")
+    language = OrmLanguage(language="International")
+    audience = OrmTargetAudience(audience="Working professionals")
 
     with Session(engine) as session:
         session.add(language)

@@ -6,13 +6,13 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 from datetime import datetime
 
-from database.model.news import News
+from database.model.news import OrmNews
 
 
 def test_happy_path_for_all(client: TestClient, engine: Engine):
     date_format = "%Y-%m-%d"
     news = [
-        News(
+        OrmNews(
             title="n1",
             body="b1",
             section="s1",
@@ -22,7 +22,7 @@ def test_happy_path_for_all(client: TestClient, engine: Engine):
             alternative_headline="ah1",
             word_count=10,
         ),
-        News(
+        OrmNews(
             title="n2",
             body="b2",
             section="s2",
@@ -32,7 +32,7 @@ def test_happy_path_for_all(client: TestClient, engine: Engine):
             alternative_headline="ah2",
             word_count=10,
         ),
-        News(
+        OrmNews(
             title="n3",
             body="b3",
             section="s3",
@@ -72,7 +72,7 @@ def test_happy_path_for_all(client: TestClient, engine: Engine):
 def test_happy_path_for_one(client: TestClient, engine: Engine, news_id: int):
     date_format = "%Y-%m-%d"
     news = [
-        News(
+        OrmNews(
             title="n1",
             body="b1",
             section="s1",
@@ -82,7 +82,7 @@ def test_happy_path_for_one(client: TestClient, engine: Engine, news_id: int):
             alternative_headline="ah1",
             word_count=10,
         ),
-        News(
+        OrmNews(
             title="n2",
             body="b2",
             section="s2",
@@ -92,7 +92,7 @@ def test_happy_path_for_one(client: TestClient, engine: Engine, news_id: int):
             alternative_headline="ah2",
             word_count=10,
         ),
-        News(
+        OrmNews(
             title="n3",
             body="b3",
             section="s3",
@@ -132,7 +132,7 @@ def test_empty_db(client: TestClient, engine: Engine, news_id):
 def test_news_not_found(client: TestClient, engine: Engine, news_id):
     date_format = "%Y-%m-%d"
     news = [
-        News(
+        OrmNews(
             title="n1",
             body="b1",
             section="s1",

@@ -44,7 +44,7 @@ news_media_relationship = Table(
 )
 
 
-class Media(Base):
+class OrmMedia(Base):
     """Any media"""
 
     __tablename__ = "media"
@@ -53,18 +53,18 @@ class Media(Base):
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
 
-class NewsCategory(Base):
+class OrmNewsCategory(Base):
     """Any news category"""
 
     __tablename__ = "news_categories"
 
     category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     parent_id: Mapped[int] = mapped_column(ForeignKey("news_categories.id"), nullable=True)
-    parent_category = relationship("NewsCategory")
+    parent_category = relationship("OrmNewsCategory")
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
 
-class News(Base):
+class OrmNews(Base):
     """Any news"""
 
     __tablename__ = "news"
@@ -81,21 +81,21 @@ class News(Base):
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
     business_categories = relationship(
-        "BusinessCategory",
+        "OrmBusinessCategory",
         secondary=news_business_category_relationship,
         backref="news_business_categories",
         passive_deletes=True,
     )
     news_categories = relationship(
-        "NewsCategory",
+        "OrmNewsCategory",
         secondary=news_news_category_relationship,
         backref="news_categories",
         passive_deletes=True,
     )
     tags = relationship(
-        "Tag", secondary=news_tag_relationship, backref="news_tags", passive_deletes=True
+        "OrmTag", secondary=news_tag_relationship, backref="news_tags", passive_deletes=True
     )
 
     media = relationship(
-        "Media", secondary=news_media_relationship, backref="news_media", passive_deletes=True
+        "OrmMedia", secondary=news_media_relationship, backref="news_media", passive_deletes=True
     )

@@ -47,7 +47,7 @@ class Base(DeclarativeBase, MappedAsDataclass):
         return d
 
 
-class BusinessCategory(Base):
+class OrmBusinessCategory(Base):
     """Any business category"""
 
     __tablename__ = "business_categories"
@@ -56,7 +56,7 @@ class BusinessCategory(Base):
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
 
-class TechnicalCategory(Base):
+class OrmTechnicalCategory(Base):
     """Any technical category"""
 
     __tablename__ = "technical_categories"
@@ -65,7 +65,7 @@ class TechnicalCategory(Base):
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
 
-class Tag(Base):
+class OrmTag(Base):
     """Any tag"""
 
     __tablename__ = "tags"
@@ -74,14 +74,14 @@ class Tag(Base):
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
 
-class TargetAudience(Base):
+class OrmTargetAudience(Base):
     __tablename__ = "target_audience"
 
     audience: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
 
-class Language(Base):
+class OrmLanguage(Base):
     __tablename__ = "languages"
 
     language: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
