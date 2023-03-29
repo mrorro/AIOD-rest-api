@@ -91,8 +91,6 @@ class AIoDDataset(BaseModel):
 class AIoDNews(BaseModel):
     """The complete metadata for news entity"""
 
-    id: int | None
-
     title: str = Field(max_length=500)
     date_modified: datetime
     body: str = Field(max_length=2000)

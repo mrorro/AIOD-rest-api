@@ -1,17 +1,24 @@
 """
 Converting between different educational resource representations
 """
-from ast import keyword
 from sqlalchemy.orm import Session
 
 from converters.abstract_converter import AbstractConverter
 from database.model.general import OrmKeyword, OrmBusinessCategory, OrmTechnicalCategory
-from database.model.educational_resource import OrmEducationalResource, OrmLanguage, OrmTargetAudience
+from database.model.educational_resource import (
+    OrmEducationalResource,
+    OrmLanguage,
+    OrmTargetAudience,
+)
 from schemas import AIoDEducationalResource
 
 
-class EducationalResourceConverter(AbstractConverter[AIoDEducationalResource, OrmEducationalResource]):
-    def aiod_to_orm(self, session: Session, aiod: AIoDEducationalResource) -> OrmEducationalResource:
+class EducationalResourceConverter(
+    AbstractConverter[AIoDEducationalResource, OrmEducationalResource]
+):
+    def aiod_to_orm(
+        self, session: Session, aiod: AIoDEducationalResource
+    ) -> OrmEducationalResource:
         """
         Converting between news representations: the AIoD schema towards the database variant
         """
@@ -49,27 +56,26 @@ class EducationalResourceConverter(AbstractConverter[AIoDEducationalResource, Or
             if aiod.keywords
             else [],
             business_categories=[
-                OrmBusinessCategory.as_unique(session=session, category=category) for category in aiod.business_categories
+                OrmBusinessCategory.as_unique(session=session, category=category)
+                for category in aiod.business_categories
             ]
             if aiod.business_categories
             else [],
             technical_categories=[
-                OrmTechnicalCategory.as_unique(session=session, category=category) for category in aiod.technical_categories
+                OrmTechnicalCategory.as_unique(session=session, category=category)
+                for category in aiod.technical_categories
             ]
             if aiod.technical_categories
             else [],
             target_audience=[
-                OrmTargetAudience.as_unique(session=session, name=name) for name in aiod.target_audience
+                OrmTargetAudience.as_unique(session=session, name=name)
+                for name in aiod.target_audience
             ]
             if aiod.target_audience
             else [],
-            languages=[
-                OrmLanguage.as_unique(session=session, name=name) for name in aiod.languages
-            ]
+            languages=[OrmLanguage.as_unique(session=session, name=name) for name in aiod.languages]
             if aiod.languages
-            else []
-        
-        
+            else [],
         )
 
     def orm_to_aiod(self, orm: OrmEducationalResource) -> AIoDEducationalResource:
@@ -108,7 +114,5 @@ class EducationalResourceConverter(AbstractConverter[AIoDEducationalResource, Or
             technical_categories={c.category for c in orm.technical_categories},
             keywords={k.name for k in orm.keywords},
             target_audience={t.name for t in orm.target_audience},
-            languages={l.name for l in orm.languages},
-
-
+            languages={language.name for language in orm.languages},
         )
