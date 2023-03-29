@@ -68,7 +68,6 @@ class OrmEducationalResource(Base):
     date_modified: Mapped[Date] = mapped_column(DateTime(timezone=True), server_default=func.now())
     body: Mapped[str] = mapped_column(String(500), nullable=False)
     website_url: Mapped[str] = mapped_column(String(500), nullable=False)
-    educational_role: Mapped[str] = mapped_column(String(500), nullable=False)
     educational_level: Mapped[str] = mapped_column(String(500), nullable=False)
     educational_type: Mapped[str] = mapped_column(String(500), nullable=False)
     pace: Mapped[str] = mapped_column(String(500), nullable=False)

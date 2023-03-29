@@ -115,7 +115,6 @@ class AIoDEducationalResource(BaseModel):
     website_url: str = Field(max_length=500)
     date_modified: datetime | None
 
-    educational_role: str = Field(max_length=500)
     educational_level: str = Field(max_length=500)
     educational_type: str = Field(max_length=500)
 
