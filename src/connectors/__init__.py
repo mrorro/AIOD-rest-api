@@ -1,20 +1,19 @@
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 
-from connectors.zenodo.zenodo_publication_connector import ZenodoPublicationConnector
-
-from .abstract.dataset_connector import DatasetConnector  # noqa:F401
-from .abstract.publication_connector import PublicationConnector  # noqa:F401
+import node_names  # noqa:F401
+import schemas  # noqa:F401
+from .abstract.resource_connector import ResourceConnector  # noqa:F401
 from .example.example_dataset_connector import ExampleDatasetConnector
 from .example.example_publication_connector import ExamplePublicationConnector
 from .huggingface.huggingface_dataset_connector import HuggingFaceDatasetConnector
-from .node_names import NodeName  # noqa:F401
 from .openml.openml_dataset_connector import OpenMlDatasetConnector
+from .zenodo.zenodo_publication_connector import ZenodoPublicationConnector
 
 dataset_connectors = {
     c.node_name: c
     for c in (ExampleDatasetConnector(), OpenMlDatasetConnector(), HuggingFaceDatasetConnector())
-}  # type: typing.Dict[NodeName, DatasetConnector]
+}  # type: typing.Dict[node_names.NodeName, ResourceConnector[schemas.AIoDDataset]]
 
 publication_connectors = {
     p.node_name: p for p in (ExamplePublicationConnector(), ZenodoPublicationConnector())
-}  # type: typing.Dict[NodeName, PublicationConnector]
+}  # type: typing.Dict[node_names.NodeName, ResourceConnector[schemas.AIoDPublication]]

@@ -3,14 +3,14 @@ Converting between different dataset representations
 """
 from sqlalchemy.orm import Session
 
-from converters.abstract_converter import AbstractConverter
+from converters.abstract_converter import ResourceConverter
 from converters.dataset_converter import retrieve_related_objects_by_ids
 from database.model.dataset import OrmDataset
 from database.model.publication import OrmPublication
 from schemas import AIoDPublication
 
 
-class PublicationConverter(AbstractConverter[AIoDPublication, OrmPublication]):
+class PublicationConverter(ResourceConverter[AIoDPublication, OrmPublication]):
     def aiod_to_orm(self, session: Session, aiod: AIoDPublication) -> OrmPublication:
         """
         Converting between publication representations: the AIoD schema towards the database variant

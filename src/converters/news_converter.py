@@ -3,13 +3,13 @@ Converting between different dataset representations
 """
 from sqlalchemy.orm import Session
 
-from converters.abstract_converter import AbstractConverter
+from converters.abstract_converter import ResourceConverter
 from database.model.general import OrmKeyword
 from database.model.news import OrmNews, OrmBusinessCategory, OrmNewsCategory
 from schemas import AIoDNews
 
 
-class NewsConverter(AbstractConverter[AIoDNews, OrmNews]):
+class NewsConverter(ResourceConverter[AIoDNews, OrmNews]):
     def aiod_to_orm(self, session: Session, aiod: AIoDNews) -> OrmNews:
         """
         Converting between news representations: the AIoD schema towards the database variant

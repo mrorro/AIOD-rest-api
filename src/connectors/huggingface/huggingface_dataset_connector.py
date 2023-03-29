@@ -6,12 +6,18 @@ import datasets
 import dateutil.parser
 import requests
 
-from connectors import DatasetConnector
-from schemas import AIoDDataset, AIoDPublication, AIoDDistribution
+from connectors import ResourceConnector
+from connectors.resource_with_relations import ResourceWithRelations
+from node_names import NodeName
+from schemas import AIoDPublication, AIoDDistribution, AIoDDataset
 
 
-class HuggingFaceDatasetConnector(DatasetConnector):
-    def fetch(self, node_specific_identifier: str) -> AIoDDataset:
+class HuggingFaceDatasetConnector(ResourceConnector[AIoDDataset]):
+    @property
+    def node_name(self) -> NodeName:
+        return NodeName.huggingface
+
+    def fetch(self, node_specific_identifier: str) -> ResourceWithRelations[AIoDDataset]:
         raise NotImplementedError()
 
     @staticmethod
@@ -29,9 +35,10 @@ class HuggingFaceDatasetConnector(DatasetConnector):
             return []
         return response_json["parquet_files"]
 
-    def fetch_all(self, limit: int | None = None) -> typing.Iterator[AIoDDataset]:
-        ds = datasets.list_datasets(with_details=True)[:limit]
-        for dataset in ds:
+    def fetch_all(
+        self, limit: int | None = None
+    ) -> typing.Iterator[ResourceWithRelations[AIoDDataset]]:
+        for dataset in datasets.list_datasets(with_details=True)[:limit]:
             try:
                 citations = []
                 if dataset.citation is not None:
@@ -39,6 +46,8 @@ class HuggingFaceDatasetConnector(DatasetConnector):
                     if len(parsed_citations) == 0:
                         citations = [
                             AIoDPublication(
+                                id=1,  # temporary identifier, for matching
+                                # within ResourceWithRelations
                                 title=dataset.citation,
                                 node=self.node_name,
                                 node_specific_identifier=dataset.citation,
@@ -48,6 +57,8 @@ class HuggingFaceDatasetConnector(DatasetConnector):
                         citation = parsed_citations[0]
                         citations = [
                             AIoDPublication(
+                                id=1,  # temporary identifier, for matching
+                                # within ResourceWithRelations
                                 title=citation["title"],
                                 node=self.node_name,
                                 node_specific_identifier=citation["ID"],
@@ -87,20 +98,23 @@ class HuggingFaceDatasetConnector(DatasetConnector):
                     #         split["num_examples"]
                     #         for split in dataset.cardData["dataset_info"]["splits"]
                     #     )
-                yield AIoDDataset(
-                    description=dataset.description,
-                    name=dataset.id,
-                    node_specific_identifier=dataset.id,
-                    node=self.node_name,
-                    same_as=f"https://huggingface.co/datasets/{dataset.id}",
-                    creator=dataset.author,
-                    date_modified=dateutil.parser.parse(dataset.lastModified),
-                    citations=citations,
-                    license=ds_license,
-                    distributions=distributions,
-                    is_accessible_for_free=True,
-                    size=size,
-                    keywords=dataset.tags,
+                yield ResourceWithRelations[AIoDDataset](
+                    resource=AIoDDataset(
+                        description=dataset.description,
+                        name=dataset.id,
+                        node_specific_identifier=dataset.id,
+                        node=self.node_name,
+                        same_as=f"https://huggingface.co/datasets/{dataset.id}",
+                        creator=dataset.author,
+                        date_modified=dateutil.parser.parse(dataset.lastModified),
+                        citations={c.id for c in citations},
+                        license=ds_license,
+                        distributions=distributions,
+                        is_accessible_for_free=True,
+                        size=size,
+                        keywords=dataset.tags,
+                    ),
+                    related_resources=citations,
                 )
             except Exception as e:
                 logging.error(

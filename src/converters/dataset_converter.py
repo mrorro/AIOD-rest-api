@@ -6,7 +6,7 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from converters.abstract_converter import AbstractConverter
+from converters.abstract_converter import ResourceConverter
 from converters.conversion_helpers import retrieve_related_objects_by_ids
 from database.model.dataset import OrmDataset, OrmDataDownload, OrmMeasuredValue, OrmAlternateName
 from database.model.general import (
@@ -17,13 +17,12 @@ from database.model.publication import OrmPublication
 from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue
 
 
-class DatasetConverter(AbstractConverter[AIoDDataset, OrmDataset]):
+class DatasetConverter(ResourceConverter[AIoDDataset, OrmDataset]):
     def aiod_to_orm(self, session: Session, aiod: AIoDDataset) -> OrmDataset:
         """
         Converting between dataset representations: the AIoD schema towards the database variant (
         OrmDataset)
         """
-
         if isinstance(aiod.citations, List):
             # TODO(issue 7): retrieve OrmPublication from AIoDPublication
             citations = []

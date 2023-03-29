@@ -37,7 +37,7 @@ class AIoDPublication(BaseModel):
     id: int | None
     title: str = Field(max_length=250)
     url: str | None = Field(max_length=250)
-    datasets: Set[str] = Field(
+    datasets: Set[int] = Field(
         description="Identifiers of datasets that are connected to this publication",
         default_factory=list,
     )
@@ -70,17 +70,16 @@ class AIoDDataset(BaseModel):
 
     # Relations
     license: str | None = Field(max_length=150)
-    has_parts: Set[str] = Field(
+    has_parts: Set[int] = Field(
         description="Identifiers of datasets that are part of this " "dataset.",
         default_factory=set,
     )
-    is_part: Set[str] = Field(
+    is_part: Set[int] = Field(
         description="Identifiers of datasets this dataset is part of.", default_factory=set
     )
     alternate_names: Set[str] = Field(default_factory=set)
-    citations: Set[str] | List[AIoDPublication] = Field(
-        description="Identifiers of publications linked to this dataset, or the actual "
-        "publications",
+    citations: Set[int] = Field(
+        description="Identifiers of publications linked to this dataset",
         default_factory=set,
     )
     distributions: List[AIoDDistribution] = []

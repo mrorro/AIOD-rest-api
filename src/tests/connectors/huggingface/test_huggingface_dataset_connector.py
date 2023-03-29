@@ -3,7 +3,8 @@ import json
 import responses
 
 import connectors
-from connectors import NodeName
+from connectors.resource_with_relations import ResourceWithRelations
+from node_names import NodeName
 from tests.testutils.paths import path_test_resources
 
 HUGGINGFACE_URL = "https://datasets-server.huggingface.co"
@@ -30,15 +31,16 @@ def test_fetch_all_happy_path():
         )
         for dataset_id in ids_expected:
             mock_parquet(mocked_requests, dataset_id)
-        datasets = list(connector.fetch_all(limit=None))
+        resources_with_relations = list(connector.fetch_all(limit=None))
 
-    assert len(datasets) == 5
+    assert len(resources_with_relations) == 5
+    assert all(type(r) == ResourceWithRelations for r in resources_with_relations)
+    datasets = [r.resource for r in resources_with_relations]
     ids = {d.node_specific_identifier for d in datasets}
     names = {d.name for d in datasets}
     assert ids == ids_expected
     assert names == ids_expected
     assert {len(d.citations) for d in datasets} == {1}
-    # TODO(issue 8): improve test, after discussion what to do with HuggingFace datasets
 
 
 def mock_parquet(mocked_requests: responses.RequestsMock, dataset_id: str):

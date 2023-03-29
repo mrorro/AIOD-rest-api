@@ -5,7 +5,8 @@ import responses
 from fastapi import HTTPException
 
 import connectors
-from connectors import NodeName
+from node_names import NodeName
+from schemas import AIoDDataset
 from tests.testutils.paths import path_test_resources
 
 OPENML_URL = "https://www.openml.org/api/v1/json"
@@ -19,6 +20,7 @@ def test_fetch_happy_path():
         dataset = connector.fetch(id_)
     with open(path_test_resources() / "connectors" / "openml" / "data_2.json", "r") as f:
         expected = json.load(f)["data_set_description"]
+    assert isinstance(dataset, AIoDDataset)
 
     assert dataset.name == "anneal"
     assert dataset.description == expected["description"]

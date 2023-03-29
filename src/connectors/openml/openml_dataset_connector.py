@@ -9,11 +9,16 @@ import dateutil.parser
 import requests
 from fastapi import HTTPException
 
-from connectors.abstract.dataset_connector import DatasetConnector
-from schemas import AIoDDataset, AIoDDistribution
+from connectors.abstract.resource_connector import ResourceConnector
+from node_names import NodeName
+from schemas import AIoDDistribution, AIoDDataset
 
 
-class OpenMlDatasetConnector(DatasetConnector):
+class OpenMlDatasetConnector(ResourceConnector[AIoDDataset]):
+    @property
+    def node_name(self) -> NodeName:
+        return NodeName.openml
+
     def fetch(self, node_specific_identifier: str) -> AIoDDataset:
         url_data = f"https://www.openml.org/api/v1/json/data/{node_specific_identifier}"
         response = requests.get(url_data)

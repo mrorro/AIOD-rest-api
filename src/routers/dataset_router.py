@@ -1,7 +1,7 @@
 from typing import Type
 
 from converters import dataset_converter_instance
-from converters.abstract_converter import AbstractConverter
+from converters.abstract_converter import ResourceConverter
 from database.model.dataset import OrmDataset
 from routers.abstract_router import ResourceRouter, AIOD_CLASS, ORM_CLASS
 from schemas import AIoDDataset
@@ -25,5 +25,5 @@ class DatasetRouter(ResourceRouter[OrmDataset, AIoDDataset]):
         return OrmDataset
 
     @property
-    def converter(self) -> AbstractConverter[AIOD_CLASS, ORM_CLASS]:
+    def converter(self) -> ResourceConverter[AIOD_CLASS, ORM_CLASS]:
         return dataset_converter_instance

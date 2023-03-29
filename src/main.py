@@ -19,9 +19,9 @@ from sqlalchemy import select, Engine
 import connectors
 import routers
 from authentication import get_current_user
-from connectors import NodeName
 from database.model.news import OrmNews
 from database.setup import connect_to_database, populate_database
+from node_names import NodeName
 
 
 def _parse_args() -> argparse.Namespace:
@@ -48,17 +48,11 @@ def _parse_args() -> argparse.Namespace:
         help="Zero, one or more nodes with which the publications should get populated.",
     )
     parser.add_argument(
-        "--limit-number-of-datasets",
+        "--limit",
         type=int,
         default=None,
-        help="Limit the number of initial datasets with which the database is populated, per node.",
-    )
-    parser.add_argument(
-        "--limit-number-of-publications",
-        default=None,
-        type=int,
-        help="Limit the number of initial publication with which the database is populated, "
-        "per node.",
+        help="Limit the number of initial resources with which the database is populated, "
+        "per resources and per node.",
     )
     parser.add_argument(
         "--reload",
@@ -172,15 +166,14 @@ def create_app() -> FastAPI:
         _connector_from_node_name("publication", connectors.publication_connectors, node_name)
         for node_name in args.populate_publications
     ]
+    connectors_ = dataset_connectors + publication_connectors
     engine = _engine(args.rebuild_db)
-    if len(dataset_connectors) + len(publication_connectors) > 0:
+    if len(connectors_) > 0:
         populate_database(
             engine,
-            dataset_connectors=dataset_connectors,
-            publications_connectors=publication_connectors,
+            connectors=connectors_,
             only_if_empty=True,
-            limit_datasets=args.limit_number_of_datasets,
-            limit_publications=args.limit_number_of_publications,
+            limit=args.limit,
         )
     add_routes(app, engine, url_prefix=args.url_prefix)
     return app

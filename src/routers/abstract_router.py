@@ -8,9 +8,9 @@ from sqlalchemy import Engine, select, and_, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from connectors import NodeName
-from converters.abstract_converter import AbstractConverter
+from converters.abstract_converter import ResourceConverter
 from database.model.base import Base
+from node_names import NodeName
 
 
 class Pagination(BaseModel):
@@ -48,7 +48,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
 
     @property
     @abc.abstractmethod
-    def converter(self) -> AbstractConverter[AIOD_CLASS, ORM_CLASS]:
+    def converter(self) -> ResourceConverter[AIOD_CLASS, ORM_CLASS]:
         pass
 
     @property

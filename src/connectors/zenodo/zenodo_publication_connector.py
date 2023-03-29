@@ -1,16 +1,20 @@
 from typing import Iterator
-from fastapi import HTTPException
 
 import requests
+from fastapi import HTTPException
 
-from connectors.abstract.publication_connector import PublicationConnector
-from database.model.publication import OrmPublication
+from connectors import ResourceConnector
+from node_names import NodeName
 from schemas import AIoDPublication
 
 
-class ZenodoPublicationConnector(PublicationConnector):
-    def fetch(self, publication: OrmPublication) -> AIoDPublication:
-        identifier = publication.node_specific_identifier
+class ZenodoPublicationConnector(ResourceConnector[AIoDPublication]):
+    @property
+    def node_name(self) -> NodeName:
+        return NodeName.zenodo
+
+    def fetch(self, node_specific_identifier: str) -> AIoDPublication:
+        identifier = node_specific_identifier
         url_data = f"https://zenodo.org/api/records/{identifier}"
         response = requests.get(url_data)
         if not response.ok:
@@ -24,12 +28,12 @@ class ZenodoPublicationConnector(PublicationConnector):
         result = AIoDPublication(
             doi=publication_json["doi"],
             title=publication_json["metadata"]["title"],
-            node=publication.node,
-            node_specific_identifier=publication.node_specific_identifier,
+            node=self.node_name,
+            node_specific_identifier=node_specific_identifier,
         )
         return result
 
-    def fetch_all(self, limit: int | None) -> Iterator[OrmPublication]:
+    def fetch_all(self, limit: int | None = None) -> Iterator[AIoDPublication]:
         url_data = "https://zenodo.org/api/records/"
         response = requests.get(url_data, params={"type": "publication"})
         response_json = response.json()
@@ -40,7 +44,7 @@ class ZenodoPublicationConnector(PublicationConnector):
                 detail=f"Error while fetching data from Zenodo: '{msg}'",
             )
         for publication_json in response_json["hits"]["hits"]:
-            yield OrmPublication(
+            yield AIoDPublication(
                 doi=publication_json["doi"],
                 title=publication_json["metadata"]["title"],
                 node=self.node_name,

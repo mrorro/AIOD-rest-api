@@ -10,7 +10,7 @@ ORM_CLASS = TypeVar("ORM_CLASS", bound=Base)
 AIOD_CLASS = TypeVar("AIOD_CLASS", bound=BaseModel)
 
 
-class AbstractConverter(abc.ABC, Generic[AIOD_CLASS, ORM_CLASS]):
+class ResourceConverter(abc.ABC, Generic[AIOD_CLASS, ORM_CLASS]):
     """
     Converting between resource representations.
     """
