@@ -1,84 +1,61 @@
 from sqlite3 import Date
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 from sqlalchemy.sql import func
-from sqlalchemy import ForeignKey, Table, Column, String, DateTime, Boolean, Interval
+from sqlalchemy import String, DateTime, Boolean, Interval
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database.model.base import Base
 
-educational_resource_business_category_relationship = Table(
-    "educational_resource_business_category",
-    Base.metadata,
-    Column(
-        "educational_resource_id",
-        ForeignKey("educational_resources.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
-    Column(
-        "business_category_id",
-        ForeignKey("business_categories.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
+from database.model.general import OrmBusinessCategory, OrmTechnicalCategory, OrmKeyword
+
+from database.model.educational_resource_relationships import (
+    educational_resource_business_category_relationship,
+    educational_resource_technical_category_relationship,
+    educational_resource_keyword_relationship,
+    educational_resource_target_audience_relationship,
+    educational_resource_language_relationship,
 )
-
-educational_resource_technical_category_relationship = Table(
-    "educational_resource_technical_category",
-    Base.metadata,
-    Column(
-        "educational_resource_id",
-        ForeignKey("educational_resources.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
-    Column(
-        "technical_category_id",
-        ForeignKey("technical_categories.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
-)
-
-educational_resource_tag_relationship = Table(
-    "educational_resource_tag",
-    Base.metadata,
-    Column(
-        "educational_resrouce_id",
-        ForeignKey("educational_resources.id", ondelete="CASCADE", onupdate="RESTRICT"),
-        primary_key=True,
-    ),
-    Column(
-        "tag_id", ForeignKey("tags.id", ondelete="CASCADE", onupdate="RESTRICT"), primary_key=True
-    ),
-)
+from database.model.unique_model import UniqueMixin
 
 
-educational_resource_target_audience_relationship = Table(
-    "educational_resource_target_audience",
-    Base.metadata,
-    Column(
-        "educational_resrouce_id",
-        ForeignKey("educational_resources.id", ondelete="CASCADE", onupdate="RESTRICT"),
-        primary_key=True,
-    ),
-    Column(
-        "target_audience_id",
-        ForeignKey("target_audience.id", ondelete="CASCADE", onupdate="RESTRICT"),
-        primary_key=True,
-    ),
-)
+class OrmTargetAudience(UniqueMixin, Base):
+    __tablename__ = "target_audience"
+
+    @classmethod
+    def _unique_hash(cls, name):
+        return name
+
+    @classmethod
+    def _unique_filter(cls, query, name):
+        return query.filter(cls.name == name)
+
+    name: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    educational_resources: Mapped[list["OrmEducationalResource"]] = relationship(
+        default_factory=list,
+        back_populates="target_audience",
+        secondary=educational_resource_target_audience_relationship,
+    )
 
 
-educational_resource_language_relationship = Table(
-    "educational_resource_language",
-    Base.metadata,
-    Column(
-        "educational_resrouce_id",
-        ForeignKey("educational_resources.id", ondelete="CASCADE", onupdate="RESTRICT"),
-        primary_key=True,
-    ),
-    Column(
-        "language_id",
-        ForeignKey("languages.id", ondelete="CASCADE", onupdate="RESTRICT"),
-        primary_key=True,
-    ),
-)
+class OrmLanguage(UniqueMixin, Base):
+    __tablename__ = "languages"
+
+    @classmethod
+    def _unique_hash(cls, name):
+        return name
+
+    @classmethod
+    def _unique_filter(cls, query, name):
+        return query.filter(cls.name == name)
+
+    name: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+
+    educational_resources: Mapped[list["OrmEducationalResource"]] = relationship(
+        default_factory=list,
+        back_populates="languages",
+        secondary=educational_resource_language_relationship,
+    )
 
 
 class OrmEducationalResource(Base):
@@ -124,37 +101,33 @@ class OrmEducationalResource(Base):
 
     # relationships
 
-    business_categories = relationship(
-        "OrmBusinessCategory",
+    business_categories: Mapped[list["OrmBusinessCategory"]] = relationship(
         secondary=educational_resource_business_category_relationship,
-        backref="educational_resource_business_categories",
+        back_populates="educational_resources",
         passive_deletes=True,
+        default_factory=list,
     )
-
-    technical_categories = relationship(
-        "OrmTechnicalCategory",
+    technical_categories: Mapped[list["OrmTechnicalCategory"]] = relationship(
         secondary=educational_resource_technical_category_relationship,
-        backref="educational_resource_technical_categories",
+        back_populates="educational_resources",
         passive_deletes=True,
+        default_factory=list,
     )
-
-    tags = relationship(
-        "OrmTag",
-        secondary=educational_resource_tag_relationship,
-        backref="educational_resource_tags",
+    keywords: Mapped[list["OrmKeyword"]] = relationship(
+        secondary=educational_resource_keyword_relationship,
+        back_populates="educational_resources",
         passive_deletes=True,
+        default_factory=list,
     )
-
-    target_audience = relationship(
-        "OrmTargetAudience",
+    target_audience: Mapped[list["OrmTargetAudience"]] = relationship(
         secondary=educational_resource_target_audience_relationship,
-        backref="educational_resource_target_audience",
+        back_populates="educational_resources",
         passive_deletes=True,
+        default_factory=list,
     )
-
-    languages = relationship(
-        "OrmLanguage",
+    languages: Mapped[list["OrmLanguage"]] = relationship(
         secondary=educational_resource_language_relationship,
-        backref="educational_resource_languages",
+        back_populates="educational_resources",
         passive_deletes=True,
+        default_factory=list,
     )

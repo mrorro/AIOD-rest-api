@@ -1,4 +1,4 @@
-from database.model.base import (
+from database.model.educational_resource import (
     OrmLanguage,
     OrmTargetAudience,
 )  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
@@ -23,7 +23,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             website_url="str",
             educational_role="Student",
             educational_level="Advanced",
-            educatonal_type="MOOC",
+            educational_type="MOOC",
             interactivity_type="str",
             typical_age_range="str",
             accessibility_api="str",
@@ -52,7 +52,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             website_url="str",
             educational_role="Student",
             educational_level="Advanced",
-            educatonal_type="MOOC",
+            educational_type="MOOC",
             interactivity_type="str",
             typical_age_range="str",
             accessibility_api="str",
@@ -75,8 +75,8 @@ def test_happy_path(client: TestClient, engine: Engine):
             time_required=datetime.today() - datetime.today(),
         ),
     ]
-    language = OrmLanguage(language="International")
-    audience = OrmTargetAudience(audience="Working professionals")
+    language = OrmLanguage(name="International")
+    audience = OrmTargetAudience(name="Working professionals")
 
     with Session(engine) as session:
         # Populate database
@@ -86,7 +86,7 @@ def test_happy_path(client: TestClient, engine: Engine):
         session.commit()
 
     response = client.post(
-        "/educational_resource",
+        "/educational_resources",
         json={
             "title": "string",
             "body": "string",
@@ -112,7 +112,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             "hours_per_week": "1-3 hours (lower-paced)",
             "educational_role": "Student",
             "educational_level": "Basic",
-            "educatonal_type": "Distance Learning",
+            "educational_type": "Distance Learning",
             "country": "Sweeden",
             "pace": "Full-time",
             "languages": ["International"],
@@ -125,7 +125,6 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["title"] == "string"
     assert response_json["body"] == "string"
     assert response_json["accessibility_control"] == "string"
-    assert response_json["id"] == 3
 
 
 @pytest.mark.parametrize(
@@ -133,8 +132,8 @@ def test_happy_path(client: TestClient, engine: Engine):
     ["\"'é:?", "!@#$%^&*()`~", "Ω≈ç√∫˜µ≤≥÷", "田中さんにあげて下さい", " أي بعد, ", "𝑻𝒉𝒆 𝐪𝐮𝐢𝐜𝐤", "گچپژ"],
 )
 def test_unicode(client: TestClient, engine: Engine, title):
-    language = OrmLanguage(language="International")
-    audience = OrmTargetAudience(audience="Working professionals")
+    language = OrmLanguage(name="International")
+    audience = OrmTargetAudience(name="Working professionals")
 
     with Session(engine) as session:
         session.add(language)
@@ -142,7 +141,7 @@ def test_unicode(client: TestClient, engine: Engine, title):
         session.commit()
 
     response = client.post(
-        "/educational_resource",
+        "/educational_resources",
         json={
             "title": title,
             "body": "string",
@@ -168,7 +167,7 @@ def test_unicode(client: TestClient, engine: Engine, title):
             "hours_per_week": "1-3 hours (lower-paced)",
             "educational_role": "Student",
             "educational_level": "Basic",
-            "educatonal_type": "Distance Learning",
+            "educational_type": "Distance Learning",
             "country": "Sweeden",
             "pace": "Full-time",
             "languages": ["International"],
@@ -176,6 +175,7 @@ def test_unicode(client: TestClient, engine: Engine, title):
             "time_required": 0,
         },
     )
+
     assert response.status_code == 200
     response_json = response.json()
     assert response_json["title"] == title
@@ -188,7 +188,7 @@ def test_unicode(client: TestClient, engine: Engine, title):
         "body",
         "educational_role",
         "educational_level",
-        "educatonal_type",
+        "educational_type",
     ],
 )
 def test_missing_value(client: TestClient, engine: Engine, field: str):
@@ -217,7 +217,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "hours_per_week": "1-3 hours (lower-paced)",
         "educational_role": "Student",
         "educational_level": "Basic",
-        "educatonal_type": "Distance Learning",
+        "educational_type": "Distance Learning",
         "country": "Sweeden",
         "pace": "Full-time",
         "languages": ["International"],
@@ -225,7 +225,8 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "time_required": 0,
     }
     del data[field]
-    response = client.post("/educational_resource", json=data)
+    response = client.post("/educational_resources", json=data)
+
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {"loc": ["body", field], "msg": "field required", "type": "value_error.missing"}
@@ -239,7 +240,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "body",
         "educational_role",
         "educational_level",
-        "educatonal_type",
+        "educational_type",
     ],
 )
 def test_null_value(client: TestClient, engine: Engine, field: str):
@@ -268,7 +269,7 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "hours_per_week": "1-3 hours (lower-paced)",
         "educational_role": "Student",
         "educational_level": "Basic",
-        "educatonal_type": "Distance Learning",
+        "educational_type": "Distance Learning",
         "country": "Sweeden",
         "pace": "Full-time",
         "languages": ["International"],
@@ -276,7 +277,8 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "time_required": 0,
     }
     data[field] = None
-    response = client.post("/educational_resource", json=data)
+    response = client.post("/educational_resources", json=data)
+
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {

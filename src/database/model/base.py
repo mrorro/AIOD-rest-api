@@ -1,8 +1,7 @@
 import dataclasses
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 
-from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass, Mapped, mapped_column
-from sqlalchemy import String
+from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass
 
 
 class Base(DeclarativeBase, MappedAsDataclass):
@@ -45,44 +44,3 @@ class Base(DeclarativeBase, MappedAsDataclass):
             elif value is not None:
                 d[field.name] = value
         return d
-
-
-class OrmBusinessCategory(Base):
-    """Any business category"""
-
-    __tablename__ = "business_categories"
-
-    category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
-
-
-class OrmTechnicalCategory(Base):
-    """Any technical category"""
-
-    __tablename__ = "technical_categories"
-
-    category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
-
-
-class OrmTag(Base):
-    """Any tag"""
-
-    __tablename__ = "tags"
-
-    tag: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
-
-
-class OrmTargetAudience(Base):
-    __tablename__ = "target_audience"
-
-    audience: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
-
-
-class OrmLanguage(Base):
-    __tablename__ = "languages"
-
-    language: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)

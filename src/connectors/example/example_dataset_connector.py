@@ -1,4 +1,4 @@
-import typing
+import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 
 from connectors.abstract.dataset_connector import DatasetConnector
 from schemas import AIoDDataset

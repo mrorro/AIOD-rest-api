@@ -2,6 +2,7 @@ from sqlalchemy import Table, Column, ForeignKey
 
 from database.model.base import Base
 
+
 dataset_alternateName_relationship = Table(
     "dataset_alternateName",
     Base.metadata,

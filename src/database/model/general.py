@@ -21,10 +21,21 @@ from database.model.dataset_relationships import (
     dataset_keyword_relationship,
     dataset_license_relationship,
 )
+from database.model.news_relationships import (
+    news_keyword_relationship,
+    news_business_category_relationship,
+)
+from database.model.educational_resource_relationships import (
+    educational_resource_business_category_relationship,
+    educational_resource_keyword_relationship,
+    educational_resource_technical_category_relationship,
+)
 from database.model.unique_model import UniqueMixin
 
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
     from database.model.dataset import OrmDataset
+    from database.model.news import OrmNews
+    from database.model.educational_resource import OrmEducationalResource
 
 
 class OrmLicense(UniqueMixin, Base):
@@ -46,9 +57,7 @@ class OrmLicense(UniqueMixin, Base):
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(String(150), unique=True)
     datasets: Mapped[list["OrmDataset"]] = relationship(
-        default_factory=list,
-        back_populates="license",
-        secondary=dataset_license_relationship,
+        default_factory=list, back_populates="license", secondary=dataset_license_relationship
     )
 
 
@@ -56,7 +65,8 @@ class OrmKeyword(UniqueMixin, Base):
     """
     Keywords or tags used to describe some item
 
-    For now only related to datasets, but we can extend it with relationships to other resources.
+    For now only related to datasets and news, but we can extend it with relationships to other
+    resources.
     """
 
     @classmethod
@@ -71,7 +81,63 @@ class OrmKeyword(UniqueMixin, Base):
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(String(150), unique=True)
     datasets: Mapped[list["OrmDataset"]] = relationship(
+        default_factory=list, back_populates="keywords", secondary=dataset_keyword_relationship
+    )
+    news: Mapped[list["OrmNews"]] = relationship(
+        default_factory=list, back_populates="keywords", secondary=news_keyword_relationship
+    )
+    educational_resources: Mapped[list["OrmEducationalResource"]] = relationship(
         default_factory=list,
         back_populates="keywords",
-        secondary=dataset_keyword_relationship,
+        secondary=educational_resource_keyword_relationship,
+    )
+
+
+class OrmBusinessCategory(UniqueMixin, Base):
+    """Any business category"""
+
+    @classmethod
+    def _unique_hash(cls, category):
+        return category
+
+    @classmethod
+    def _unique_filter(cls, query, category):
+        return query.filter(cls.category == category)
+
+    __tablename__ = "business_categories"
+
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    category: Mapped[str] = mapped_column(String(250), unique=True)
+    news: Mapped[list["OrmNews"]] = relationship(
+        default_factory=list,
+        back_populates="business_categories",
+        secondary=news_business_category_relationship,
+    )
+    educational_resources: Mapped[list["OrmEducationalResource"]] = relationship(
+        default_factory=list,
+        back_populates="business_categories",
+        secondary=educational_resource_business_category_relationship,
+    )
+
+
+class OrmTechnicalCategory(UniqueMixin, Base):
+    """Any technical category"""
+
+    @classmethod
+    def _unique_hash(cls, category):
+        return category
+
+    @classmethod
+    def _unique_filter(cls, query, category):
+        return query.filter(cls.category == category)
+
+    __tablename__ = "technical_categories"
+
+    category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+
+    educational_resources: Mapped[list["OrmEducationalResource"]] = relationship(
+        default_factory=list,
+        back_populates="technical_categories",
+        secondary=educational_resource_technical_category_relationship,
     )

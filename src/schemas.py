@@ -12,7 +12,6 @@ from datetime import datetime, timedelta
 from typing import Set, List, Optional
 
 from pydantic import BaseModel, Field
-from enum import Enum
 
 
 class AIoDDistribution(BaseModel):
@@ -32,9 +31,16 @@ class AIoDPublication(BaseModel):
     """The complete metadata of a publication. For now, only a couple of fields are shown,
     we have to decide which fields to use."""
 
+    doi: str | None = Field(max_length=150)
+    node_specific_identifier: str = Field(max_length=250)
+    node: str = Field(max_length=30)
     id: int | None
-    title: str | None = Field(max_length=250)
+    title: str = Field(max_length=250)
     url: str | None = Field(max_length=250)
+    datasets: Set[str] = Field(
+        description="Identifiers of datasets that are connected to this publication",
+        default_factory=list,
+    )
 
 
 class AIoDDataset(BaseModel):
@@ -82,8 +88,10 @@ class AIoDDataset(BaseModel):
     measured_values: List[AIoDMeasurementValue] = Field(default_factory=list)
 
 
-class News(BaseModel):
+class AIoDNews(BaseModel):
     """The complete metadata for news entity"""
+
+    id: int | None
 
     title: str = Field(max_length=500)
     date_modified: datetime
@@ -97,73 +105,11 @@ class News(BaseModel):
     source: Optional[str]
     news_categories: Optional[list[str]]
     business_categories: Optional[list[str]]
-    tags: Optional[list[str]]
+    keywords: Optional[list[str]]
     id: int | None
 
 
-class DurationMinutesHoursEnum(str, Enum):
-    option_1 = "Less than 1 hour"
-    option_2 = "1-3 hours"
-    option_3 = "4-10 hours"
-    option_4 = "10+ hours"
-
-
-class HoursPerWeekEnum(str, Enum):
-    option_1 = "1-3 hours (lower-paced)"
-    option_2 = "4-10 hours (quarter-speed)"
-    option_3 = "11-24 hours (Part-time)"
-    option_4 = "25-40 hours (intensive courses)"
-
-
-class EducationalRoleEnum(str, Enum):
-    option_1 = "Student"
-    option_2 = "Teacher"
-
-
-class EducationalLevelEnum(str, Enum):
-    option_1 = "Basic"
-    option_2 = "Advanced"
-    option_3 = "Bachelor Programme"
-    option_4 = "Master's Programme"
-
-
-class EducationalTypeEnum(str, Enum):
-    option_1 = "Distance Learning"
-    option_2 = "Blended Learning"
-    option_3 = "MOOC"
-    option_4 = "On-site"
-    option_5 = "Tutorial"
-
-
-class CountryEnum(str, Enum):
-    opyion_1 = "Sweeden"
-
-
-class PaceEnum(str, Enum):
-    option_1 = "Full-time"
-    option_2 = "Part-time (scheduled)"
-    option_3 = " Self-paced"
-
-
-class LanguageEnum(str, Enum):
-    option_1 = "International"
-    option_2 = "Czech"
-    option_3 = "Croatian"
-    option_4 = "Danish"
-    option_5 = "Dutch"
-    option_6 = "English"
-    option_7 = "Bulgarian"
-
-    # TODO add the remaining languages mentioned in cms description
-
-
-class TargetAudienceEnum(str, Enum):
-    option_1 = "Working professionals"
-    option_2 = "Students in Higher Education"
-    option_3 = "Teachers in Secondary School"
-
-
-class EducationalResource(BaseModel):
+class AIoDEducationalResource(BaseModel):
     """The complete metadata for educational resource"""
 
     title: str = Field(max_length=500)
@@ -171,13 +117,13 @@ class EducationalResource(BaseModel):
     website_url: str = Field(max_length=500)
     date_modified: datetime | None
 
-    educational_role: EducationalRoleEnum
-    educational_level: EducationalLevelEnum
-    educatonal_type: EducationalTypeEnum
+    educational_role: str = Field(max_length=500)
+    educational_level: str = Field(max_length=500)
+    educational_type: str = Field(max_length=500)
 
-    pace: PaceEnum
-    languages: list[LanguageEnum]
-    target_audience: list[TargetAudienceEnum]
+    pace: str = Field(max_length=500)
+    languages: list[str]
+    target_audience: list[str]
 
     educational_use: str | List[str] = Field(
         description="The intended educational use of the resource, such as lecture, lab exercise"
@@ -208,11 +154,11 @@ class EducationalResource(BaseModel):
     short_summary: str | None = Field(max_length=500)
     duration_in_years: int | None
 
-    duration_minutes_and_hours: Optional[DurationMinutesHoursEnum]
-    hours_per_week: Optional[HoursPerWeekEnum]
-    country: Optional[CountryEnum]
+    duration_minutes_and_hours: Optional[str]
+    hours_per_week: Optional[str]
+    country: Optional[str]
     technical_categories: Optional[list[str]]
     business_categories: Optional[list[str]]
-    tags: Optional[list[str]]
+    keywords: Optional[list[str]]
 
     id: int | None

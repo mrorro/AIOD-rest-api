@@ -16,12 +16,15 @@ class OrmPublication(Base):
     __tablename__ = "publications"
     __table_args__ = (
         UniqueConstraint(
-            "title",
-            "url",
-            name="publications_unique_title_url",
+            "node",
+            "node_specific_identifier",
+            name="publication_unique_node_node_specific_identifier",
         ),
     )
     title: Mapped[str] = mapped_column(String(250), nullable=False)
+    doi: Mapped[str] = mapped_column(String(150), nullable=False)
+    node: Mapped[str] = mapped_column(String(30), nullable=False)
+    node_specific_identifier: Mapped[str] = mapped_column(String(250), nullable=False)
     url: Mapped[str] = mapped_column(String(250), nullable=True, default=None)
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     datasets: Mapped[list["OrmDataset"]] = relationship(
