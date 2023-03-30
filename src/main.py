@@ -21,7 +21,6 @@ import routers
 from authentication import get_current_user
 from connectors import NodeName
 
-# from database.model.base import OrmLanguage, OrmTargetAudience
 from database.setup import connect_to_database, populate_database
 
 
