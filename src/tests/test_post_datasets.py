@@ -54,7 +54,7 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["same_as"] == "openml.org/datasets/1"
     assert response_json["node"] == "openml"
     assert response_json["node_specific_identifier"] == "2"
-    assert response_json["id"] == 4
+    assert response_json["identifier"] == 4
     assert len(response_json) == 13
 
 
@@ -105,13 +105,11 @@ def test_duplicated_dataset(client: TestClient, engine: Engine):
     assert response.status_code == 409
     assert (
         response.json()["detail"] == "There already exists a dataset with the same node "
-        "and name, with id=1."
+        "and name, with identifier=1."
     )
 
 
-@pytest.mark.parametrize(
-    "field", ["name", "node", "node_specific_identifier", "same_as", "description"]
-)
+@pytest.mark.parametrize("field", ["name", "same_as", "description"])
 def test_missing_value(client: TestClient, engine: Engine, field: str):
     data = {
         "name": "Name",
@@ -128,9 +126,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
     ]
 
 
-@pytest.mark.parametrize(
-    "field", ["name", "node", "node_specific_identifier", "same_as", "description"]
-)
+@pytest.mark.parametrize("field", ["name", "node", "same_as", "description"])
 def test_null_value(client: TestClient, engine: Engine, field: str):
     data = {
         "name": "Name",

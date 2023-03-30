@@ -10,11 +10,17 @@ from schemas import AIoDNews
 
 
 class NewsConverter(ResourceConverter[AIoDNews, OrmNews]):
-    def aiod_to_orm(self, session: Session, aiod: AIoDNews) -> OrmNews:
+    def aiod_to_orm(
+        self, session: Session, aiod: AIoDNews, return_existing_if_present: bool = False
+    ) -> OrmNews:
         """
         Converting between news representations: the AIoD schema towards the database variant
         """
-        return OrmNews(
+        return OrmNews.create(
+            session=session,
+            return_existing_if_present=return_existing_if_present,
+            node=aiod.node,
+            node_specific_identifier=aiod.node_specific_identifier,
             title=aiod.title,
             date_modified=aiod.date_modified,
             body=aiod.body,
@@ -39,7 +45,11 @@ class NewsConverter(ResourceConverter[AIoDNews, OrmNews]):
         Converting between news representations: the database variant towards the AIoD schema.
         """
         return AIoDNews(
-            id=orm.id,
+            identifier=orm.identifier,
+            node=orm.node,
+            node_specific_identifier=orm.node_specific_identifier
+            if orm.node_specific_identifier is not None
+            else str(orm.identifier),
             title=orm.title,
             date_modified=orm.date_modified,
             body=orm.body,

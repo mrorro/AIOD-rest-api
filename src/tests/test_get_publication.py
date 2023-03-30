@@ -59,7 +59,7 @@ def test_happy_path(client: TestClient, engine: Engine, publication_id: int):
     assert response_json["doi"] == expected.doi
     assert response_json["node"] == expected.node
     assert response_json["node_specific_identifier"] == expected.node_specific_identifier
-    assert response_json["id"] == publication_id
+    assert response_json["identifier"] == publication_id
     assert len(response_json["datasets"]) == len(datasets)
     assert len(response_json) == 6
 

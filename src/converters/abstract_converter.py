@@ -16,9 +16,17 @@ class ResourceConverter(abc.ABC, Generic[AIOD_CLASS, ORM_CLASS]):
     """
 
     @abc.abstractmethod
-    def aiod_to_orm(self, session: Session, orm: AIOD_CLASS) -> ORM_CLASS:
+    def aiod_to_orm(
+        self, session: Session, aiod: AIOD_CLASS, return_existing_if_present=False
+    ) -> ORM_CLASS:
         """
-        Convert an AIoD representation into the database representation
+        Convert an AIoD representation into the database representation and add it to the session.
+
+            Parameters:
+                session (Session): the SqlAlchemy session
+                aiod (AIOD_CLASS): the AIoD instance
+                return_existing_if_present (bool): if true, return existing object if it already
+                    exists. If false, it will just return
         """
         pass
 

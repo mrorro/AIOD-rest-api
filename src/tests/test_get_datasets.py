@@ -42,7 +42,7 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert {ds["description"] for ds in response_json} == {"a", "b", "c"}
     assert {ds["node"] for ds in response_json} == {"openml", "other_node"}
     assert {ds["node_specific_identifier"] for ds in response_json} == {"1", "2"}
-    assert {ds["id"] for ds in response_json} == {1, 2, 3}
+    assert {ds["identifier"] for ds in response_json} == {1, 2, 3}
     assert {ds["same_as"] for ds in response_json} == {
         "openml.eu/1",
         "other_node.eu/1",

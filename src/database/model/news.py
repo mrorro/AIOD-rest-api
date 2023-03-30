@@ -5,6 +5,7 @@ from sqlalchemy import ForeignKey, String, Integer, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
+from database.model.ai_resource import OrmAIResource
 from database.model.base import Base
 from database.model.general import OrmKeyword
 from database.model.news_relationships import (
@@ -86,7 +87,7 @@ class OrmNewsCategory(UniqueMixin, Base):
     )
 
 
-class OrmNews(Base):
+class OrmNews(OrmAIResource):
     """Any news"""
 
     __tablename__ = "news"
@@ -99,8 +100,6 @@ class OrmNews(Base):
     word_count: Mapped[int] = mapped_column(Integer, nullable=False)
     source: Mapped[str] = mapped_column(String(500), nullable=True)
     alternative_headline: Mapped[str] = mapped_column(String(500), nullable=True)
-
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
     business_categories: Mapped[list["OrmBusinessCategory"]] = relationship(
         secondary=news_business_category_relationship,

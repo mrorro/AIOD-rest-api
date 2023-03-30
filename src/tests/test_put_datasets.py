@@ -43,7 +43,7 @@ def test_happy_path(
     assert response_json["name"] == name
     assert response_json["node"] == node
     assert response_json["node_specific_identifier"] == node_specific_identifier
-    assert response_json["id"] == identifier
+    assert response_json["identifier"] == identifier
     assert response_json["same_as"] == same_as
     assert response_json["description"] == description
     assert len(response_json) == 13
@@ -78,12 +78,6 @@ def test_partial_update(client: TestClient, engine: Engine):
     response_json = response.json()
     assert response_json["detail"] == [
         {"loc": ["body", "description"], "msg": "field required", "type": "value_error.missing"},
-        {"loc": ["body", "node"], "msg": "field required", "type": "value_error.missing"},
-        {
-            "loc": ["body", "node_specific_identifier"],
-            "msg": "field required",
-            "type": "value_error.missing",
-        },
         {"loc": ["body", "same_as"], "msg": "field required", "type": "value_error.missing"},
     ]
 

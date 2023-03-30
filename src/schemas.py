@@ -13,6 +13,14 @@ from typing import Set, List, Optional
 
 from pydantic import BaseModel, Field
 
+from node_names import NodeName
+
+
+class AIoDAIResource(BaseModel):
+    identifier: int | None
+    node: str = Field(max_length=30, default=NodeName.aiod)
+    node_specific_identifier: str | None = Field(max_length=250, default=None)
+
 
 class AIoDDistribution(BaseModel):
     content_url: str = Field(max_length=150)
@@ -27,14 +35,11 @@ class AIoDMeasurementValue(BaseModel):
     technique: str | None
 
 
-class AIoDPublication(BaseModel):
+class AIoDPublication(AIoDAIResource):
     """The complete metadata of a publication. For now, only a couple of fields are shown,
     we have to decide which fields to use."""
 
     doi: str | None = Field(max_length=150)
-    node_specific_identifier: str = Field(max_length=250)
-    node: str = Field(max_length=30)
-    id: int | None
     title: str = Field(max_length=250)
     url: str | None = Field(max_length=250)
     datasets: Set[int] = Field(
@@ -43,16 +48,13 @@ class AIoDPublication(BaseModel):
     )
 
 
-class AIoDDataset(BaseModel):
+class AIoDDataset(AIoDAIResource):
     """
     The complete metadata of a dataset in AIoD format.
     """
 
-    id: int | None
     description: str = Field(max_length=5000)
     name: str = Field(max_length=150)
-    node: str = Field(max_length=30)
-    node_specific_identifier: str = Field(max_length=250)
     same_as: str = Field(max_length=150)
 
     # Recommended fields
@@ -87,10 +89,8 @@ class AIoDDataset(BaseModel):
     measured_values: List[AIoDMeasurementValue] = Field(default_factory=list)
 
 
-class AIoDNews(BaseModel):
+class AIoDNews(AIoDAIResource):
     """The complete metadata for news entity"""
-
-    id: int | None
 
     title: str = Field(max_length=500)
     date_modified: datetime

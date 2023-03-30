@@ -29,7 +29,7 @@ def test_happy_path(client: TestClient, engine: Engine):
 
     assert response_json["name"] == "anneal"
     assert response_json["description"] == "description text"
-    assert response_json["id"] == 1
+    assert response_json["identifier"] == 1
 
 
 def test_dataset_not_found_in_local_db(client: TestClient, engine: Engine):

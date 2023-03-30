@@ -45,7 +45,7 @@ def test_happy_path(
     assert response_json["doi"] == doi
     assert response_json["node"] == node
     assert response_json["node_specific_identifier"] == node_specific_identifier
-    assert response_json["id"] == identifier
+    assert response_json["identifier"] == identifier
     assert len(response_json["datasets"]) == 0
     assert len(response_json) == 7
 
@@ -65,19 +65,14 @@ def test_non_existent(client: TestClient, engine: Engine):
 def test_partial_update(client: TestClient, engine: Engine):
     _setup(engine)
 
-    response = client.put("/publications/4", json={"title": "title", "doi": "doi"})
-    # Partial update: node and node_specific_identifier omitted. This is not supported,
+    response = client.put("/publications/4", json={"doi": "doi"})
+    # Partial update: title omitted. This is not supported,
     # and should be a PATCH request if we supported it.
 
     assert response.status_code == 422
     response_json = response.json()
     assert response_json["detail"] == [
-        {
-            "loc": ["body", "node_specific_identifier"],
-            "msg": "field required",
-            "type": "value_error.missing",
-        },
-        {"loc": ["body", "node"], "msg": "field required", "type": "value_error.missing"},
+        {"loc": ["body", "title"], "msg": "field required", "type": "value_error.missing"},
     ]
 
 

@@ -17,7 +17,7 @@ from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue
 @pytest.fixture
 def aiod_dataset() -> AIoDDataset:
     return AIoDDataset(
-        id=7,
+        identifier=7,
         description="description",
         name="name",
         node="node",

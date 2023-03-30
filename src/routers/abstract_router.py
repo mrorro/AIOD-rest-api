@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from converters.abstract_converter import ResourceConverter
-from database.model.base import Base
+from database.model.ai_resource import OrmAIResource
 from node_names import NodeName
 
 
@@ -18,7 +18,7 @@ class Pagination(BaseModel):
     limit: int = 100
 
 
-ORM_CLASS = TypeVar("ORM_CLASS", bound=Base)
+ORM_CLASS = TypeVar("ORM_CLASS", bound=OrmAIResource)
 AIOD_CLASS = TypeVar("AIOD_CLASS", bound=BaseModel)
 
 
@@ -190,7 +190,9 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             f"""Register a {self.resource_name} with AIoD."""
             try:
                 with Session(engine) as session:
-                    resource = self.converter.aiod_to_orm(session, resource)
+                    resource = self.converter.aiod_to_orm(
+                        session, resource, return_existing_if_present=False
+                    )
                     session.add(resource)
                     try:
                         session.commit()
@@ -198,20 +200,18 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
                         session.rollback()
                         query = select(self.orm_class).where(
                             and_(
-                                self.orm_class.node == resource.node,  # type: ignore
-                                self.orm_class.node_specific_identifier  # type: ignore
-                                == resource.node_specific_identifier,  # type: ignore
+                                self.orm_class.node == resource.node,
+                                self.orm_class.node_specific_identifier
+                                == resource.node_specific_identifier,
                             )
                         )
-                        # TODO: removing these "type: ignore"s, by letting the ORM classes inherit
-                        #  from a class that contains node and node_specific_identifier (e.g.
-                        #  AiResource).
                         existing_resource = session.scalars(query).first()
                         raise HTTPException(
                             status_code=409,
                             detail=f"There already exists a {self.resource_name} with the same "
-                            f"node and name, with id={existing_resource.id}.",
+                            f"node and name, with identifier={existing_resource.identifier}.",
                         )
+
                     return self.converter.orm_to_aiod(resource)
             except Exception as e:
                 raise _wrap_as_http_exception(e)
@@ -226,8 +226,10 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             try:
                 with Session(engine) as session:
                     self._retrieve_resource(session, identifier)  # Raise error if it does not exist
-                    resource_orm = self.converter.aiod_to_orm(session, resource)
-                    resource_orm.id = identifier
+                    resource_orm = self.converter.aiod_to_orm(
+                        session, resource, return_existing_if_present=False
+                    )
+                    resource_orm.identifier = identifier
                     session.merge(resource_orm)
                     session.commit()
                     new_resource = self._retrieve_resource(session, identifier)
@@ -242,7 +244,9 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             try:
                 with Session(engine) as session:
                     self._retrieve_resource(session, identifier)  # Raise error if it does not exist
-                    statement = delete(self.orm_class).where(self.orm_class.id == identifier)
+                    statement = delete(self.orm_class).where(
+                        self.orm_class.identifier == identifier
+                    )
                     session.execute(statement)
                     session.commit()
             except Exception as e:
@@ -252,7 +256,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
 
     def _retrieve_resource(self, session, identifier, node=None):
         if node is None:
-            query = select(self.orm_class).where(self.orm_class.id == identifier)
+            query = select(self.orm_class).where(self.orm_class.identifier == identifier)
         else:
             if node not in {n.name for n in NodeName}:
                 raise HTTPException(status_code=400, detail=f"Node '{node}' not recognized.")

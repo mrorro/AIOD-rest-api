@@ -69,17 +69,19 @@ def test_aiod_to_orm_happy_path(
         assert orm.license.name == aiod.license
         assert orm.license.datasets == [orm]
 
-        assert {ds.id for ds in orm.has_parts} == has_parts
-        assert all({p.id for p in ds.is_part} == {orm.id} for ds in orm.has_parts)
-        assert {ds.id for ds in orm.is_part} == is_part
-        assert all({p.id for p in ds.has_parts} == {orm.id} for ds in orm.is_part)
+        assert {ds.identifier for ds in orm.has_parts} == has_parts
+        assert all({p.identifier for p in ds.is_part} == {orm.identifier} for ds in orm.has_parts)
+        assert {ds.identifier for ds in orm.is_part} == is_part
+        assert all({p.identifier for p in ds.has_parts} == {orm.identifier} for ds in orm.is_part)
 
         assert {a.name for a in orm.alternate_names} == set(aiod.alternate_names)
-        assert all({ds.id for ds in a.datasets} == {orm.id} for a in orm.alternate_names)
-        assert {c.id for c in orm.citations} == citations
-        assert all({ds.id for ds in p.datasets} == {orm.id} for p in orm.citations)
+        assert all(
+            {ds.identifier for ds in a.datasets} == {orm.identifier} for a in orm.alternate_names
+        )
+        assert {c.identifier for c in orm.citations} == citations
+        assert all({ds.identifier for ds in p.datasets} == {orm.identifier} for p in orm.citations)
         assert {k.name for k in orm.keywords} == {"a", "b", "c"}
-        assert all({ds.id for ds in p.datasets} == {orm.id} for p in orm.citations)
+        assert all({ds.identifier for ds in p.datasets} == {orm.identifier} for p in orm.citations)
 
         assert len(orm.distributions) == 1
         for field, expected_value in aiod.distributions[0].__dict__.items():
@@ -136,7 +138,7 @@ def test_orm_to_aiod(
 
     for related_dataset_id in has_parts | is_part:
         ds = copy.deepcopy(orm_dataset)
-        ds.id = related_dataset_id
+        ds.identifier = related_dataset_id
         ds.same_as = f"url_{related_dataset_id}"
         ds.name = f"name_{related_dataset_id}"
         ds.node_specific_identifier = str(related_dataset_id)
@@ -147,7 +149,7 @@ def test_orm_to_aiod(
 
     for related_publication_id in citations:
         p = copy.deepcopy(orm_publication)
-        p.id = related_publication_id
+        p.identifier = related_publication_id
         p.node_specific_identifier = str(related_publication_id)
         orm.citations.append(p)
 

@@ -30,18 +30,18 @@ class ExampleDatasetConnector(ResourceConnector[AIoDDataset]):
                     description="Higgs dataset",
                     same_as="non-existing-url/1",
                     node_specific_identifier="42769",
-                    citations=[1],
                 ),
-                related_resources=[
-                    AIoDPublication(
-                        id=1,
-                        title="Searching for exotic particles in high-energy physics with deep "
-                        "learning",
-                        doi="2",
-                        node="example",
-                        node_specific_identifier="2",
-                    )
-                ],
+                related_resources={
+                    "citations": [
+                        AIoDPublication(
+                            title="Searching for exotic particles in high-energy physics with deep "
+                            "learning",
+                            doi="2",
+                            node="example",
+                            node_specific_identifier="2",
+                        )
+                    ]
+                },
             ),
             ResourceWithRelations[AIoDDataset](
                 resource=AIoDDataset(

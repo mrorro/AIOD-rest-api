@@ -1,7 +1,7 @@
 """
 Utility functions for initializing the database and tables through SQLAlchemy.
 """
-from typing import List, Iterable
+from typing import List
 
 from pydantic import BaseModel
 from sqlalchemy import Engine, text, create_engine, select
@@ -10,7 +10,8 @@ from sqlalchemy.orm import Session
 import converters
 from connectors import ResourceConnector
 from connectors.resource_with_relations import ResourceWithRelations
-from .model.base import Base
+from .model.ai_resource import OrmAIResource
+from .model.base import Base  # noqa:F401
 from .model.dataset import OrmDataset
 from .model.publication import OrmPublication
 
@@ -73,26 +74,39 @@ def populate_database(
         if only_if_empty and data_exists:
             return
 
-        aiod_resources = _fetch_aiod_resources(connectors, limit)
-        orm_resources = _convert_to_orm(session, aiod_resources)
-        session.add_all(orm_resources)
+        _fetch_aiod_resources(session, connectors, limit)
         session.commit()
 
 
-def _fetch_aiod_resources(
-    connectors: List[ResourceConnector], limit: int | None
-) -> Iterable[BaseModel]:
+def _fetch_aiod_resources(session: Session, connectors: List[ResourceConnector], limit: int | None):
     for connector in connectors:
         for item in connector.fetch_all(limit=limit):
             if isinstance(item, ResourceWithRelations):
-                yield from item.related_resources
-                yield item.resource
-                # TODO: remove identifier, and make sure the linking is correct
+                orm_resource = convert(session, item.resource)
+                related_orm = {}  # type: dict[str, Base | List[Base]]
+                for field_name, related_resource_or_list in item.related_resources.items():
+                    if isinstance(related_resource_or_list, BaseModel):
+                        resource: BaseModel = related_resource_or_list
+                        related_orm[field_name] = convert(session, resource)
+                    else:
+                        resources: list[BaseModel] = related_resource_or_list
+                        related_orm[field_name] = [
+                            convert(session, resource) for resource in resources
+                        ]
+
+                if len(related_orm) > 0:
+                    for field_name, related_resource_or_list in related_orm.items():
+                        if isinstance(related_resource_or_list, OrmAIResource):
+                            related_resource: OrmAIResource = related_resource_or_list
+                            orm_resource.__setattr__(field_name, related_resource)
+                        else:
+                            orm_resource.__setattr__(field_name, related_resource_or_list)
+                session.add(orm_resource)
             else:
-                yield item
+                aiod = convert(session, item)
+                session.add(aiod)
 
 
-def _convert_to_orm(session: Session, aiod_resources: Iterable[BaseModel]) -> Iterable[Base]:
-    for resource in aiod_resources:
-        converter = converters.converters[type(resource)]
-        yield converter.aiod_to_orm(session, resource)
+def convert(session: Session, resource: BaseModel) -> Base:
+    converter = converters.converters[type(resource)]
+    return converter.aiod_to_orm(session, resource, return_existing_if_present=True)

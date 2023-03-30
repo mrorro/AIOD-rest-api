@@ -11,12 +11,17 @@ from schemas import AIoDPublication
 
 
 class PublicationConverter(ResourceConverter[AIoDPublication, OrmPublication]):
-    def aiod_to_orm(self, session: Session, aiod: AIoDPublication) -> OrmPublication:
+    def aiod_to_orm(
+        self, session: Session, aiod: AIoDPublication, return_existing_if_present: bool = False
+    ) -> OrmPublication:
         """
         Converting between publication representations: the AIoD schema towards the database variant
         """
         datasets = retrieve_related_objects_by_ids(session, aiod.datasets, OrmDataset)
-        return OrmPublication(
+
+        return OrmPublication.create(
+            session=session,
+            return_existing_if_present=return_existing_if_present,
             doi=aiod.doi,
             node=aiod.node,
             node_specific_identifier=aiod.node_specific_identifier,
@@ -31,11 +36,11 @@ class PublicationConverter(ResourceConverter[AIoDPublication, OrmPublication]):
         the AIoD schema.
         """
         return AIoDPublication(
-            id=orm.id,
+            identifier=orm.identifier,
             doi=orm.doi,
             node=orm.node,
             node_specific_identifier=orm.node_specific_identifier,
             title=orm.title,
             url=orm.url,
-            datasets=[d.id for d in orm.datasets],
+            datasets=[d.identifier for d in orm.datasets],
         )

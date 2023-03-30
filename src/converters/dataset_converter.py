@@ -18,7 +18,9 @@ from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue
 
 
 class DatasetConverter(ResourceConverter[AIoDDataset, OrmDataset]):
-    def aiod_to_orm(self, session: Session, aiod: AIoDDataset) -> OrmDataset:
+    def aiod_to_orm(
+        self, session: Session, aiod: AIoDDataset, return_existing_if_present: bool = False
+    ) -> OrmDataset:
         """
         Converting between dataset representations: the AIoD schema towards the database variant (
         OrmDataset)
@@ -31,7 +33,9 @@ class DatasetConverter(ResourceConverter[AIoDDataset, OrmDataset]):
         has_parts = retrieve_related_objects_by_ids(session, aiod.has_parts, OrmDataset)
         is_part = retrieve_related_objects_by_ids(session, aiod.is_part, OrmDataset)
 
-        orm = OrmDataset(
+        orm = OrmDataset.create(
+            return_existing_if_present=return_existing_if_present,
+            session=session,
             description=aiod.description,
             name=aiod.name,
             node=aiod.node,
@@ -78,7 +82,6 @@ class DatasetConverter(ResourceConverter[AIoDDataset, OrmDataset]):
                 for mv in aiod.measured_values
             ],
         )
-        orm.id = aiod.id
         return orm
 
     def orm_to_aiod(self, orm: OrmDataset) -> AIoDDataset:
@@ -87,7 +90,7 @@ class DatasetConverter(ResourceConverter[AIoDDataset, OrmDataset]):
         AIoD schema.
         """
         return AIoDDataset(
-            id=orm.id,
+            identifier=orm.identifier,
             description=orm.description,
             name=orm.name,
             node=orm.node,
@@ -105,10 +108,10 @@ class DatasetConverter(ResourceConverter[AIoDDataset, OrmDataset]):
             temporal_coverage_to=orm.temporal_coverage_to,
             version=orm.version,
             license=orm.license.name if orm.license is not None else None,
-            has_parts=[part.id for part in orm.has_parts],
-            is_part=[part.id for part in orm.is_part],
+            has_parts=[part.identifier for part in orm.has_parts],
+            is_part=[part.identifier for part in orm.is_part],
             alternate_names=[alias.name for alias in orm.alternate_names],
-            citations=[citation.id for citation in orm.citations],
+            citations=[citation.identifier for citation in orm.citations],
             distributions=[
                 AIoDDistribution(
                     content_url=orm_distr.content_url,

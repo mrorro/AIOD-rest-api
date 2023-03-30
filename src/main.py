@@ -100,7 +100,7 @@ def _connector_from_node_name(connector_type: str, connector_dict: Dict, node_na
 
 
 def _retrieve_news(session, identifier) -> OrmNews:
-    query = select(OrmNews).where(OrmNews.id == identifier)
+    query = select(OrmNews).where(OrmNews.identifier == identifier)
     news = session.scalars(query).first()
     if not news:
         raise HTTPException(

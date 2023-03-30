@@ -23,6 +23,6 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert {pub["doi"] for pub in response_json} == {"doi1", "doi2"}
     assert {pub["node"] for pub in response_json} == {"zenodo", "zenodo"}
     assert {pub["node_specific_identifier"] for pub in response_json} == {"1", "2"}
-    assert {pub["id"] for pub in response_json} == {1, 2}
+    assert {pub["identifier"] for pub in response_json} == {1, 2}
     for pub in response_json:
         assert len(pub) == 6

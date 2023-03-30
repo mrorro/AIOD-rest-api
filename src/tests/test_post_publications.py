@@ -41,7 +41,7 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["doi"] == "doi2"
     assert response_json["node"] == "zenodo"
     assert response_json["node_specific_identifier"] == "2"
-    assert response_json["id"] == 4
+    assert response_json["identifier"] == 4
     assert len(response_json["datasets"]) == 0
     assert len(response_json) == 7
 
@@ -75,12 +75,12 @@ def test_duplicated_publication(client: TestClient, engine: Engine):
     assert response.status_code == 409
     assert (
         response.json()["detail"] == "There already exists a publication with the same node "
-        "and name, with id=1."
+        "and name, with identifier=1."
     )
 
 
 # Test if the api allows creating publications with not all fields
-@pytest.mark.parametrize("field", ["title", "node", "node_specific_identifier"])
+@pytest.mark.parametrize("field", ["title"])
 def test_missing_value(client: TestClient, engine: Engine, field: str):
     data = {
         "title": "pub2",
@@ -96,7 +96,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
     ]
 
 
-@pytest.mark.parametrize("field", ["title", "node", "node_specific_identifier"])
+@pytest.mark.parametrize("field", ["title", "node"])
 def test_null_value(client: TestClient, engine: Engine, field: str):
     data = {
         "title": "pub2",

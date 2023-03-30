@@ -46,8 +46,6 @@ class HuggingFaceDatasetConnector(ResourceConnector[AIoDDataset]):
                     if len(parsed_citations) == 0:
                         citations = [
                             AIoDPublication(
-                                id=1,  # temporary identifier, for matching
-                                # within ResourceWithRelations
                                 title=dataset.citation,
                                 node=self.node_name,
                                 node_specific_identifier=dataset.citation,
@@ -57,8 +55,6 @@ class HuggingFaceDatasetConnector(ResourceConnector[AIoDDataset]):
                         citation = parsed_citations[0]
                         citations = [
                             AIoDPublication(
-                                id=1,  # temporary identifier, for matching
-                                # within ResourceWithRelations
                                 title=citation["title"],
                                 node=self.node_name,
                                 node_specific_identifier=citation["ID"],
@@ -107,14 +103,13 @@ class HuggingFaceDatasetConnector(ResourceConnector[AIoDDataset]):
                         same_as=f"https://huggingface.co/datasets/{dataset.id}",
                         creator=dataset.author,
                         date_modified=dateutil.parser.parse(dataset.lastModified),
-                        citations={c.id for c in citations},
                         license=ds_license,
                         distributions=distributions,
                         is_accessible_for_free=True,
                         size=size,
                         keywords=dataset.tags,
                     ),
-                    related_resources=citations,
+                    related_resources={"citations": citations},
                 )
             except Exception as e:
                 logging.error(
