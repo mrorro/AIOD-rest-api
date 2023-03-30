@@ -51,30 +51,22 @@ class EducationalResourceConverter(
             time_required=aiod.time_required,
             keywords=[
                 OrmKeyword.as_unique(session=session, name=keyword) for keyword in aiod.keywords
-            ]
-            if aiod.keywords
-            else [],
+            ],
             business_categories=[
                 OrmBusinessCategory.as_unique(session=session, category=category)
                 for category in aiod.business_categories
-            ]
-            if aiod.business_categories
-            else [],
+            ],
             technical_categories=[
                 OrmTechnicalCategory.as_unique(session=session, category=category)
                 for category in aiod.technical_categories
-            ]
-            if aiod.technical_categories
-            else [],
+            ],
             target_audience=[
                 OrmTargetAudience.as_unique(session=session, name=name)
                 for name in aiod.target_audience
-            ]
-            if aiod.target_audience
-            else [],
-            languages=[OrmLanguage.as_unique(session=session, name=name) for name in aiod.languages]
-            if aiod.languages
-            else [],
+            ],
+            languages=[
+                OrmLanguage.as_unique(session=session, name=name) for name in aiod.languages
+            ],
         )
 
     def orm_to_aiod(self, orm: OrmEducationalResource) -> AIoDEducationalResource:

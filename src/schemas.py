@@ -119,8 +119,12 @@ class AIoDEducationalResource(BaseModel):
     educational_type: str = Field(max_length=500)
 
     pace: str = Field(max_length=500)
-    languages: list[str]
-    target_audience: list[str]
+    languages: List[str] = Field(
+        description="Languages related with an educational resource", default_factory=list
+    )
+    target_audience: List[str] = Field(
+        description="Target audience related with an educational resource", default_factory=list
+    )
 
     educational_use: str | List[str] = Field(
         description="The intended educational use of the resource, such as lecture, lab exercise"
@@ -154,8 +158,17 @@ class AIoDEducationalResource(BaseModel):
     duration_minutes_and_hours: Optional[str]
     hours_per_week: Optional[str]
     country: Optional[str]
-    technical_categories: Optional[list[str]]
-    business_categories: Optional[list[str]]
-    keywords: Optional[list[str]]
+
+    technical_categories: List[str] = Field(
+        description="Technical categories related with an educational resource",
+        default_factory=list,
+    )
+    business_categories: List[str] = Field(
+        description="Business categories related with an educational resource", default_factory=list
+    )
+    keywords: List[str] = Field(
+        description="Keywords or tags categories related with an educational resource",
+        default_factory=list,
+    )
 
     id: int | None
