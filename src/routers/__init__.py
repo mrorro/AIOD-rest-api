@@ -4,5 +4,11 @@ from .abstract_router import ResourceRouter  # noqa:F401
 from .dataset_router import DatasetRouter
 from .news_router import NewsRouter
 from .publication_router import PublicationRouter
+from .educational_resource_router import EducationalResourceRouter
 
-routers = [DatasetRouter(), PublicationRouter(), NewsRouter()]  # type: typing.List[ResourceRouter]
+routers = [
+    DatasetRouter(),
+    PublicationRouter(),
+    NewsRouter(),
+    EducationalResourceRouter(),
+]  # type: typing.List[ResourceRouter]

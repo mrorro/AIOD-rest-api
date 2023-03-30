@@ -73,7 +73,7 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["alternative_headline"] == "ah1"
     assert response_json["word_count"] == 10
     assert response_json["id"] == 4
-    assert len(response_json) == 12
+    assert len(response_json) == 13
 
 
 @pytest.mark.parametrize(

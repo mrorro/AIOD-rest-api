@@ -1,11 +1,11 @@
 """
-Converting between different dataset representations
+Converting between different news representations
 """
 from sqlalchemy.orm import Session
 
 from converters.abstract_converter import AbstractConverter
-from database.model.general import OrmKeyword
-from database.model.news import OrmNews, OrmBusinessCategory, OrmNewsCategory
+from database.model.general import OrmKeyword, OrmBusinessCategory
+from database.model.news import OrmMedia, OrmNews, OrmNewsCategory
 from schemas import AIoDNews
 
 
@@ -23,15 +23,26 @@ class NewsConverter(AbstractConverter[AIoDNews, OrmNews]):
             alternative_headline=aiod.alternative_headline,
             section=aiod.section,
             word_count=aiod.word_count,
-            tags=[OrmKeyword.as_unique(session=session, name=tag) for tag in aiod.tags],
+            keywords=[
+                OrmKeyword.as_unique(session=session, name=keyword) for keyword in aiod.keywords
+            ]
+            if aiod.keywords
+            else [],
             business_categories=[
                 OrmBusinessCategory.as_unique(session=session, category=category)
                 for category in aiod.business_categories
-            ],
+            ]
+            if aiod.business_categories
+            else [],
             news_categories=[
                 OrmNewsCategory.as_unique(session=session, category=category)
                 for category in aiod.news_categories
-            ],
+            ]
+            if aiod.news_categories
+            else [],
+            media=[OrmMedia.as_unique(session=session, name=name) for name in aiod.media]
+            if aiod.media
+            else [],
         )
 
     def orm_to_aiod(self, orm: OrmNews) -> AIoDNews:
@@ -48,7 +59,8 @@ class NewsConverter(AbstractConverter[AIoDNews, OrmNews]):
             alternative_headline=orm.alternative_headline,
             section=orm.section,
             word_count=orm.word_count,
-            tags={t.name for t in orm.tags},
+            keywords={k.name for k in orm.keywords},
             business_categories={c.category for c in orm.business_categories},
             news_categories={c.category for c in orm.news_categories},
+            media={m.name for m in orm.media},
         )

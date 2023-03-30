@@ -24,7 +24,7 @@ def test_happy_path_for_all(client: TestClient, engine: Engine):
             word_count=10,
             news_categories=[OrmNewsCategory(category="something")],
             business_categories=[OrmBusinessCategory(category="something")],
-            tags=[OrmKeyword(name="something")],
+            keywords=[OrmKeyword(name="something")],
         ),
         OrmNews(
             title="n2",
@@ -66,9 +66,9 @@ def test_happy_path_for_all(client: TestClient, engine: Engine):
     assert {ds["word_count"] for ds in response_json} == {10, 10, 10}
     assert {len(ds["news_categories"]) for ds in response_json} == {0, 1}
     assert {len(ds["business_categories"]) for ds in response_json} == {0, 1}
-    assert {len(ds["tags"]) for ds in response_json} == {0, 1}
+    assert {len(ds["keywords"]) for ds in response_json} == {0, 1}
     for ds in response_json:
-        assert len(ds) == 12
+        assert len(ds) == 13
 
 
 @pytest.mark.parametrize("news_id", [1, 2])
@@ -86,7 +86,7 @@ def test_happy_path_for_one(client: TestClient, engine: Engine, news_id: int):
             word_count=10,
             news_categories=[OrmNewsCategory(category="something")],
             business_categories=[OrmBusinessCategory(category="something")],
-            tags=[OrmKeyword(name="something")],
+            keywords=[OrmKeyword(name="something")],
         ),
         OrmNews(
             title="n2",
@@ -124,8 +124,8 @@ def test_happy_path_for_one(client: TestClient, engine: Engine, news_id: int):
     assert response_json["id"] == news_id
     assert len(response_json["news_categories"]) == (1 if news_id == 1 else 0)
     assert len(response_json["business_categories"]) == (1 if news_id == 1 else 0)
-    assert len(response_json["tags"]) == (1 if news_id == 1 else 0)
-    assert len(response_json) == 12
+    assert len(response_json["keywords"]) == (1 if news_id == 1 else 0)
+    assert len(response_json) == 13
 
 
 @pytest.mark.parametrize("news_id", [-1, 2, 3])
