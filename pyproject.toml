@@ -1,10 +1,14 @@
 [project]
 name = "ai4eu_server_demo"
 description = "A containerized demo application for AI on demand (previously AI4EU) "
-version = "0.1.20230116"
+version = "0.2.20230331"
 authors = [
-    { name = "Pieter Gijsbers", email = "p.gijsbers@tue.nl"},
+
+    { name = "Antonis Gianios"},
+    { name = "Íñigo Aréjula Aísa"},
     { name = "Jos van der Velde", email = "j.d.v.d.velde@tue.nl"},
+    { name = "Pieter Gijsbers", email = "p.gijsbers@tue.nl"},
+    { name = "Giannis Mouchakis"},
 ]
 dependencies = [
     "sqlalchemy==2.0.0b4",
