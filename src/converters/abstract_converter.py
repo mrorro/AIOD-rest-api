@@ -3,11 +3,11 @@ from typing import Generic, TypeVar
 
 from sqlalchemy.orm import Session
 
-from database.model.ai_resource import OrmAIResource
-from schemas import AIoDAIResource
+from database.model.resource import OrmResource
+from schemas import AIoDResource
 
-ORM_CLASS = TypeVar("ORM_CLASS", bound=OrmAIResource)
-AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDAIResource)
+ORM_CLASS = TypeVar("ORM_CLASS", bound=OrmResource)
+AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDResource)
 
 
 class ResourceConverter(abc.ABC, Generic[AIOD_CLASS, ORM_CLASS]):

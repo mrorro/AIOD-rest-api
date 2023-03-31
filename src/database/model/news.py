@@ -4,7 +4,6 @@ from sqlalchemy import ForeignKey, String, Integer, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
-from database.model.ai_resource import OrmAIResource
 from database.model.base import Base
 from database.model.general import OrmKeyword, OrmBusinessCategory
 from database.model.news_relationships import (
@@ -13,6 +12,7 @@ from database.model.news_relationships import (
     news_keyword_relationship,
     news_media_relationship,
 )
+from database.model.resource import OrmResource
 from database.model.unique_model import UniqueMixin
 
 
@@ -42,11 +42,11 @@ class OrmNewsCategory(UniqueMixin, Base):
     """Any news category"""
 
     @classmethod
-    def _unique_hash(cls, category):
+    def _unique_hash(cls, category, **_):
         return category
 
     @classmethod
-    def _unique_filter(cls, query, category):
+    def _unique_filter(cls, query, category, **_):
         return query.filter(cls.category == category)
 
     __tablename__ = "news_categories"
@@ -64,7 +64,7 @@ class OrmNewsCategory(UniqueMixin, Base):
     )
 
 
-class OrmNews(OrmAIResource):
+class OrmNews(OrmResource):
     """Any news"""
 
     __tablename__ = "news"

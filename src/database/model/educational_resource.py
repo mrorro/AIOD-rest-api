@@ -1,14 +1,11 @@
-from sqlite3 import Date
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
-from sqlalchemy.sql import func
+from sqlite3 import Date
+
 from sqlalchemy import String, DateTime, Boolean, Interval
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
 
-from database.model.ai_resource import OrmAIResource
 from database.model.base import Base
-
-from database.model.general import OrmBusinessCategory, OrmTechnicalCategory, OrmKeyword
-
 from database.model.educational_resource_relationships import (
     educational_resource_business_category_relationship,
     educational_resource_technical_category_relationship,
@@ -16,6 +13,8 @@ from database.model.educational_resource_relationships import (
     educational_resource_target_audience_relationship,
     educational_resource_language_relationship,
 )
+from database.model.general import OrmBusinessCategory, OrmTechnicalCategory, OrmKeyword
+from database.model.resource import OrmResource
 from database.model.unique_model import UniqueMixin
 
 
@@ -60,7 +59,7 @@ class OrmLanguage(UniqueMixin, Base):
     )
 
 
-class OrmEducationalResource(OrmAIResource):
+class OrmEducationalResource(OrmResource):
     """Any educational resource"""
 
     __tablename__ = "educational_resources"

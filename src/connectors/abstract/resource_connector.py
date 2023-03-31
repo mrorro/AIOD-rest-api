@@ -3,9 +3,9 @@ from typing import Generic, TypeVar, Iterator
 
 from connectors.resource_with_relations import ResourceWithRelations
 from platform_names import PlatformName
-from schemas import AIoDAIResource
+from schemas import AIoDResource
 
-AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDAIResource)
+AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDResource)
 
 
 class ResourceConnector(abc.ABC, Generic[AIOD_CLASS]):

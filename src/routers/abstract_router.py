@@ -9,9 +9,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from converters.abstract_converter import ResourceConverter
-from database.model.ai_resource import OrmAIResource
+from database.model.resource import OrmResource
 from platform_names import PlatformName
-from schemas import AIoDAIResource
+from schemas import AIoDResource
 
 
 class Pagination(BaseModel):
@@ -19,8 +19,8 @@ class Pagination(BaseModel):
     limit: int = 100
 
 
-ORM_CLASS = TypeVar("ORM_CLASS", bound=OrmAIResource)
-AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDAIResource)
+ORM_CLASS = TypeVar("ORM_CLASS", bound=OrmResource)
+AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDResource)
 
 
 class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):

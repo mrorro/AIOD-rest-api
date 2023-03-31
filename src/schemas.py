@@ -16,16 +16,24 @@ from pydantic import BaseModel, Field
 from platform_names import PlatformName
 
 
-class AIoDAIResource(BaseModel):
+class AIoDResource(BaseModel):
     """
-    The base class of all our AIResources such as Datasets, Publications, News etc..
-
-    For now it only contains a couple of fields, we will have to extend it later.
+    The base class of all our Resources
     """
 
     identifier: int | None
     platform: str = Field(max_length=30, default=PlatformName.aiod)
     platform_identifier: str | None = Field(max_length=250, default=None)
+
+
+class AIoDAIResource(AIoDResource):
+    """
+    The base class of all our AIResources such as Datasets, Publications etc..
+
+    For now, it contains no fields, we will have to extend it later.
+    """
+
+    pass
 
 
 class AIoDDistribution(BaseModel):

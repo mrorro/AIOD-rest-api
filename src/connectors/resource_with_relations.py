@@ -1,9 +1,9 @@
 import dataclasses
 from typing import TypeVar, Generic, List
 
-from schemas import AIoDAIResource
+from schemas import AIoDAIResource, AIoDResource
 
-AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDAIResource)
+AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDResource)
 
 
 @dataclasses.dataclass
