@@ -1,4 +1,3 @@
-import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 from sqlite3 import Date
 
 from sqlalchemy import ForeignKey, String, Integer, DateTime
@@ -7,11 +6,11 @@ from sqlalchemy.sql import func
 
 from database.model.ai_resource import OrmAIResource
 from database.model.base import Base
-from database.model.general import OrmKeyword
+from database.model.general import OrmKeyword, OrmBusinessCategory
 from database.model.news_relationships import (
     news_business_category_relationship,
     news_news_category_relationship,
-    news_tag_relationship,
+    news_keyword_relationship,
     news_media_relationship,
 )
 from database.model.unique_model import UniqueMixin
@@ -39,34 +38,12 @@ class OrmMedia(UniqueMixin, Base):
     )
 
 
-class OrmBusinessCategory(UniqueMixin, Base):
-    """Any business category"""
-
-    @classmethod
-    def _unique_hash(cls, name):
-        return name
-
-    @classmethod
-    def _unique_filter(cls, query, category):
-        return query.filter(cls.category == category)
-
-    __tablename__ = "business_categories"
-
-    category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    news: Mapped[list["OrmNews"]] = relationship(
-        default_factory=list,
-        back_populates="business_categories",
-        secondary=news_business_category_relationship,
-    )
-
-
 class OrmNewsCategory(UniqueMixin, Base):
     """Any news category"""
 
     @classmethod
-    def _unique_hash(cls, name):
-        return name
+    def _unique_hash(cls, category):
+        return category
 
     @classmethod
     def _unique_filter(cls, query, category):
@@ -113,8 +90,8 @@ class OrmNews(OrmAIResource):
         passive_deletes=True,
         default_factory=list,
     )
-    tags: Mapped[list["OrmKeyword"]] = relationship(
-        secondary=news_tag_relationship,
+    keywords: Mapped[list["OrmKeyword"]] = relationship(
+        secondary=news_keyword_relationship,
         back_populates="news",
         passive_deletes=True,
         default_factory=list,

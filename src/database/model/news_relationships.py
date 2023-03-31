@@ -15,8 +15,8 @@ news_business_category_relationship = Table(
     ),
 )
 
-news_tag_relationship = Table(
-    "news_tag",
+news_keyword_relationship = Table(
+    "news_keyword",
     Base.metadata,
     Column(
         "news_id",

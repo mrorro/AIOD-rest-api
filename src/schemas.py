@@ -8,7 +8,7 @@ which should be a separate object inside a separate table in the database (so th
 search for all datasets having the same keyword). In the external schema, a set of strings is
 easier.
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Set, List, Optional
 
 from pydantic import BaseModel, Field
@@ -102,7 +102,72 @@ class AIoDNews(AIoDAIResource):
 
     media: Optional[list[str]]
     source: Optional[str]
+    news_categories: Optional[list[str]]
+    business_categories: Optional[list[str]]
+    keywords: Optional[list[str]]
+    id: int | None
 
-    news_categories: Set[str] = Field(default_factory=set)
-    business_categories: Set[str] = Field(default_factory=set)
-    tags: Set[str] = Field(default_factory=set)
+
+class AIoDEducationalResource(AIoDAIResource):
+    """The complete metadata for educational resource"""
+
+    title: str = Field(max_length=500)
+    body: str = Field(max_length=500)
+    website_url: str = Field(max_length=500)
+    date_modified: datetime | None
+
+    educational_level: str = Field(max_length=500)
+    educational_type: str = Field(max_length=500)
+
+    pace: str = Field(max_length=500)
+    languages: List[str] = Field(
+        description="Languages related with an educational resource", default_factory=list
+    )
+    target_audience: List[str] = Field(
+        description="Target audience related with an educational resource", default_factory=list
+    )
+
+    educational_use: str | List[str] = Field(
+        description="The intended educational use of the resource, such as lecture, lab exercise"
+        ", or homework assignment",
+        default_factory=str,
+    )
+    typical_age_range: str | None = Field(max_length=100)
+
+    interactivity_type: str | None = Field(max_length=100)
+    accessibility_api: str | None = Field(max_length=100)
+    accessibility_control: str | None = Field(max_length=100)
+    access_mode: str | None = Field(max_length=100)
+
+    access_mode_sufficient: str | List[str] = Field(
+        description="The set of access modes required to access the educational resource,"
+        " such as textual and visual.",
+        default_factory=str,
+    )
+    access_restrictions: str | None = Field(max_length=100)
+    is_accessible_for_free: bool | None
+    time_required: timedelta | None
+    citation: str | None = Field(max_length=200)
+
+    version: str | int | None
+    credits: bool | None
+    number_of_weeks: int | None
+    field_prerequisites: str | None = Field(max_length=500)
+    short_summary: str | None = Field(max_length=500)
+    duration_in_years: int | None
+
+    duration_minutes_and_hours: Optional[str]
+    hours_per_week: Optional[str]
+    country: Optional[str]
+
+    technical_categories: List[str] = Field(
+        description="Technical categories related with an educational resource",
+        default_factory=list,
+    )
+    business_categories: List[str] = Field(
+        description="Business categories related with an educational resource", default_factory=list
+    )
+    keywords: List[str] = Field(
+        description="Keywords or tags categories related with an educational resource",
+        default_factory=list,
+    )

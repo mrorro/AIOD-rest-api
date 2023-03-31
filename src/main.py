@@ -14,12 +14,11 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import Json
-from sqlalchemy import select, Engine
+from sqlalchemy import Engine
 
 import connectors
 import routers
 from authentication import get_current_user
-from database.model.news import OrmNews
 from database.setup import connect_to_database, populate_database
 from node_names import NodeName
 
@@ -97,17 +96,6 @@ def _connector_from_node_name(connector_type: str, connector_dict: Dict, node_na
         )
         raise HTTPException(status_code=501, detail=msg)
     return connector
-
-
-def _retrieve_news(session, identifier) -> OrmNews:
-    query = select(OrmNews).where(OrmNews.identifier == identifier)
-    news = session.scalars(query).first()
-    if not news:
-        raise HTTPException(
-            status_code=404,
-            detail=f"News '{identifier}' not found in the database.",
-        )
-    return news
 
 
 def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
