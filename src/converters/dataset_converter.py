@@ -2,8 +2,6 @@
 Converting between different dataset representations
 """
 
-from typing import List
-
 from sqlalchemy.orm import Session
 
 from converters.abstract_converter import ResourceConverter
@@ -25,16 +23,12 @@ class DatasetConverter(ResourceConverter[AIoDDataset, OrmDataset]):
         Converting between dataset representations: the AIoD schema towards the database variant (
         OrmDataset)
         """
-        if isinstance(aiod.citations, List):
-            # TODO(issue 7): retrieve OrmPublication from AIoDPublication
-            citations = []
-        else:
-            citations = retrieve_related_objects_by_ids(session, aiod.citations, OrmPublication)
+        citations = retrieve_related_objects_by_ids(session, aiod.citations, OrmPublication)
         has_parts = retrieve_related_objects_by_ids(session, aiod.has_parts, OrmDataset)
         is_part = retrieve_related_objects_by_ids(session, aiod.is_part, OrmDataset)
 
-        orm = OrmDataset.create(
-            return_existing_if_present=return_existing_if_present,
+        orm = OrmDataset.create_or_get(
+            create=not return_existing_if_present,
             session=session,
             description=aiod.description,
             name=aiod.name,

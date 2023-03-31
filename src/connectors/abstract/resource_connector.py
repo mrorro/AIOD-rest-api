@@ -3,9 +3,9 @@ from typing import Generic, TypeVar, Iterator
 
 from connectors.resource_with_relations import ResourceWithRelations
 from node_names import NodeName
-from pydantic import BaseModel
+from schemas import AIoDAIResource
 
-AIOD_CLASS = TypeVar("AIOD_CLASS", bound=BaseModel)
+AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDAIResource)
 
 
 class ResourceConnector(abc.ABC, Generic[AIOD_CLASS]):

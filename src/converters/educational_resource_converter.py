@@ -22,9 +22,9 @@ class EducationalResourceConverter(
         """
         Converting between news representations: the AIoD schema towards the database variant
         """
-        return OrmEducationalResource.create(
+        return OrmEducationalResource.create_or_get(
             session=session,
-            return_existing_if_present=return_existing_if_present,
+            create=not return_existing_if_present,
             node=aiod.node,
             node_specific_identifier=aiod.node_specific_identifier,
             title=aiod.title,

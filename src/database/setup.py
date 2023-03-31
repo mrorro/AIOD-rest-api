@@ -3,13 +3,13 @@ Utility functions for initializing the database and tables through SQLAlchemy.
 """
 from typing import List
 
-from pydantic import BaseModel
 from sqlalchemy import Engine, text, create_engine, select
 from sqlalchemy.orm import Session
 
 import converters
 from connectors import ResourceConnector
 from connectors.resource_with_relations import ResourceWithRelations
+from schemas import AIoDAIResource
 from .model.ai_resource import OrmAIResource
 from .model.base import Base  # noqa:F401
 from .model.dataset import OrmDataset
@@ -66,7 +66,6 @@ def populate_database(
     """Add some data to the Dataset and Publication tables."""
 
     with Session(engine) as session:
-
         data_exists = (
             session.scalars(select(OrmPublication)).first()
             or session.scalars(select(OrmDataset)).first()
@@ -74,39 +73,33 @@ def populate_database(
         if only_if_empty and data_exists:
             return
 
-        _fetch_aiod_resources(session, connectors, limit)
+        for connector in connectors:
+            for item in connector.fetch_all(limit=limit):
+                if isinstance(item, ResourceWithRelations):
+                    orm_resource = _convert(session, item.resource)
+                    _add_related_objects(session, orm_resource, item.related_resources)
+                else:
+                    orm_resource = _convert(session, item)
+                session.add(orm_resource)
         session.commit()
 
 
-def _fetch_aiod_resources(session: Session, connectors: List[ResourceConnector], limit: int | None):
-    for connector in connectors:
-        for item in connector.fetch_all(limit=limit):
-            if isinstance(item, ResourceWithRelations):
-                orm_resource = convert(session, item.resource)
-                related_orm = {}  # type: dict[str, Base | List[Base]]
-                for field_name, related_resource_or_list in item.related_resources.items():
-                    if isinstance(related_resource_or_list, BaseModel):
-                        resource: BaseModel = related_resource_or_list
-                        related_orm[field_name] = convert(session, resource)
-                    else:
-                        resources: list[BaseModel] = related_resource_or_list
-                        related_orm[field_name] = [
-                            convert(session, resource) for resource in resources
-                        ]
-
-                if len(related_orm) > 0:
-                    for field_name, related_resource_or_list in related_orm.items():
-                        if isinstance(related_resource_or_list, OrmAIResource):
-                            related_resource: OrmAIResource = related_resource_or_list
-                            orm_resource.__setattr__(field_name, related_resource)
-                        else:
-                            orm_resource.__setattr__(field_name, related_resource_or_list)
-                session.add(orm_resource)
-            else:
-                aiod = convert(session, item)
-                session.add(aiod)
+def _add_related_objects(
+    session: Session,
+    orm_resource: OrmAIResource,
+    related_resources: dict[str, AIoDAIResource | List[AIoDAIResource]],
+):
+    for field_name, related_resource_or_list in related_resources.items():
+        if isinstance(related_resource_or_list, AIoDAIResource):
+            resource: AIoDAIResource = related_resource_or_list
+            related_orm = _convert(session, resource)
+            orm_resource.__setattr__(field_name, related_orm)
+        else:
+            resources: list[AIoDAIResource] = related_resource_or_list
+            related_orms = [_convert(session, resource) for resource in resources]
+            orm_resource.__setattr__(field_name, related_orms)
 
 
-def convert(session: Session, resource: BaseModel) -> Base:
+def _convert(session: Session, resource: AIoDAIResource) -> OrmAIResource:
     converter = converters.converters[type(resource)]
     return converter.aiod_to_orm(session, resource, return_existing_if_present=True)

@@ -1,13 +1,13 @@
 import abc
 from typing import Generic, TypeVar
 
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from database.model.base import Base
+from database.model.ai_resource import OrmAIResource
+from schemas import AIoDAIResource
 
-ORM_CLASS = TypeVar("ORM_CLASS", bound=Base)
-AIOD_CLASS = TypeVar("AIOD_CLASS", bound=BaseModel)
+ORM_CLASS = TypeVar("ORM_CLASS", bound=OrmAIResource)
+AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDAIResource)
 
 
 class ResourceConverter(abc.ABC, Generic[AIOD_CLASS, ORM_CLASS]):

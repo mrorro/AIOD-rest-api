@@ -1,15 +1,19 @@
 import dataclasses
 from typing import TypeVar, Generic, List
 
-from pydantic import BaseModel
+from schemas import AIoDAIResource
 
-AIOD_CLASS = TypeVar("AIOD_CLASS", bound=BaseModel)
+AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDAIResource)
 
 
 @dataclasses.dataclass
 class ResourceWithRelations(Generic[AIOD_CLASS]):
+    """
+    A resource, with related AIResources in a dictionary of {field_name: other resource(s)}.
+    """
+
     resource: AIOD_CLASS
-    related_resources: dict[str, BaseModel | List[BaseModel]] = dataclasses.field(
+    related_resources: dict[str, AIoDAIResource | List[AIoDAIResource]] = dataclasses.field(
         default_factory=dict
     )
     # For each field name, another resource or a list of other resources

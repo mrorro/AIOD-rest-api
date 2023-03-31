@@ -27,7 +27,13 @@ class OrmAIResource(UniqueMixin, Base):
         )
 
     @classmethod
-    def create(cls, session: Session, *arg, return_existing_if_present: bool = False, **kw):
-        if return_existing_if_present:
-            return cls.as_unique(session, *arg, **kw)
-        return cls(*arg, **kw)
+    def create_or_get(cls, session: Session, *arg, create: bool = True, **kw):
+        """
+        If create=True, create a new Orm object. If False, try to get an existing instance from
+        the database, or create a new instance if that failed.
+        """
+        if len(arg) > 0:
+            raise ValueError("Please use only keyword arguments, to avoid mistakes")
+        if create:
+            return cls(**kw)
+        return cls.as_unique(session, **kw)

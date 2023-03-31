@@ -16,9 +16,9 @@ class NewsConverter(ResourceConverter[AIoDNews, OrmNews]):
         """
         Converting between news representations: the AIoD schema towards the database variant
         """
-        return OrmNews.create(
+        return OrmNews.create_or_get(
             session=session,
-            return_existing_if_present=return_existing_if_present,
+            create=not return_existing_if_present,
             node=aiod.node,
             node_specific_identifier=aiod.node_specific_identifier,
             title=aiod.title,

@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from converters.abstract_converter import ResourceConverter
 from database.model.ai_resource import OrmAIResource
 from node_names import NodeName
+from schemas import AIoDAIResource
 
 
 class Pagination(BaseModel):
@@ -19,7 +20,7 @@ class Pagination(BaseModel):
 
 
 ORM_CLASS = TypeVar("ORM_CLASS", bound=OrmAIResource)
-AIOD_CLASS = TypeVar("AIOD_CLASS", bound=BaseModel)
+AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDAIResource)
 
 
 class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):

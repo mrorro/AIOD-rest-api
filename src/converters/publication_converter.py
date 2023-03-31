@@ -19,9 +19,9 @@ class PublicationConverter(ResourceConverter[AIoDPublication, OrmPublication]):
         """
         datasets = retrieve_related_objects_by_ids(session, aiod.datasets, OrmDataset)
 
-        return OrmPublication.create(
+        return OrmPublication.create_or_get(
             session=session,
-            return_existing_if_present=return_existing_if_present,
+            create=not return_existing_if_present,
             doi=aiod.doi,
             node=aiod.node,
             node_specific_identifier=aiod.node_specific_identifier,
