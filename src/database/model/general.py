@@ -54,7 +54,7 @@ class OrmLicense(UniqueMixin, Base):
         return query.filter(cls.name == name)
 
     __tablename__ = "licenses"
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(String(150), unique=True)
     datasets: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list, back_populates="license", secondary=dataset_license_relationship
@@ -78,7 +78,7 @@ class OrmKeyword(UniqueMixin, Base):
         return query.filter(cls.name == name)
 
     __tablename__ = "keywords"
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(String(150), unique=True)
     datasets: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list, back_populates="keywords", secondary=dataset_keyword_relationship
@@ -106,7 +106,7 @@ class OrmBusinessCategory(UniqueMixin, Base):
 
     __tablename__ = "business_categories"
 
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     category: Mapped[str] = mapped_column(String(250), unique=True)
     news: Mapped[list["OrmNews"]] = relationship(
         default_factory=list,
@@ -134,7 +134,7 @@ class OrmTechnicalCategory(UniqueMixin, Base):
     __tablename__ = "technical_categories"
 
     category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
 
     educational_resources: Mapped[list["OrmEducationalResource"]] = relationship(
         default_factory=list,

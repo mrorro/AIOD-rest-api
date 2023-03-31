@@ -10,7 +10,6 @@ from starlette.testclient import TestClient
 from database.model.publication import OrmPublication
 from tests.testutils.paths import path_test_resources
 
-
 ZENODO_URL = "https://zenodo.org/api"
 
 
@@ -44,10 +43,7 @@ def test_publication_not_found_in_local_db(client: TestClient, engine: Engine):
         node_specific_identifier="7712947",
     )
     with Session(engine) as session:
-        # Populate database.
-        # Deepcopy necessary because SqlAlchemy changes the instance so that accessing the
-        # node_specific_identifier is not possible anymore
-        session.add(copy.deepcopy(publication_description))
+        session.add(publication_description)
         session.commit()
 
     response = client.get("/nodes/zenodo/publications/2")  # Note that only dataset 1 exists
@@ -64,10 +60,7 @@ def test_publication_not_found_in_zenodo(client: TestClient, engine: Engine):
         node_specific_identifier="7712947",
     )
     with Session(engine) as session:
-        # Populate database
-        # Deepcopy necessary because SqlAlchemy changes the instance so that accessing the
-        # node_specific_identifier is not possible anymore
-        session.add(copy.deepcopy(publication_description))
+        session.add(publication_description)
         session.commit()
 
     with responses.RequestsMock() as mocked_requests:

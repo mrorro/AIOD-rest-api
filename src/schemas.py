@@ -105,7 +105,6 @@ class AIoDNews(AIoDAIResource):
     news_categories: Optional[list[str]]
     business_categories: Optional[list[str]]
     keywords: Optional[list[str]]
-    id: int | None
 
 
 class AIoDEducationalResource(AIoDAIResource):

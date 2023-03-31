@@ -31,7 +31,7 @@ class OrmTargetAudience(UniqueMixin, Base):
         return query.filter(cls.name == name)
 
     name: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     educational_resources: Mapped[list["OrmEducationalResource"]] = relationship(
         default_factory=list,
         back_populates="target_audience",
@@ -51,7 +51,7 @@ class OrmLanguage(UniqueMixin, Base):
         return query.filter(cls.name == name)
 
     name: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
 
     educational_resources: Mapped[list["OrmEducationalResource"]] = relationship(
         default_factory=list,

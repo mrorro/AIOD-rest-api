@@ -30,7 +30,7 @@ class OrmMedia(UniqueMixin, Base):
     __tablename__ = "media"
 
     name: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     news: Mapped[list["OrmNews"]] = relationship(
         default_factory=list,
         back_populates="media",
@@ -51,10 +51,10 @@ class OrmNewsCategory(UniqueMixin, Base):
 
     __tablename__ = "news_categories"
 
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     parent_id: Mapped[int] = mapped_column(
-        ForeignKey("news_categories.id"), nullable=True, default=None
+        ForeignKey("news_categories.identifier"), nullable=True, default=None
     )
     parent_category = relationship("OrmNewsCategory")
     news: Mapped[list["OrmNews"]] = relationship(

@@ -109,7 +109,7 @@ class OrmDataDownload(Base):
     """All or part of a Dataset in downloadable form"""
 
     __tablename__ = "data_downloads"
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     content_url: Mapped[str] = mapped_column(String(250), nullable=False, unique=True)
     content_size_kb: Mapped[int] = mapped_column(default=None, nullable=True)
     description: Mapped[str] = mapped_column(String(5000), default=None, nullable=True)
@@ -140,7 +140,7 @@ class OrmMeasuredValue(UniqueMixin, Base):
             name="measuredValue_variable_technique",
         ),
     )
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     variable: Mapped[str] = mapped_column(String(150))
     technique: Mapped[str] = mapped_column(String(150))
     datasets: Mapped[list["OrmDataset"]] = relationship(
@@ -167,7 +167,7 @@ class OrmAlternateName(UniqueMixin, Base):
         return query.filter(cls.name == name)
 
     __tablename__ = "alternate_names"
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(String(150), unique=True)
     datasets: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list,

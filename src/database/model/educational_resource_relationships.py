@@ -14,7 +14,7 @@ educational_resource_business_category_relationship = Table(
     ),
     Column(
         "business_category_id",
-        ForeignKey("business_categories.id", ondelete="CASCADE"),
+        ForeignKey("business_categories.identifier", ondelete="CASCADE"),
         primary_key=True,
     ),
 )
@@ -29,7 +29,7 @@ educational_resource_technical_category_relationship = Table(
     ),
     Column(
         "technical_category_id",
-        ForeignKey("technical_categories.id", ondelete="CASCADE"),
+        ForeignKey("technical_categories.identifier", ondelete="CASCADE"),
         primary_key=True,
     ),
 )
@@ -44,7 +44,7 @@ educational_resource_keyword_relationship = Table(
     ),
     Column(
         "keyword_id",
-        ForeignKey("keywords.id", ondelete="CASCADE", onupdate="RESTRICT"),
+        ForeignKey("keywords.identifier", ondelete="CASCADE", onupdate="RESTRICT"),
         primary_key=True,
     ),
 )
@@ -60,7 +60,7 @@ educational_resource_target_audience_relationship = Table(
     ),
     Column(
         "target_audience_id",
-        ForeignKey("target_audience.id", ondelete="CASCADE", onupdate="RESTRICT"),
+        ForeignKey("target_audience.identifier", ondelete="CASCADE", onupdate="RESTRICT"),
         primary_key=True,
     ),
 )
@@ -76,7 +76,7 @@ educational_resource_language_relationship = Table(
     ),
     Column(
         "language_id",
-        ForeignKey("languages.id", ondelete="CASCADE", onupdate="RESTRICT"),
+        ForeignKey("languages.identifier", ondelete="CASCADE", onupdate="RESTRICT"),
         primary_key=True,
     ),
 )

@@ -68,7 +68,8 @@ class HuggingFaceDatasetConnector(ResourceConnector[AIoDDataset]):
                         )
 
                 parquet_info = HuggingFaceDatasetConnector._get(
-                    url="https://datasets-server.huggingface.co/parquet", dataset_id=dataset.id
+                    url="https://datasets-server.huggingface.co/parquet",
+                    dataset_id=dataset.id,
                 )
                 distributions = [
                     AIoDDistribution(

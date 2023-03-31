@@ -1,5 +1,3 @@
-import copy
-
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
@@ -18,10 +16,7 @@ def test_happy_path(client: TestClient, engine: Engine):
         node_specific_identifier="1",
     )
     with Session(engine) as session:
-        # Populate database.
-        # Deepcopy necessary because SqlAlchemy changes the instance so that accessing the
-        # node_specific_identifier is not possible anymore
-        session.add(copy.deepcopy(dataset_description))
+        session.add(dataset_description)
         session.commit()
     response = client.get("/nodes/openml/datasets/1")
     assert response.status_code == 200
