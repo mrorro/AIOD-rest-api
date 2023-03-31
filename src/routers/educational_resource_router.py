@@ -1,7 +1,7 @@
 from typing import Type
 
 from converters import educational_resource_converter_instance
-from converters.abstract_converter import AbstractConverter
+from converters.abstract_converter import ResourceConverter
 from database.model.educational_resource import OrmEducationalResource
 from routers.abstract_router import ResourceRouter, AIOD_CLASS, ORM_CLASS
 from schemas import AIoDEducationalResource
@@ -25,5 +25,5 @@ class EducationalResourceRouter(ResourceRouter[OrmEducationalResource, AIoDEduca
         return OrmEducationalResource
 
     @property
-    def converter(self) -> AbstractConverter[AIOD_CLASS, ORM_CLASS]:
+    def converter(self) -> ResourceConverter[AIOD_CLASS, ORM_CLASS]:
         return educational_resource_converter_instance

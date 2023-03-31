@@ -3,26 +3,30 @@ Converting between different educational resource representations
 """
 from sqlalchemy.orm import Session
 
-from converters.abstract_converter import AbstractConverter
-from database.model.general import OrmKeyword, OrmBusinessCategory, OrmTechnicalCategory
+from converters.abstract_converter import ResourceConverter
 from database.model.educational_resource import (
     OrmEducationalResource,
     OrmLanguage,
     OrmTargetAudience,
 )
+from database.model.general import OrmKeyword, OrmBusinessCategory, OrmTechnicalCategory
 from schemas import AIoDEducationalResource
 
 
 class EducationalResourceConverter(
-    AbstractConverter[AIoDEducationalResource, OrmEducationalResource]
+    ResourceConverter[AIoDEducationalResource, OrmEducationalResource]
 ):
     def aiod_to_orm(
-        self, session: Session, aiod: AIoDEducationalResource
+        self, session: Session, aiod: AIoDEducationalResource, return_existing_if_present=False
     ) -> OrmEducationalResource:
         """
         Converting between news representations: the AIoD schema towards the database variant
         """
-        return OrmEducationalResource(
+        return OrmEducationalResource.create_or_get(
+            session=session,
+            create=not return_existing_if_present,
+            platform=aiod.platform,
+            platform_identifier=aiod.platform_identifier,
             title=aiod.title,
             date_modified=aiod.date_modified,
             body=aiod.body,

@@ -8,12 +8,15 @@ from datetime import datetime
 
 
 from database.model.news import OrmNews
+from platform_names import PlatformName
 
 
 def test_happy_path(client: TestClient, engine: Engine):
     date_format = "%Y-%m-%d"
     news = [
         OrmNews(
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="n1",
             body="b1",
             section="s1",
@@ -24,6 +27,8 @@ def test_happy_path(client: TestClient, engine: Engine):
             word_count=10,
         ),
         OrmNews(
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="n2",
             body="b2",
             section="s2",
@@ -34,6 +39,8 @@ def test_happy_path(client: TestClient, engine: Engine):
             word_count=10,
         ),
         OrmNews(
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="n3",
             body="b3",
             section="s3",
@@ -72,8 +79,8 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["date_modified"] == "2023-03-21T00:00:00"
     assert response_json["alternative_headline"] == "ah1"
     assert response_json["word_count"] == 10
-    assert response_json["id"] == 4
-    assert len(response_json) == 13
+    assert response_json["identifier"] == 4
+    assert len(response_json) == 15
 
 
 @pytest.mark.parametrize(

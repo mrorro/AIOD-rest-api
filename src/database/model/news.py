@@ -12,6 +12,7 @@ from database.model.news_relationships import (
     news_keyword_relationship,
     news_media_relationship,
 )
+from database.model.resource import OrmResource
 from database.model.unique_model import UniqueMixin
 
 
@@ -29,7 +30,7 @@ class OrmMedia(UniqueMixin, Base):
     __tablename__ = "media"
 
     name: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     news: Mapped[list["OrmNews"]] = relationship(
         default_factory=list,
         back_populates="media",
@@ -41,19 +42,19 @@ class OrmNewsCategory(UniqueMixin, Base):
     """Any news category"""
 
     @classmethod
-    def _unique_hash(cls, category):
+    def _unique_hash(cls, category, **_):
         return category
 
     @classmethod
-    def _unique_filter(cls, query, category):
+    def _unique_filter(cls, query, category, **_):
         return query.filter(cls.category == category)
 
     __tablename__ = "news_categories"
 
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     parent_id: Mapped[int] = mapped_column(
-        ForeignKey("news_categories.id"), nullable=True, default=None
+        ForeignKey("news_categories.identifier"), nullable=True, default=None
     )
     parent_category = relationship("OrmNewsCategory")
     news: Mapped[list["OrmNews"]] = relationship(
@@ -63,7 +64,7 @@ class OrmNewsCategory(UniqueMixin, Base):
     )
 
 
-class OrmNews(Base):
+class OrmNews(OrmResource):
     """Any news"""
 
     __tablename__ = "news"
@@ -76,8 +77,6 @@ class OrmNews(Base):
     word_count: Mapped[int] = mapped_column(Integer, nullable=False)
     source: Mapped[str] = mapped_column(String(500), nullable=True)
     alternative_headline: Mapped[str] = mapped_column(String(500), nullable=True)
-
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
 
     business_categories: Mapped[list["OrmBusinessCategory"]] = relationship(
         secondary=news_business_category_relationship,

@@ -1,16 +1,17 @@
 """
 Utility functions for initializing the database and tables through SQLAlchemy.
 """
-import itertools
 from typing import List
 
 from sqlalchemy import Engine, text, create_engine, select
 from sqlalchemy.orm import Session
 
-from connectors import DatasetConnector, PublicationConnector
-from converters import dataset_converter_instance
-from schemas import AIoDDataset
-from .model.base import Base
+import converters
+from connectors import ResourceConnector
+from connectors.resource_with_relations import ResourceWithRelations
+from schemas import AIoDAIResource
+from .model.ai_resource import OrmAIResource
+from .model.base import Base  # noqa:F401
 from .model.dataset import OrmDataset
 from .model.publication import OrmPublication
 
@@ -58,35 +59,11 @@ def drop_or_create_database(url: str, delete_first: bool):
 
 def populate_database(
     engine: Engine,
+    connectors: List[ResourceConnector],
     only_if_empty: bool = True,
-    dataset_connectors: List[DatasetConnector] | None = None,
-    publications_connectors: List[PublicationConnector] | None = None,
-    limit_datasets: int | None = None,
-    limit_publications: int | None = None,
+    limit: int | None = None,
 ):
     """Add some data to the Dataset and Publication tables."""
-
-    if dataset_connectors is None:
-        datasets_iterable = iter(())
-    else:
-        datasets_iterable = itertools.chain(
-            *[c.fetch_all(limit=limit_datasets) for c in dataset_connectors]
-        )
-    if publications_connectors is None:
-        publications_iterable = iter(())
-    else:
-        publications_iterable = itertools.chain(
-            *[c.fetch_all(limit=limit_publications) for c in publications_connectors]
-        )
-
-    datasets: List[AIoDDataset] = list(datasets_iterable)
-    publications: List[OrmPublication] = list(publications_iterable)
-    # For now, we cannot make use of generators, because we have to link the datasets with the
-    # publications. This is a temporary setup though, so it makes sense to let the fetch_all()
-    # return an iterator for future benefits.
-
-    # TODO(issue 7): return AIoDPublication instead of OrmPublication, and link them again
-    # _link_datasets_with_publications(datasets, publications)
 
     with Session(engine) as session:
         data_exists = (
@@ -96,37 +73,33 @@ def populate_database(
         if only_if_empty and data_exists:
             return
 
-        orm_datasets = [
-            dataset_converter_instance.aiod_to_orm(session, dataset) for dataset in datasets
-        ]
-        session.add_all(orm_datasets)
-        session.add_all(publications)
+        for connector in connectors:
+            for item in connector.fetch_all(limit=limit):
+                if isinstance(item, ResourceWithRelations):
+                    orm_resource = _convert(session, item.resource)
+                    _add_related_objects(session, orm_resource, item.related_resources)
+                else:
+                    orm_resource = _convert(session, item)
+                session.add(orm_resource)
         session.commit()
 
 
-def _link_datasets_with_publications(datasets, publications):
-    """Linking some publications with some datasets. Temporary function to show the
-    possibilities."""
-    # fmt: off
-    benchmark_dataset_ids = [
-        181, 1111, 1596, 1457, 40981, 40983, 23517, 1489, 31, 40982, 41138, 41163, 41164, 41143,
-        1169, 41167, 41147, 41158, 1487, 54, 41144, 41145, 41156, 41157, 41168, 4541, 1515, 188,
-        1464, 1494, 1468, 1049, 23, 40975, 12, 1067, 40984, 40670, 3, 40978, 4134, 40701, 1475,
-        4538, 4534, 41146, 41142, 40498, 40900, 40996, 40668, 4135, 1486, 41027, 1461, 1590, 41169,
-        41166, 41165, 40685, 41159, 41161, 41150, 41162, 42733, 42734, 42732, 42746, 42742, 42769,
-        43072
-    ]
-    # fmt: on
-    benchmark_datasets = [
-        d
-        for d in datasets
-        if d.node == "openml" and int(d.node_specific_identifier) in benchmark_dataset_ids
-    ]
-    benchmark_publications = [p for p in publications if p.title == "AMLB: an AutoML Benchmark"]
-    higgs_title = "Searching for exotic particles in high-energy physics with deep learning"
-    higgs_publication = [p for p in publications if p.title == higgs_title]
-    for publication in higgs_publication:
-        publication.datasets = [d for d in datasets if d.node == "openml" and d.name == "Higgs"]
-    for publication in benchmark_publications:
-        publication.datasets = benchmark_datasets
-    return datasets, publications
+def _add_related_objects(
+    session: Session,
+    orm_resource: OrmAIResource,
+    related_resources: dict[str, AIoDAIResource | List[AIoDAIResource]],
+):
+    for field_name, related_resource_or_list in related_resources.items():
+        if isinstance(related_resource_or_list, AIoDAIResource):
+            resource: AIoDAIResource = related_resource_or_list
+            related_orm = _convert(session, resource)
+            orm_resource.__setattr__(field_name, related_orm)
+        else:
+            resources: list[AIoDAIResource] = related_resource_or_list
+            related_orms = [_convert(session, resource) for resource in resources]
+            orm_resource.__setattr__(field_name, related_orms)
+
+
+def _convert(session: Session, resource: AIoDAIResource) -> OrmAIResource:
+    converter = converters.converters[type(resource)]
+    return converter.aiod_to_orm(session, resource, return_existing_if_present=True)

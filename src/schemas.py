@@ -13,6 +13,28 @@ from typing import Set, List, Optional
 
 from pydantic import BaseModel, Field
 
+from platform_names import PlatformName
+
+
+class AIoDResource(BaseModel):
+    """
+    The base class of all our Resources
+    """
+
+    identifier: int | None
+    platform: str = Field(max_length=30, default=PlatformName.aiod)
+    platform_identifier: str | None = Field(max_length=250, default=None)
+
+
+class AIoDAIResource(AIoDResource):
+    """
+    The base class of all our AIResources such as Datasets, Publications etc..
+
+    For now, it contains no fields, we will have to extend it later.
+    """
+
+    pass
+
 
 class AIoDDistribution(BaseModel):
     content_url: str = Field(max_length=150)
@@ -27,32 +49,26 @@ class AIoDMeasurementValue(BaseModel):
     technique: str | None
 
 
-class AIoDPublication(BaseModel):
+class AIoDPublication(AIoDAIResource):
     """The complete metadata of a publication. For now, only a couple of fields are shown,
     we have to decide which fields to use."""
 
     doi: str | None = Field(max_length=150)
-    node_specific_identifier: str = Field(max_length=250)
-    node: str = Field(max_length=30)
-    id: int | None
     title: str = Field(max_length=250)
     url: str | None = Field(max_length=250)
-    datasets: Set[str] = Field(
+    datasets: Set[int] = Field(
         description="Identifiers of datasets that are connected to this publication",
         default_factory=list,
     )
 
 
-class AIoDDataset(BaseModel):
+class AIoDDataset(AIoDAIResource):
     """
     The complete metadata of a dataset in AIoD format.
     """
 
-    id: int | None
     description: str = Field(max_length=5000)
     name: str = Field(max_length=150)
-    node: str = Field(max_length=30)
-    node_specific_identifier: str = Field(max_length=250)
     same_as: str = Field(max_length=150)
 
     # Recommended fields
@@ -70,17 +86,16 @@ class AIoDDataset(BaseModel):
 
     # Relations
     license: str | None = Field(max_length=150)
-    has_parts: Set[str] = Field(
+    has_parts: Set[int] = Field(
         description="Identifiers of datasets that are part of this " "dataset.",
         default_factory=set,
     )
-    is_part: Set[str] = Field(
+    is_part: Set[int] = Field(
         description="Identifiers of datasets this dataset is part of.", default_factory=set
     )
     alternate_names: Set[str] = Field(default_factory=set)
-    citations: Set[str] | List[AIoDPublication] = Field(
-        description="Identifiers of publications linked to this dataset, or the actual "
-        "publications",
+    citations: Set[int] = Field(
+        description="Identifiers of publications linked to this dataset",
         default_factory=set,
     )
     distributions: List[AIoDDistribution] = []
@@ -88,7 +103,7 @@ class AIoDDataset(BaseModel):
     measured_values: List[AIoDMeasurementValue] = Field(default_factory=list)
 
 
-class AIoDNews(BaseModel):
+class AIoDNews(AIoDAIResource):
     """The complete metadata for news entity"""
 
     title: str = Field(max_length=500)
@@ -104,10 +119,9 @@ class AIoDNews(BaseModel):
     news_categories: Optional[list[str]]
     business_categories: Optional[list[str]]
     keywords: Optional[list[str]]
-    id: int | None
 
 
-class AIoDEducationalResource(BaseModel):
+class AIoDEducationalResource(AIoDAIResource):
     """The complete metadata for educational resource"""
 
     title: str = Field(max_length=500)
@@ -170,5 +184,3 @@ class AIoDEducationalResource(BaseModel):
         description="Keywords or tags categories related with an educational resource",
         default_factory=list,
     )
-
-    id: int | None

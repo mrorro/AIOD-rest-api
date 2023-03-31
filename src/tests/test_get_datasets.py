@@ -9,24 +9,24 @@ def test_happy_path(client: TestClient, engine: Engine):
     datasets = [
         OrmDataset(
             name="dset1",
-            node="openml",
+            platform="openml",
             description="a",
             same_as="openml.eu/1",
-            node_specific_identifier="1",
+            platform_identifier="1",
         ),
         OrmDataset(
             name="dset1",
-            node="other_node",
+            platform="other_platform",
             description="b",
-            same_as="other_node.eu/1",
-            node_specific_identifier="1",
+            same_as="other_platform.eu/1",
+            platform_identifier="1",
         ),
         OrmDataset(
             name="dset2",
-            node="other_node",
+            platform="other_platform",
             description="c",
-            same_as="other_node.eu/2",
-            node_specific_identifier="2",
+            same_as="other_platform.eu/2",
+            platform_identifier="2",
         ),
     ]
     with Session(engine) as session:
@@ -40,13 +40,13 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert len(response_json) == 3
     assert {ds["name"] for ds in response_json} == {"dset1", "dset2"}
     assert {ds["description"] for ds in response_json} == {"a", "b", "c"}
-    assert {ds["node"] for ds in response_json} == {"openml", "other_node"}
-    assert {ds["node_specific_identifier"] for ds in response_json} == {"1", "2"}
-    assert {ds["id"] for ds in response_json} == {1, 2, 3}
+    assert {ds["platform"] for ds in response_json} == {"openml", "other_platform"}
+    assert {ds["platform_identifier"] for ds in response_json} == {"1", "2"}
+    assert {ds["identifier"] for ds in response_json} == {1, 2, 3}
     assert {ds["same_as"] for ds in response_json} == {
         "openml.eu/1",
-        "other_node.eu/1",
-        "other_node.eu/2",
+        "other_platform.eu/1",
+        "other_platform.eu/2",
     }
     for ds in response_json:
         assert len(ds) == 13

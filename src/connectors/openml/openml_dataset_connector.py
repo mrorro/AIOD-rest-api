@@ -9,13 +9,18 @@ import dateutil.parser
 import requests
 from fastapi import HTTPException
 
-from connectors.abstract.dataset_connector import DatasetConnector
-from schemas import AIoDDataset, AIoDDistribution
+from connectors.abstract.resource_connector import ResourceConnector
+from platform_names import PlatformName
+from schemas import AIoDDistribution, AIoDDataset
 
 
-class OpenMlDatasetConnector(DatasetConnector):
-    def fetch(self, node_specific_identifier: str) -> AIoDDataset:
-        url_data = f"https://www.openml.org/api/v1/json/data/{node_specific_identifier}"
+class OpenMlDatasetConnector(ResourceConnector[AIoDDataset]):
+    @property
+    def platform_name(self) -> PlatformName:
+        return PlatformName.openml
+
+    def fetch(self, platform_identifier: str) -> AIoDDataset:
+        url_data = f"https://www.openml.org/api/v1/json/data/{platform_identifier}"
         response = requests.get(url_data)
         if not response.ok:
             code = response.status_code
@@ -30,7 +35,7 @@ class OpenMlDatasetConnector(DatasetConnector):
 
         # Here we can format the response into some standardized way, maybe this includes some
         # dataset characteristics. These need to be retrieved separately from OpenML:
-        url_qual = f"https://www.openml.org/api/v1/json/data/qualities/{node_specific_identifier}"
+        url_qual = f"https://www.openml.org/api/v1/json/data/qualities/{platform_identifier}"
         response = requests.get(url_qual)
         if not response.ok:
             msg = response.json()["error"]["message"]
@@ -45,8 +50,8 @@ class OpenMlDatasetConnector(DatasetConnector):
         }
 
         return AIoDDataset(
-            node=self.node_name,
-            node_specific_identifier=node_specific_identifier,
+            platform=self.platform_name,
+            platform_identifier=platform_identifier,
             name=dataset_json["name"],
             same_as=url_data,
             description=dataset_json["description"],

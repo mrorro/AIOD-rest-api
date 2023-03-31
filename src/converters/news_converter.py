@@ -3,18 +3,24 @@ Converting between different news representations
 """
 from sqlalchemy.orm import Session
 
-from converters.abstract_converter import AbstractConverter
+from converters.abstract_converter import ResourceConverter
 from database.model.general import OrmKeyword, OrmBusinessCategory
 from database.model.news import OrmMedia, OrmNews, OrmNewsCategory
 from schemas import AIoDNews
 
 
-class NewsConverter(AbstractConverter[AIoDNews, OrmNews]):
-    def aiod_to_orm(self, session: Session, aiod: AIoDNews) -> OrmNews:
+class NewsConverter(ResourceConverter[AIoDNews, OrmNews]):
+    def aiod_to_orm(
+        self, session: Session, aiod: AIoDNews, return_existing_if_present: bool = False
+    ) -> OrmNews:
         """
         Converting between news representations: the AIoD schema towards the database variant
         """
-        return OrmNews(
+        return OrmNews.create_or_get(
+            session=session,
+            create=not return_existing_if_present,
+            platform=aiod.platform,
+            platform_identifier=aiod.platform_identifier,
             title=aiod.title,
             date_modified=aiod.date_modified,
             body=aiod.body,
@@ -50,7 +56,11 @@ class NewsConverter(AbstractConverter[AIoDNews, OrmNews]):
         Converting between news representations: the database variant towards the AIoD schema.
         """
         return AIoDNews(
-            id=orm.id,
+            identifier=orm.identifier,
+            platform=orm.platform,
+            platform_identifier=orm.platform_identifier
+            if orm.platform_identifier is not None
+            else str(orm.identifier),
             title=orm.title,
             date_modified=orm.date_modified,
             body=orm.body,

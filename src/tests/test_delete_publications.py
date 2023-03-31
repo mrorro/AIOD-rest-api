@@ -14,15 +14,15 @@ def test_happy_path(client: TestClient, engine: Engine, identifier: str):
         OrmPublication(
             title="title 1",
             doi="10.5281/zenodo.121",
-            node="zenodo",
-            node_specific_identifier="121",
+            platform="zenodo",
+            platform_identifier="121",
             datasets=[],
         ),
         OrmPublication(
             title="title 2",
             doi="10.5281/zenodo.122",
-            node="zenodo",
-            node_specific_identifier="122",
+            platform="zenodo",
+            platform_identifier="122",
             datasets=[],
         ),
     ]
@@ -44,15 +44,15 @@ def test_nonexistent_dataset(client: TestClient, engine: Engine, identifier: str
         OrmPublication(
             title="title 1",
             doi="10.5281/zenodo.121",
-            node="zenodo",
-            node_specific_identifier="121",
+            platform="zenodo",
+            platform_identifier="121",
             datasets=[],
         ),
         OrmPublication(
             title="title 2",
             doi="10.5281/zenodo.122",
-            node="zenodo",
-            node_specific_identifier="122",
+            platform="zenodo",
+            platform_identifier="122",
             datasets=[],
         ),
     ]

@@ -6,12 +6,18 @@ import datasets
 import dateutil.parser
 import requests
 
-from connectors import DatasetConnector
-from schemas import AIoDDataset, AIoDPublication, AIoDDistribution
+from connectors import ResourceConnector
+from connectors.resource_with_relations import ResourceWithRelations
+from platform_names import PlatformName
+from schemas import AIoDPublication, AIoDDistribution, AIoDDataset
 
 
-class HuggingFaceDatasetConnector(DatasetConnector):
-    def fetch(self, node_specific_identifier: str) -> AIoDDataset:
+class HuggingFaceDatasetConnector(ResourceConnector[AIoDDataset]):
+    @property
+    def platform_name(self) -> PlatformName:
+        return PlatformName.huggingface
+
+    def fetch(self, platform_identifier: str) -> ResourceWithRelations[AIoDDataset]:
         raise NotImplementedError()
 
     @staticmethod
@@ -29,9 +35,10 @@ class HuggingFaceDatasetConnector(DatasetConnector):
             return []
         return response_json["parquet_files"]
 
-    def fetch_all(self, limit: int | None = None) -> typing.Iterator[AIoDDataset]:
-        ds = datasets.list_datasets(with_details=True)[:limit]
-        for dataset in ds:
+    def fetch_all(
+        self, limit: int | None = None
+    ) -> typing.Iterator[ResourceWithRelations[AIoDDataset]]:
+        for dataset in datasets.list_datasets(with_details=True)[:limit]:
             try:
                 citations = []
                 if dataset.citation is not None:
@@ -40,8 +47,8 @@ class HuggingFaceDatasetConnector(DatasetConnector):
                         citations = [
                             AIoDPublication(
                                 title=dataset.citation,
-                                node=self.node_name,
-                                node_specific_identifier=dataset.citation,
+                                platform=self.platform_name,
+                                platform_identifier=dataset.citation,
                             )
                         ]
                     elif len(parsed_citations) == 1:
@@ -49,8 +56,8 @@ class HuggingFaceDatasetConnector(DatasetConnector):
                         citations = [
                             AIoDPublication(
                                 title=citation["title"],
-                                node=self.node_name,
-                                node_specific_identifier=citation["ID"],
+                                platform=self.platform_name,
+                                platform_identifier=citation["ID"],
                                 url=citation["link"] if "link" in citation else None,
                             )
                         ]
@@ -61,7 +68,8 @@ class HuggingFaceDatasetConnector(DatasetConnector):
                         )
 
                 parquet_info = HuggingFaceDatasetConnector._get(
-                    url="https://datasets-server.huggingface.co/parquet", dataset_id=dataset.id
+                    url="https://datasets-server.huggingface.co/parquet",
+                    dataset_id=dataset.id,
                 )
                 distributions = [
                     AIoDDistribution(
@@ -87,20 +95,22 @@ class HuggingFaceDatasetConnector(DatasetConnector):
                     #         split["num_examples"]
                     #         for split in dataset.cardData["dataset_info"]["splits"]
                     #     )
-                yield AIoDDataset(
-                    description=dataset.description,
-                    name=dataset.id,
-                    node_specific_identifier=dataset.id,
-                    node=self.node_name,
-                    same_as=f"https://huggingface.co/datasets/{dataset.id}",
-                    creator=dataset.author,
-                    date_modified=dateutil.parser.parse(dataset.lastModified),
-                    citations=citations,
-                    license=ds_license,
-                    distributions=distributions,
-                    is_accessible_for_free=True,
-                    size=size,
-                    keywords=dataset.tags,
+                yield ResourceWithRelations[AIoDDataset](
+                    resource=AIoDDataset(
+                        description=dataset.description,
+                        name=dataset.id,
+                        platform_identifier=dataset.id,
+                        platform=self.platform_name,
+                        same_as=f"https://huggingface.co/datasets/{dataset.id}",
+                        creator=dataset.author,
+                        date_modified=dateutil.parser.parse(dataset.lastModified),
+                        license=ds_license,
+                        distributions=distributions,
+                        is_accessible_for_free=True,
+                        size=size,
+                        keywords=dataset.tags,
+                    ),
+                    related_resources={"citations": citations},
                 )
             except Exception as e:
                 logging.error(

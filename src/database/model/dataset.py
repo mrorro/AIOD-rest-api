@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import UniqueConstraint, String, DateTime, Boolean, and_
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from database.model.ai_resource import OrmAIResource
 from database.model.dataset_relationships import (
     dataset_alternateName_relationship,
     dataset_distribution_relationship,
@@ -18,30 +19,30 @@ from database.model.publication import OrmPublication
 from database.model.unique_model import UniqueMixin
 
 
-class OrmDataset(Base):
+class OrmDataset(OrmAIResource):
     """Keeps track of which dataset is stored where."""
 
     __tablename__ = "datasets"
     __table_args__ = (
         UniqueConstraint(
-            "node",
-            "node_specific_identifier",
-            name="dataset_unique_node_node_specific_identifier",
+            "platform",
+            "platform_identifier",
+            name="dataset_unique_platform_platform_identifier",
         ),
         UniqueConstraint(
-            "node",
+            "platform",
             "name",
             "version",
-            name="dataset_unique_node_name_version",
+            name="dataset_unique_platform_name_version",
         ),
     )
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
+    # Defined on AIResource as well, but without this attribute here, SQLAlchemy does not
+    # understand the self-referential relationship in has_part and is_part
 
     # Required fields
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
     description: Mapped[str] = mapped_column(String(5000), nullable=False)
     name: Mapped[str] = mapped_column(String(150), nullable=False)
-    node: Mapped[str] = mapped_column(String(30), nullable=False)
-    node_specific_identifier: Mapped[str] = mapped_column(String(250), nullable=False)
     same_as: Mapped[str] = mapped_column(String(150), unique=True, nullable=False)
 
     # Recommended fields
@@ -66,16 +67,16 @@ class OrmDataset(Base):
     has_parts: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list,
         back_populates="is_part",
-        primaryjoin=dataset_dataset_relationship.c.parent_id == id,
+        primaryjoin=dataset_dataset_relationship.c.parent_id == identifier,
         secondary=dataset_dataset_relationship,
-        secondaryjoin=dataset_dataset_relationship.c.child_id == id,
+        secondaryjoin=dataset_dataset_relationship.c.child_id == identifier,
     )
     is_part: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list,
         back_populates="has_parts",
-        primaryjoin=dataset_dataset_relationship.c.child_id == id,
+        primaryjoin=dataset_dataset_relationship.c.child_id == identifier,
         secondary=dataset_dataset_relationship,
-        secondaryjoin=dataset_dataset_relationship.c.parent_id == id,
+        secondaryjoin=dataset_dataset_relationship.c.parent_id == identifier,
     )
     alternate_names: Mapped[list["OrmAlternateName"]] = relationship(
         default_factory=list,
@@ -108,7 +109,7 @@ class OrmDataDownload(Base):
     """All or part of a Dataset in downloadable form"""
 
     __tablename__ = "data_downloads"
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     content_url: Mapped[str] = mapped_column(String(250), nullable=False, unique=True)
     content_size_kb: Mapped[int] = mapped_column(default=None, nullable=True)
     description: Mapped[str] = mapped_column(String(5000), default=None, nullable=True)
@@ -139,7 +140,7 @@ class OrmMeasuredValue(UniqueMixin, Base):
             name="measuredValue_variable_technique",
         ),
     )
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     variable: Mapped[str] = mapped_column(String(150))
     technique: Mapped[str] = mapped_column(String(150))
     datasets: Mapped[list["OrmDataset"]] = relationship(
@@ -166,7 +167,7 @@ class OrmAlternateName(UniqueMixin, Base):
         return query.filter(cls.name == name)
 
     __tablename__ = "alternate_names"
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(String(150), unique=True)
     datasets: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list,

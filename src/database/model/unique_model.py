@@ -7,7 +7,7 @@ class UniqueMixin(object):
     lead to having the same license twice in the database (or a unique-constraint-failed exception).
     Solution: use License.as_unique(session).
 
-    Copied from https://github.com/sqlalchemy/sqlalchemy/wiki/UniqueObject
+    Inspired by https://github.com/sqlalchemy/sqlalchemy/wiki/UniqueObject
     """
 
     @classmethod
@@ -20,13 +20,16 @@ class UniqueMixin(object):
 
     @classmethod
     def as_unique(cls, session, *arg, **kw):
-        return _unique(session, cls, cls._unique_hash, cls._unique_filter, cls, arg, kw)
+        """
+        Try to find this instance in the database, or create a new instance if it does not exist.
+        """
+        return _unique(session, cls, cls._unique_hash, cls._unique_filter, arg, kw)
 
 
-def _unique(session, cls, hashfunc, queryfunc, constructor, arg, kw):
+def _unique(session, cls, hashfunc, queryfunc, arg, kw):
     cache = getattr(session, "_unique_cache", None)
     if cache is None:
-        session._unique_cache = cache = {}
+        session._unique_cache = cache = {}  # TODO: test if deleted objects are left in the cache
 
     key = (cls, hashfunc(*arg, **kw))
     if key in cache:
@@ -35,9 +38,11 @@ def _unique(session, cls, hashfunc, queryfunc, constructor, arg, kw):
         with session.no_autoflush:
             q = session.query(cls)
             q = queryfunc(q, *arg, **kw)
-            obj = q.first()
-            if not obj:
-                obj = constructor(*arg, **kw)
-                session.add(obj)
-        cache[key] = obj
-        return obj
+            existing = q.first()
+            if existing:
+                unique_object = existing
+            else:
+                unique_object = cls(*arg, **kw)
+                session.add(unique_object)
+        cache[key] = unique_object
+        return unique_object

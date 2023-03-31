@@ -1,12 +1,11 @@
-from sqlite3 import Date
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
-from sqlalchemy.sql import func
+from sqlite3 import Date
+
 from sqlalchemy import String, DateTime, Boolean, Interval
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
+
 from database.model.base import Base
-
-from database.model.general import OrmBusinessCategory, OrmTechnicalCategory, OrmKeyword
-
 from database.model.educational_resource_relationships import (
     educational_resource_business_category_relationship,
     educational_resource_technical_category_relationship,
@@ -14,6 +13,8 @@ from database.model.educational_resource_relationships import (
     educational_resource_target_audience_relationship,
     educational_resource_language_relationship,
 )
+from database.model.general import OrmBusinessCategory, OrmTechnicalCategory, OrmKeyword
+from database.model.resource import OrmResource
 from database.model.unique_model import UniqueMixin
 
 
@@ -29,7 +30,7 @@ class OrmTargetAudience(UniqueMixin, Base):
         return query.filter(cls.name == name)
 
     name: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     educational_resources: Mapped[list["OrmEducationalResource"]] = relationship(
         default_factory=list,
         back_populates="target_audience",
@@ -49,7 +50,7 @@ class OrmLanguage(UniqueMixin, Base):
         return query.filter(cls.name == name)
 
     name: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
 
     educational_resources: Mapped[list["OrmEducationalResource"]] = relationship(
         default_factory=list,
@@ -58,7 +59,7 @@ class OrmLanguage(UniqueMixin, Base):
     )
 
 
-class OrmEducationalResource(Base):
+class OrmEducationalResource(OrmResource):
     """Any educational resource"""
 
     __tablename__ = "educational_resources"
@@ -95,9 +96,6 @@ class OrmEducationalResource(Base):
     duration_in_years: Mapped[int] = mapped_column(nullable=True)
 
     time_required: Mapped[Interval] = mapped_column(Interval, nullable=True)
-
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
-
     # relationships
 
     business_categories: Mapped[list["OrmBusinessCategory"]] = relationship(

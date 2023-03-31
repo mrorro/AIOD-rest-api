@@ -1,7 +1,7 @@
 from typing import Type
 
 from converters import news_converter_instance
-from converters.abstract_converter import AbstractConverter
+from converters.abstract_converter import ResourceConverter
 from database.model.news import OrmNews
 from routers.abstract_router import ResourceRouter, AIOD_CLASS, ORM_CLASS
 from schemas import AIoDNews
@@ -25,5 +25,5 @@ class NewsRouter(ResourceRouter[OrmNews, AIoDNews]):
         return OrmNews
 
     @property
-    def converter(self) -> AbstractConverter[AIOD_CLASS, ORM_CLASS]:
+    def converter(self) -> ResourceConverter[AIOD_CLASS, ORM_CLASS]:
         return news_converter_instance

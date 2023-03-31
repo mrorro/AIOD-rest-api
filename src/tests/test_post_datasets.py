@@ -12,24 +12,24 @@ def test_happy_path(client: TestClient, engine: Engine):
     datasets = [
         OrmDataset(
             name="dset1",
-            node="openml",
+            platform="openml",
             description="",
             same_as="non-existing-url/1",
-            node_specific_identifier="1",
+            platform_identifier="1",
         ),
         OrmDataset(
             name="dset1",
-            node="other_node",
+            platform="other_platform",
             description="",
             same_as="non-existing-url/2",
-            node_specific_identifier="1",
+            platform_identifier="1",
         ),
         OrmDataset(
             name="dset2",
-            node="other_node",
+            platform="other_platform",
             description="",
             same_as="non-existing-url/3",
-            node_specific_identifier="2",
+            platform_identifier="2",
         ),
     ]
     with Session(engine) as session:
@@ -41,10 +41,10 @@ def test_happy_path(client: TestClient, engine: Engine):
         "/datasets",
         json={
             "name": "dset2",
-            "node": "openml",
+            "platform": "openml",
             "description": "description",
             "same_as": "openml.org/datasets/1",
-            "node_specific_identifier": "2",
+            "platform_identifier": "2",
         },
     )
     assert response.status_code == 200
@@ -52,9 +52,9 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["name"] == "dset2"
     assert response_json["description"] == "description"
     assert response_json["same_as"] == "openml.org/datasets/1"
-    assert response_json["node"] == "openml"
-    assert response_json["node_specific_identifier"] == "2"
-    assert response_json["id"] == 4
+    assert response_json["platform"] == "openml"
+    assert response_json["platform_identifier"] == "2"
+    assert response_json["identifier"] == 4
     assert len(response_json) == 13
 
 
@@ -67,8 +67,8 @@ def test_unicode(client: TestClient, engine: Engine, name):
         "/datasets",
         json={
             "name": name,
-            "node": "openml",
-            "node_specific_identifier": "2",
+            "platform": "openml",
+            "platform_identifier": "2",
             "description": f"Description of {name}",
             "same_as": "url",
         },
@@ -82,8 +82,8 @@ def test_duplicated_dataset(client: TestClient, engine: Engine):
     datasets = [
         OrmDataset(
             name="dset1",
-            node="openml",
-            node_specific_identifier="1",
+            platform="openml",
+            platform_identifier="1",
             same_as="url",
             description="bla",
         )
@@ -98,25 +98,23 @@ def test_duplicated_dataset(client: TestClient, engine: Engine):
             "name": "dset1",
             "description": "description",
             "same_as": "url",
-            "node": "openml",
-            "node_specific_identifier": "1",
+            "platform": "openml",
+            "platform_identifier": "1",
         },
     )
     assert response.status_code == 409
     assert (
-        response.json()["detail"] == "There already exists a dataset with the same node "
-        "and name, with id=1."
+        response.json()["detail"] == "There already exists a dataset with the same platform "
+        "and name, with identifier=1."
     )
 
 
-@pytest.mark.parametrize(
-    "field", ["name", "node", "node_specific_identifier", "same_as", "description"]
-)
+@pytest.mark.parametrize("field", ["name", "same_as", "description"])
 def test_missing_value(client: TestClient, engine: Engine, field: str):
     data = {
         "name": "Name",
-        "node": "openml",
-        "node_specific_identifier": "1",
+        "platform": "openml",
+        "platform_identifier": "1",
         "same_as": "url",
         "description": "description",
     }  # type: typing.Dict[str, typing.Any]
@@ -128,14 +126,12 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
     ]
 
 
-@pytest.mark.parametrize(
-    "field", ["name", "node", "node_specific_identifier", "same_as", "description"]
-)
+@pytest.mark.parametrize("field", ["name", "platform", "same_as", "description"])
 def test_null_value(client: TestClient, engine: Engine, field: str):
     data = {
         "name": "Name",
-        "node": "openml",
-        "node_specific_identifier": "1",
+        "platform": "openml",
+        "platform_identifier": "1",
         "same_as": "url",
         "description": "description",
     }  # type: typing.Dict[str, typing.Any]

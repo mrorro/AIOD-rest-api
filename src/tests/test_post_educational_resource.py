@@ -11,12 +11,15 @@ from datetime import datetime
 
 
 from database.model.educational_resource import OrmEducationalResource
+from platform_names import PlatformName
 
 
 def test_happy_path(client: TestClient, engine: Engine):
     date_format = "%Y-%m-%d"
     educational_resources = [
         OrmEducationalResource(
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="str",
             date_modified=datetime.strptime("2023-03-21", date_format),
             body="str",
@@ -45,6 +48,8 @@ def test_happy_path(client: TestClient, engine: Engine):
             time_required=datetime.today() - datetime.today(),
         ),
         OrmEducationalResource(
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="str",
             date_modified=datetime.strptime("2023-03-21", date_format),
             body="str",

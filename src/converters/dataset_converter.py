@@ -2,11 +2,9 @@
 Converting between different dataset representations
 """
 
-from typing import List
-
 from sqlalchemy.orm import Session
 
-from converters.abstract_converter import AbstractConverter
+from converters.abstract_converter import ResourceConverter
 from converters.conversion_helpers import retrieve_related_objects_by_ids
 from database.model.dataset import OrmDataset, OrmDataDownload, OrmMeasuredValue, OrmAlternateName
 from database.model.general import (
@@ -17,26 +15,25 @@ from database.model.publication import OrmPublication
 from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue
 
 
-class DatasetConverter(AbstractConverter[AIoDDataset, OrmDataset]):
-    def aiod_to_orm(self, session: Session, aiod: AIoDDataset) -> OrmDataset:
+class DatasetConverter(ResourceConverter[AIoDDataset, OrmDataset]):
+    def aiod_to_orm(
+        self, session: Session, aiod: AIoDDataset, return_existing_if_present: bool = False
+    ) -> OrmDataset:
         """
         Converting between dataset representations: the AIoD schema towards the database variant (
         OrmDataset)
         """
-
-        if isinstance(aiod.citations, List):
-            # TODO(issue 7): retrieve OrmPublication from AIoDPublication
-            citations = []
-        else:
-            citations = retrieve_related_objects_by_ids(session, aiod.citations, OrmPublication)
+        citations = retrieve_related_objects_by_ids(session, aiod.citations, OrmPublication)
         has_parts = retrieve_related_objects_by_ids(session, aiod.has_parts, OrmDataset)
         is_part = retrieve_related_objects_by_ids(session, aiod.is_part, OrmDataset)
 
-        orm = OrmDataset(
+        orm = OrmDataset.create_or_get(
+            create=not return_existing_if_present,
+            session=session,
             description=aiod.description,
             name=aiod.name,
-            node=aiod.node,
-            node_specific_identifier=aiod.node_specific_identifier,
+            platform=aiod.platform,
+            platform_identifier=aiod.platform_identifier,
             same_as=aiod.same_as,
             creator=aiod.creator,
             date_modified=aiod.date_modified,
@@ -79,7 +76,6 @@ class DatasetConverter(AbstractConverter[AIoDDataset, OrmDataset]):
                 for mv in aiod.measured_values
             ],
         )
-        orm.id = aiod.id
         return orm
 
     def orm_to_aiod(self, orm: OrmDataset) -> AIoDDataset:
@@ -88,11 +84,11 @@ class DatasetConverter(AbstractConverter[AIoDDataset, OrmDataset]):
         AIoD schema.
         """
         return AIoDDataset(
-            id=orm.id,
+            identifier=orm.identifier,
             description=orm.description,
             name=orm.name,
-            node=orm.node,
-            node_specific_identifier=orm.node_specific_identifier,
+            platform=orm.platform,
+            platform_identifier=orm.platform_identifier,
             same_as=orm.same_as,
             creator=orm.creator,
             date_modified=orm.date_modified,
@@ -106,10 +102,10 @@ class DatasetConverter(AbstractConverter[AIoDDataset, OrmDataset]):
             temporal_coverage_to=orm.temporal_coverage_to,
             version=orm.version,
             license=orm.license.name if orm.license is not None else None,
-            has_parts=[part.id for part in orm.has_parts],
-            is_part=[part.id for part in orm.is_part],
+            has_parts=[part.identifier for part in orm.has_parts],
+            is_part=[part.identifier for part in orm.is_part],
             alternate_names=[alias.name for alias in orm.alternate_names],
-            citations=[citation.id for citation in orm.citations],
+            citations=[citation.identifier for citation in orm.citations],
             distributions=[
                 AIoDDistribution(
                     content_url=orm_distr.content_url,
