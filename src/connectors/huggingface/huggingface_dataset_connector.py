@@ -8,16 +8,16 @@ import requests
 
 from connectors import ResourceConnector
 from connectors.resource_with_relations import ResourceWithRelations
-from node_names import NodeName
+from platform_names import PlatformName
 from schemas import AIoDPublication, AIoDDistribution, AIoDDataset
 
 
 class HuggingFaceDatasetConnector(ResourceConnector[AIoDDataset]):
     @property
-    def node_name(self) -> NodeName:
-        return NodeName.huggingface
+    def platform_name(self) -> PlatformName:
+        return PlatformName.huggingface
 
-    def fetch(self, node_specific_identifier: str) -> ResourceWithRelations[AIoDDataset]:
+    def fetch(self, platform_identifier: str) -> ResourceWithRelations[AIoDDataset]:
         raise NotImplementedError()
 
     @staticmethod
@@ -47,8 +47,8 @@ class HuggingFaceDatasetConnector(ResourceConnector[AIoDDataset]):
                         citations = [
                             AIoDPublication(
                                 title=dataset.citation,
-                                node=self.node_name,
-                                node_specific_identifier=dataset.citation,
+                                platform=self.platform_name,
+                                platform_identifier=dataset.citation,
                             )
                         ]
                     elif len(parsed_citations) == 1:
@@ -56,8 +56,8 @@ class HuggingFaceDatasetConnector(ResourceConnector[AIoDDataset]):
                         citations = [
                             AIoDPublication(
                                 title=citation["title"],
-                                node=self.node_name,
-                                node_specific_identifier=citation["ID"],
+                                platform=self.platform_name,
+                                platform_identifier=citation["ID"],
                                 url=citation["link"] if "link" in citation else None,
                             )
                         ]
@@ -99,8 +99,8 @@ class HuggingFaceDatasetConnector(ResourceConnector[AIoDDataset]):
                     resource=AIoDDataset(
                         description=dataset.description,
                         name=dataset.id,
-                        node_specific_identifier=dataset.id,
-                        node=self.node_name,
+                        platform_identifier=dataset.id,
+                        platform=self.platform_name,
                         same_as=f"https://huggingface.co/datasets/{dataset.id}",
                         creator=dataset.author,
                         date_modified=dateutil.parser.parse(dataset.lastModified),

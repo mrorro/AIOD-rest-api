@@ -2,20 +2,18 @@ import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused'
 
 from connectors import ResourceConnector
 from connectors.resource_with_relations import ResourceWithRelations
-from node_names import NodeName
+from platform_names import PlatformName
 from schemas import AIoDDataset, AIoDPublication
 
 
 class ExampleDatasetConnector(ResourceConnector[AIoDDataset]):
     @property
-    def node_name(self) -> NodeName:
-        return NodeName.example
+    def platform_name(self) -> PlatformName:
+        return PlatformName.example
 
-    def fetch(self, node_specific_identifier: str) -> ResourceWithRelations:
+    def fetch(self, platform_identifier: str) -> ResourceWithRelations:
         (dataset,) = [
-            d
-            for d in self.fetch_all(None)
-            if d.resource.node_specific_identifier == node_specific_identifier
+            d for d in self.fetch_all(None) if d.resource.platform_identifier == platform_identifier
         ]
         return dataset
 
@@ -26,10 +24,10 @@ class ExampleDatasetConnector(ResourceConnector[AIoDDataset]):
             ResourceWithRelations[AIoDDataset](
                 resource=AIoDDataset(
                     name="Higgs",
-                    node="openml",
+                    platform="openml",
                     description="Higgs dataset",
                     same_as="non-existing-url/1",
-                    node_specific_identifier="42769",
+                    platform_identifier="42769",
                 ),
                 related_resources={
                     "citations": [
@@ -37,8 +35,8 @@ class ExampleDatasetConnector(ResourceConnector[AIoDDataset]):
                             title="Searching for exotic particles in high-energy physics with deep "
                             "learning",
                             doi="2",
-                            node="example",
-                            node_specific_identifier="2",
+                            platform="example",
+                            platform_identifier="2",
                         )
                     ]
                 },
@@ -46,10 +44,10 @@ class ExampleDatasetConnector(ResourceConnector[AIoDDataset]):
             ResourceWithRelations[AIoDDataset](
                 resource=AIoDDataset(
                     name="porto-seguro",
-                    node="openml",
+                    platform="openml",
                     description="Porto seguro dataset",
                     same_as="non-existing-url/2",
-                    node_specific_identifier="42742",
+                    platform_identifier="42742",
                 )
             ),
         ][:limit]

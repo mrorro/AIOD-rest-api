@@ -9,12 +9,12 @@ from database.model.publication import OrmPublication
 
 
 @pytest.mark.parametrize(
-    "identifier,title,url,doi,node,node_specific_identifier",
+    "identifier,title,url,doi,platform,platform_identifier",
     [
         (1, "NEW NAME", "url1", "doi1", "zenodo", "1"),
         (1, "pub1", "url1", "doi1", "zenodo", "new-id"),
-        (1, "pub1", "url1", "doi1", "other_node", "3"),
-        (3, "pub2", "url3", "doi1", "other_node", "3"),
+        (1, "pub1", "url1", "doi1", "other_platform", "3"),
+        (3, "pub2", "url3", "doi1", "other_platform", "3"),
     ],
 )
 def test_happy_path(
@@ -24,8 +24,8 @@ def test_happy_path(
     title: str,
     url: str,
     doi: str,
-    node: str,
-    node_specific_identifier: str,
+    platform: str,
+    platform_identifier: str,
 ):
     _setup(engine)
     response = client.put(
@@ -34,8 +34,8 @@ def test_happy_path(
             "title": title,
             "url": url,
             "doi": doi,
-            "node": node,
-            "node_specific_identifier": node_specific_identifier,
+            "platform": platform,
+            "platform_identifier": platform_identifier,
         },
     )
     assert response.status_code == 200
@@ -43,8 +43,8 @@ def test_happy_path(
     assert response_json["title"] == title
     assert response_json["url"] == url
     assert response_json["doi"] == doi
-    assert response_json["node"] == node
-    assert response_json["node_specific_identifier"] == node_specific_identifier
+    assert response_json["platform"] == platform
+    assert response_json["platform_identifier"] == platform_identifier
     assert response_json["identifier"] == identifier
     assert len(response_json["datasets"]) == 0
     assert len(response_json) == 7
@@ -55,7 +55,7 @@ def test_non_existent(client: TestClient, engine: Engine):
 
     response = client.put(
         "/publications/4",
-        json={"title": "pub2", "doi": "doi2", "node": "zenodo", "node_specific_identifier": "2"},
+        json={"title": "pub2", "doi": "doi2", "platform": "zenodo", "platform_identifier": "2"},
     )
     assert response.status_code == 404
     response_json = response.json()
@@ -82,7 +82,7 @@ def test_too_long_name(client: TestClient, engine: Engine):
     title = "a" * 300
     response = client.put(
         "/publications/3",
-        json={"title": title, "doi": "doi2", "node": "node", "node_specific_identifier": "id"},
+        json={"title": title, "doi": "doi2", "platform": "platform", "platform_identifier": "id"},
     )
     assert response.status_code == 422
     response_json = response.json()
@@ -98,9 +98,9 @@ def test_too_long_name(client: TestClient, engine: Engine):
 
 def _setup(engine):
     datasets = [
-        OrmPublication(title="pub1", doi="doi1", node="zenodo", node_specific_identifier="1"),
-        OrmPublication(title="pub1", doi="doi2", node="other", node_specific_identifier="1"),
-        OrmPublication(title="pub2", doi="doi3", node="zenodo", node_specific_identifier="2"),
+        OrmPublication(title="pub1", doi="doi1", platform="zenodo", platform_identifier="1"),
+        OrmPublication(title="pub1", doi="doi2", platform="other", platform_identifier="1"),
+        OrmPublication(title="pub2", doi="doi3", platform="zenodo", platform_identifier="2"),
     ]
     with Session(engine) as session:
         # Populate database

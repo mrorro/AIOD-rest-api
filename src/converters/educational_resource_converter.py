@@ -25,8 +25,8 @@ class EducationalResourceConverter(
         return OrmEducationalResource.create_or_get(
             session=session,
             create=not return_existing_if_present,
-            node=aiod.node,
-            node_specific_identifier=aiod.node_specific_identifier,
+            platform=aiod.platform,
+            platform_identifier=aiod.platform_identifier,
             title=aiod.title,
             date_modified=aiod.date_modified,
             body=aiod.body,

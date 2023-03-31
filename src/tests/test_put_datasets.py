@@ -9,12 +9,12 @@ from database.model.dataset import OrmDataset
 
 
 @pytest.mark.parametrize(
-    "identifier,name,node,node_specific_identifier,same_as,description",
+    "identifier,name,platform,platform_identifier,same_as,description",
     [
         (1, "NEW NAME", "openml", "1", "url1", "description"),
         (1, "dset1", "openml", "new-id", "url2", "description dset1"),
-        (1, "dset1", "other_node", "3", "url3", "description dset1"),
-        (3, "DSET2", "other_node", "3", "http://test.org/dataset/1", "description DSET2"),
+        (1, "dset1", "other_platform", "3", "url3", "description dset1"),
+        (3, "DSET2", "other_platform", "3", "http://test.org/dataset/1", "description DSET2"),
     ],
 )
 def test_happy_path(
@@ -22,8 +22,8 @@ def test_happy_path(
     engine: Engine,
     identifier: int,
     name: str,
-    node: str,
-    node_specific_identifier: str,
+    platform: str,
+    platform_identifier: str,
     same_as: str,
     description: str,
 ):
@@ -32,8 +32,8 @@ def test_happy_path(
         f"/datasets/{identifier}",
         json={
             "name": name,
-            "node": node,
-            "node_specific_identifier": node_specific_identifier,
+            "platform": platform,
+            "platform_identifier": platform_identifier,
             "same_as": same_as,
             "description": description,
         },
@@ -41,8 +41,8 @@ def test_happy_path(
     assert response.status_code == 200
     response_json = response.json()
     assert response_json["name"] == name
-    assert response_json["node"] == node
-    assert response_json["node_specific_identifier"] == node_specific_identifier
+    assert response_json["platform"] == platform
+    assert response_json["platform_identifier"] == platform_identifier
     assert response_json["identifier"] == identifier
     assert response_json["same_as"] == same_as
     assert response_json["description"] == description
@@ -56,10 +56,10 @@ def test_non_existent(client: TestClient, engine: Engine):
         "/datasets/4",
         json={
             "name": "name",
-            "node": "node",
+            "platform": "platform",
             "description": "description",
             "same_as": "url",
-            "node_specific_identifier": "id",
+            "platform_identifier": "id",
         },
     )
     assert response.status_code == 404
@@ -71,7 +71,7 @@ def test_partial_update(client: TestClient, engine: Engine):
     _setup(engine)
 
     response = client.put("/datasets/4", json={"name": "name"})
-    # Partial update: node and node_specific_identifier omitted. This is not supported,
+    # Partial update: platform and platform_identifier omitted. This is not supported,
     # and should be a PATCH request if we supported it.
 
     assert response.status_code == 422
@@ -90,10 +90,10 @@ def test_too_long_name(client: TestClient, engine: Engine):
         "/datasets/4",
         json={
             "name": name,
-            "node": "node",
+            "platform": "platform",
             "description": "description",
             "same_as": "url",
-            "node_specific_identifier": "id",
+            "platform_identifier": "id",
         },
     )
     assert response.status_code == 422
@@ -112,24 +112,24 @@ def _setup(engine):
     datasets = [
         OrmDataset(
             name="dset1",
-            node="openml",
+            platform="openml",
             same_as="openml.org/1",
             description="",
-            node_specific_identifier="1",
+            platform_identifier="1",
         ),
         OrmDataset(
             name="dset1",
-            node="other_node",
+            platform="other_platform",
             same_as="other.org/1",
             description="",
-            node_specific_identifier="1",
+            platform_identifier="1",
         ),
         OrmDataset(
             name="dset2",
-            node="other_node",
+            platform="other_platform",
             same_as="other.org/2",
             description="",
-            node_specific_identifier="2",
+            platform_identifier="2",
         ),
     ]
     with Session(engine) as session:

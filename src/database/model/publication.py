@@ -16,9 +16,9 @@ class OrmPublication(OrmAIResource):
     __tablename__ = "publications"
     __table_args__ = (
         UniqueConstraint(
-            "node",
-            "node_specific_identifier",
-            name="publication_unique_node_node_specific_identifier",
+            "platform",
+            "platform_identifier",
+            name="publication_unique_platform_platform_identifier",
         ),
     )
 

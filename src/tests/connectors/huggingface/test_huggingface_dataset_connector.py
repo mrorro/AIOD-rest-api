@@ -4,7 +4,7 @@ import responses
 
 import connectors
 from connectors.resource_with_relations import ResourceWithRelations
-from node_names import NodeName
+from platform_names import PlatformName
 from tests.testutils.paths import path_test_resources
 
 HUGGINGFACE_URL = "https://datasets-server.huggingface.co"
@@ -18,7 +18,7 @@ def test_fetch_all_happy_path():
         "acronym_identification",
         "air_dialogue",
     }
-    connector = connectors.dataset_connectors[NodeName.huggingface]
+    connector = connectors.dataset_connectors[PlatformName.huggingface]
     with responses.RequestsMock() as mocked_requests:
         path_data_list = path_test_resources() / "connectors" / "huggingface" / "data_list.json"
         with open(path_data_list, "r") as f:
@@ -36,7 +36,7 @@ def test_fetch_all_happy_path():
     assert len(resources_with_relations) == 5
     assert all(type(r) == ResourceWithRelations for r in resources_with_relations)
     datasets = [r.resource for r in resources_with_relations]
-    ids = {d.node_specific_identifier for d in datasets}
+    ids = {d.platform_identifier for d in datasets}
     names = {d.name for d in datasets}
     assert ids == ids_expected
     assert names == ids_expected

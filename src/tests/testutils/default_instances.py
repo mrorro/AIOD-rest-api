@@ -20,8 +20,8 @@ def aiod_dataset() -> AIoDDataset:
         identifier=7,
         description="description",
         name="name",
-        node="node",
-        node_specific_identifier="node_specific_identifier",
+        platform="platform",
+        platform_identifier="platform_identifier",
         same_as="same_as",
         creator="creator",
         date_modified=datetime.datetime(2002, 1, 1),
@@ -58,8 +58,8 @@ def orm_dataset() -> OrmDataset:
     return OrmDataset(
         description="description",
         name="name",
-        node="example",
-        node_specific_identifier="node_specific_identifier",
+        platform="example",
+        platform_identifier="platform_identifier",
         same_as="same_as",
         creator="creator",
         date_modified=datetime.datetime(2002, 1, 1),
@@ -99,7 +99,7 @@ def orm_publication() -> OrmPublication:
     return OrmPublication(
         title="Title",
         doi="12345678",
-        node="example",
-        node_specific_identifier="1",
+        platform="example",
+        platform_identifier="1",
         datasets=[],
     )

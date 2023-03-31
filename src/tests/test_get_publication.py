@@ -14,32 +14,32 @@ def test_happy_path(client: TestClient, engine: Engine, publication_id: int):
     datasets = [
         OrmDataset(
             name="dset1",
-            node="openml",
+            platform="openml",
             description="",
             same_as="openml.eu/1",
-            node_specific_identifier="1",
+            platform_identifier="1",
         ),
         OrmDataset(
             name="dset1",
-            node="other_node",
+            platform="other_platform",
             description="",
-            same_as="other_node.eu/1",
-            node_specific_identifier="1",
+            same_as="other_platform.eu/1",
+            platform_identifier="1",
         ),
     ]
     publications = [
         OrmPublication(
             title="Title 1",
             doi="doi1",
-            node="zenodo",
-            node_specific_identifier="1",
+            platform="zenodo",
+            platform_identifier="1",
             datasets=datasets,
         ),
         OrmPublication(
             title="Title 2",
             doi="doi2",
-            node="zenodo",
-            node_specific_identifier="2",
+            platform="zenodo",
+            platform_identifier="2",
             datasets=datasets,
         ),
     ]
@@ -57,8 +57,8 @@ def test_happy_path(client: TestClient, engine: Engine, publication_id: int):
     expected = publications[publication_id - 1]
     assert response_json["title"] == expected.title
     assert response_json["doi"] == expected.doi
-    assert response_json["node"] == expected.node
-    assert response_json["node_specific_identifier"] == expected.node_specific_identifier
+    assert response_json["platform"] == expected.platform
+    assert response_json["platform_identifier"] == expected.platform_identifier
     assert response_json["identifier"] == publication_id
     assert len(response_json["datasets"]) == len(datasets)
     assert len(response_json) == 6
@@ -75,7 +75,7 @@ def test_empty_db(client: TestClient, engine: Engine, publication_id):
 def test_publication_not_found(client: TestClient, engine: Engine, publication_id):
     publications = [
         OrmPublication(
-            title="Title 1", doi="doi1", node="zenodo", node_specific_identifier="1", datasets=[]
+            title="Title 1", doi="doi1", platform="zenodo", platform_identifier="1", datasets=[]
         )
     ]
     with Session(engine) as session:

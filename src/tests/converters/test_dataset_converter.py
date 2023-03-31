@@ -38,13 +38,13 @@ def test_aiod_to_orm_happy_path(
         ds = copy.deepcopy(orm_dataset)
         ds.same_as = f"url_{related_dataset_id}"
         ds.name = f"name_{related_dataset_id}"
-        ds.node_specific_identifier = str(related_dataset_id)
+        ds.platform_identifier = str(related_dataset_id)
         related_datasets.append(ds)
 
     related_publications = []
     for related_publication_id in citations:
         p = copy.deepcopy(orm_publication)
-        p.node_specific_identifier = str(related_publication_id)
+        p.platform_identifier = str(related_publication_id)
         related_publications.append(p)
 
     with Session(engine) as session:
@@ -53,7 +53,7 @@ def test_aiod_to_orm_happy_path(
         session.commit()
 
     aiod = copy.deepcopy(aiod_dataset)
-    aiod.node_specific_identifier = "7"
+    aiod.platform_identifier = "7"
     aiod.has_parts = has_parts
     aiod.is_part = is_part
     aiod.citations = citations
@@ -102,7 +102,7 @@ def test_aiod_to_orm_unexisting_dataset(
         ds = copy.deepcopy(orm_dataset)
         ds.same_as = f"url_{related_dataset_id}"
         ds.name = f"name_{related_dataset_id}"
-        ds.node_specific_identifier = str(related_dataset_id)
+        ds.platform_identifier = str(related_dataset_id)
         related_datasets.append(ds)
 
     with Session(engine) as session:
@@ -110,7 +110,7 @@ def test_aiod_to_orm_unexisting_dataset(
         session.commit()
 
     aiod = copy.deepcopy(aiod_dataset)
-    aiod.node_specific_identifier = "7"
+    aiod.platform_identifier = "7"
     aiod.has_parts = {1, 2, 3, 4}
 
     with Session(engine) as session:
@@ -141,7 +141,7 @@ def test_orm_to_aiod(
         ds.identifier = related_dataset_id
         ds.same_as = f"url_{related_dataset_id}"
         ds.name = f"name_{related_dataset_id}"
-        ds.node_specific_identifier = str(related_dataset_id)
+        ds.platform_identifier = str(related_dataset_id)
         if related_dataset_id in has_parts:
             orm.has_parts.append(ds)
         else:
@@ -150,7 +150,7 @@ def test_orm_to_aiod(
     for related_publication_id in citations:
         p = copy.deepcopy(orm_publication)
         p.identifier = related_publication_id
-        p.node_specific_identifier = str(related_publication_id)
+        p.platform_identifier = str(related_publication_id)
         orm.citations.append(p)
 
     aiod = dataset_converter_instance.orm_to_aiod(orm)

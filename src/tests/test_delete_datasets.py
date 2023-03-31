@@ -14,23 +14,23 @@ def test_happy_path(client: TestClient, engine: Engine, identifier: str):
         OrmDataset(
             name="dset1",
             description="",
-            node="openml",
+            platform="openml",
             same_as="url_openml",
-            node_specific_identifier="1",
+            platform_identifier="1",
         ),
         OrmDataset(
             name="dset1",
             description="",
-            node="other_node",
-            same_as="url_other_node_1",
-            node_specific_identifier="1",
+            platform="other_platform",
+            same_as="url_other_platform_1",
+            platform_identifier="1",
         ),
         OrmDataset(
             name="dset2",
             description="",
-            node="other_node",
-            same_as="url_other_node_2",
-            node_specific_identifier="2",
+            platform="other_platform",
+            same_as="url_other_platform_2",
+            platform_identifier="2",
         ),
     ]
     with Session(engine) as session:
@@ -49,24 +49,24 @@ def test_nonexistent_dataset(client: TestClient, engine: Engine, identifier: str
     datasets = [
         OrmDataset(
             name="dset1",
-            node="openml",
+            platform="openml",
             description="",
             same_as="openml.eu/1",
-            node_specific_identifier="1",
+            platform_identifier="1",
         ),
         OrmDataset(
             name="dset1",
-            node="other_node",
+            platform="other_platform",
             description="",
-            same_as="other_node.eu/1",
-            node_specific_identifier="1",
+            same_as="other_platform.eu/1",
+            platform_identifier="1",
         ),
         OrmDataset(
             name="dset2",
-            node="other_node",
+            platform="other_platform",
             description="",
-            same_as="other_node.eu/2",
-            node_specific_identifier="2",
+            same_as="other_platform.eu/2",
+            platform_identifier="2",
         ),
     ]
     with Session(engine) as session:

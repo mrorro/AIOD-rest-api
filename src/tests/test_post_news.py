@@ -8,15 +8,15 @@ from datetime import datetime
 
 
 from database.model.news import OrmNews
-from node_names import NodeName
+from platform_names import PlatformName
 
 
 def test_happy_path(client: TestClient, engine: Engine):
     date_format = "%Y-%m-%d"
     news = [
         OrmNews(
-            node=NodeName.aiod,
-            node_specific_identifier=None,
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="n1",
             body="b1",
             section="s1",
@@ -27,8 +27,8 @@ def test_happy_path(client: TestClient, engine: Engine):
             word_count=10,
         ),
         OrmNews(
-            node=NodeName.aiod,
-            node_specific_identifier=None,
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="n2",
             body="b2",
             section="s2",
@@ -39,8 +39,8 @@ def test_happy_path(client: TestClient, engine: Engine):
             word_count=10,
         ),
         OrmNews(
-            node=NodeName.aiod,
-            node_specific_identifier=None,
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="n3",
             body="b3",
             section="s3",

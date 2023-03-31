@@ -4,17 +4,17 @@ import requests
 from fastapi import HTTPException
 
 from connectors import ResourceConnector
-from node_names import NodeName
+from platform_names import PlatformName
 from schemas import AIoDPublication
 
 
 class ZenodoPublicationConnector(ResourceConnector[AIoDPublication]):
     @property
-    def node_name(self) -> NodeName:
-        return NodeName.zenodo
+    def platform_name(self) -> PlatformName:
+        return PlatformName.zenodo
 
-    def fetch(self, node_specific_identifier: str) -> AIoDPublication:
-        identifier = node_specific_identifier
+    def fetch(self, platform_identifier: str) -> AIoDPublication:
+        identifier = platform_identifier
         url_data = f"https://zenodo.org/api/records/{identifier}"
         response = requests.get(url_data)
         if not response.ok:
@@ -28,8 +28,8 @@ class ZenodoPublicationConnector(ResourceConnector[AIoDPublication]):
         result = AIoDPublication(
             doi=publication_json["doi"],
             title=publication_json["metadata"]["title"],
-            node=self.node_name,
-            node_specific_identifier=node_specific_identifier,
+            platform=self.platform_name,
+            platform_identifier=platform_identifier,
         )
         return result
 
@@ -47,6 +47,6 @@ class ZenodoPublicationConnector(ResourceConnector[AIoDPublication]):
             yield AIoDPublication(
                 doi=publication_json["doi"],
                 title=publication_json["metadata"]["title"],
-                node=self.node_name,
-                node_specific_identifier=str(publication_json["id"]),
+                platform=self.platform_name,
+                platform_identifier=str(publication_json["id"]),
             )

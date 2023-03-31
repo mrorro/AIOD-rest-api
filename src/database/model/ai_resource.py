@@ -6,24 +6,30 @@ from database.model.unique_model import UniqueMixin
 
 
 class OrmAIResource(UniqueMixin, Base):
+    """
+    The base class of all our AIResources such as Datasets, Publications, News etc..
+
+    For now it only contains a couple of fields, we will have to extend it later.
+    """
+
     __abstract__ = True
 
     identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
-    node: Mapped[str] = mapped_column(String(30), nullable=False)
-    node_specific_identifier: Mapped[str | None] = mapped_column(String(250))
+    platform: Mapped[str] = mapped_column(String(30), nullable=False)
+    platform_identifier: Mapped[str | None] = mapped_column(String(250))
 
     @classmethod
-    def _unique_hash(cls, node: str = "", node_specific_identifier: str = "", **_):
-        if node == "" or node_specific_identifier == "":
+    def _unique_hash(cls, platform: str = "", platform_identifier: str = "", **_):
+        if platform == "" or platform_identifier == "":
             raise ValueError("")
-        return f"Node:{node}|id:{node_specific_identifier}"
+        return f"platform:{platform}|id:{platform_identifier}"
 
     @classmethod
     def _unique_filter(
-        cls, query, *args, node: str = "", node_specific_identifier: str = "", **kwargs
+        cls, query, *args, platform: str = "", platform_identifier: str = "", **kwargs
     ):
         return query.filter(
-            and_(cls.node == node, cls.node_specific_identifier == node_specific_identifier)
+            and_(cls.platform == platform, cls.platform_identifier == platform_identifier)
         )
 
     @classmethod

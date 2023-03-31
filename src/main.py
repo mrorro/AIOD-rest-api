@@ -20,7 +20,7 @@ import connectors
 import routers
 from authentication import get_current_user
 from database.setup import connect_to_database, populate_database
-from node_names import NodeName
+from platform_names import PlatformName
 
 
 def _parse_args() -> argparse.Namespace:
@@ -36,22 +36,22 @@ def _parse_args() -> argparse.Namespace:
         "--populate-datasets",
         default=[],
         nargs="+",
-        choices=[p.name for p in NodeName],
-        help="Zero, one or more nodes with which the datasets should get populated.",
+        choices=[p.name for p in PlatformName],
+        help="Zero, one or more platforms with which the datasets should get populated.",
     )
     parser.add_argument(
         "--populate-publications",
         default=[],
         nargs="+",
-        choices=[p.name for p in NodeName],
-        help="Zero, one or more nodes with which the publications should get populated.",
+        choices=[p.name for p in PlatformName],
+        help="Zero, one or more platforms with which the publications should get populated.",
     )
     parser.add_argument(
         "--limit",
         type=int,
         default=None,
         help="Limit the number of initial resources with which the database is populated, "
-        "per resources and per node.",
+        "per resources and per platform.",
     )
     parser.add_argument(
         "--reload",
@@ -81,18 +81,18 @@ def _engine(rebuild_db: str) -> Engine:
     return connect_to_database(db_url, delete_first=delete_before_create)
 
 
-def _connector_from_node_name(connector_type: str, connector_dict: Dict, node_name: str):
-    """Get the connector from the connector_dict, identified by its node name."""
+def _connector_from_platform_name(connector_type: str, connector_dict: Dict, platform_name: str):
+    """Get the connector from the connector_dict, identified by its platform name."""
     try:
-        node = NodeName(node_name)
+        platform = PlatformName(platform_name)
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Node '{node_name}' not recognized.")
-    connector = connector_dict.get(node, None)
+        raise HTTPException(status_code=400, detail=f"platform '{platform_name}' not recognized.")
+    connector = connector_dict.get(platform, None)
     if connector is None:
         possibilities = ", ".join(f"`{c}`" for c in connectors.dataset_connectors.keys())
         msg = (
-            f"No {connector_type} connector for node '{node_name}' available. Possible values:"
-            f" {possibilities}"
+            f"No {connector_type} connector for platform '{platform_name}' available. Possible "
+            f"values: {possibilities}"
         )
         raise HTTPException(status_code=501, detail=msg)
     return connector
@@ -123,10 +123,10 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         """
         return {"msg": "success", "user": user}
 
-    @app.get(url_prefix + "/nodes")
-    def get_nodes() -> list:
-        """Retrieve information about all known nodes"""
-        return list(NodeName)
+    @app.get(url_prefix + "/platforms")
+    def get_platforms() -> list:
+        """Retrieve information about all known platforms"""
+        return list(PlatformName)
 
     for router in routers.routers:
         app.include_router(router.create(engine, url_prefix))
@@ -147,12 +147,14 @@ def create_app() -> FastAPI:
     args = _parse_args()
 
     dataset_connectors = [
-        _connector_from_node_name("dataset", connectors.dataset_connectors, node_name)
-        for node_name in args.populate_datasets
+        _connector_from_platform_name("dataset", connectors.dataset_connectors, platform_name)
+        for platform_name in args.populate_datasets
     ]
     publication_connectors = [
-        _connector_from_node_name("publication", connectors.publication_connectors, node_name)
-        for node_name in args.populate_publications
+        _connector_from_platform_name(
+            "publication", connectors.publication_connectors, platform_name
+        )
+        for platform_name in args.populate_publications
     ]
     connectors_ = dataset_connectors + publication_connectors
     engine = _engine(args.rebuild_db)

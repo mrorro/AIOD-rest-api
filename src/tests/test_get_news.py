@@ -8,15 +8,15 @@ from datetime import datetime
 
 from database.model.general import OrmKeyword
 from database.model.news import OrmNews, OrmNewsCategory, OrmBusinessCategory
-from node_names import NodeName
+from platform_names import PlatformName
 
 
 def test_happy_path_for_all(client: TestClient, engine: Engine):
     date_format = "%Y-%m-%d"
     news = [
         OrmNews(
-            node=NodeName.aiod,
-            node_specific_identifier=None,
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="n1",
             body="b1",
             section="s1",
@@ -30,8 +30,8 @@ def test_happy_path_for_all(client: TestClient, engine: Engine):
             keywords=[OrmKeyword(name="something")],
         ),
         OrmNews(
-            node=NodeName.aiod,
-            node_specific_identifier=None,
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="n2",
             body="b2",
             section="s2",
@@ -42,8 +42,8 @@ def test_happy_path_for_all(client: TestClient, engine: Engine):
             word_count=10,
         ),
         OrmNews(
-            node=NodeName.aiod,
-            node_specific_identifier=None,
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="n3",
             body="b3",
             section="s3",
@@ -83,8 +83,8 @@ def test_happy_path_for_one(client: TestClient, engine: Engine, news_id: int):
     date_format = "%Y-%m-%d"
     news = [
         OrmNews(
-            node=NodeName.aiod,
-            node_specific_identifier=None,
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="n1",
             body="b1",
             section="s1",
@@ -98,8 +98,8 @@ def test_happy_path_for_one(client: TestClient, engine: Engine, news_id: int):
             keywords=[OrmKeyword(name="something")],
         ),
         OrmNews(
-            node=NodeName.aiod,
-            node_specific_identifier=None,
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="n2",
             body="b2",
             section="s2",
@@ -110,8 +110,8 @@ def test_happy_path_for_one(client: TestClient, engine: Engine, news_id: int):
             word_count=10,
         ),
         OrmNews(
-            node=NodeName.aiod,
-            node_specific_identifier=None,
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="n3",
             body="b3",
             section="s3",
@@ -135,8 +135,8 @@ def test_happy_path_for_one(client: TestClient, engine: Engine, news_id: int):
     assert response_json["body"] == expected.body
     assert response_json["section"] == expected.section
     assert response_json["identifier"] == news_id
-    assert response_json["node"] == "aiod"
-    assert response_json["node_specific_identifier"] == str(news_id)
+    assert response_json["platform"] == "aiod"
+    assert response_json["platform_identifier"] == str(news_id)
     assert len(response_json["news_categories"]) == (1 if news_id == 1 else 0)
     assert len(response_json["business_categories"]) == (1 if news_id == 1 else 0)
 
@@ -156,8 +156,8 @@ def test_news_not_found(client: TestClient, engine: Engine, news_id):
     date_format = "%Y-%m-%d"
     news = [
         OrmNews(
-            node=NodeName.aiod,
-            node_specific_identifier=None,
+            platform=PlatformName.aiod,
+            platform_identifier=None,
             title="n1",
             body="b1",
             section="s1",

@@ -25,15 +25,15 @@ class OrmDataset(OrmAIResource):
     __tablename__ = "datasets"
     __table_args__ = (
         UniqueConstraint(
-            "node",
-            "node_specific_identifier",
-            name="dataset_unique_node_node_specific_identifier",
+            "platform",
+            "platform_identifier",
+            name="dataset_unique_platform_platform_identifier",
         ),
         UniqueConstraint(
-            "node",
+            "platform",
             "name",
             "version",
-            name="dataset_unique_node_name_version",
+            name="dataset_unique_platform_name_version",
         ),
     )
     identifier: Mapped[int] = mapped_column(init=False, primary_key=True)

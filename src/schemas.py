@@ -13,13 +13,19 @@ from typing import Set, List, Optional
 
 from pydantic import BaseModel, Field
 
-from node_names import NodeName
+from platform_names import PlatformName
 
 
 class AIoDAIResource(BaseModel):
+    """
+    The base class of all our AIResources such as Datasets, Publications, News etc..
+
+    For now it only contains a couple of fields, we will have to extend it later.
+    """
+
     identifier: int | None
-    node: str = Field(max_length=30, default=NodeName.aiod)
-    node_specific_identifier: str | None = Field(max_length=250, default=None)
+    platform: str = Field(max_length=30, default=PlatformName.aiod)
+    platform_identifier: str | None = Field(max_length=250, default=None)
 
 
 class AIoDDistribution(BaseModel):
