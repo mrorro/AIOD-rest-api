@@ -4,8 +4,8 @@ Converting between different dataset representations
 
 from sqlalchemy.orm import Session
 
-from converters.abstract_converter import ResourceConverter
-from converters.conversion_helpers import retrieve_related_objects_by_ids
+from converters.orm_converters.abstract_converter import OrmConverter
+from converters.orm_converters.conversion_helpers import retrieve_related_objects_by_ids
 from database.model.dataset import OrmDataset, OrmDataDownload, OrmMeasuredValue, OrmAlternateName
 from database.model.general import (
     OrmLicense,
@@ -15,7 +15,7 @@ from database.model.publication import OrmPublication
 from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue
 
 
-class DatasetConverter(ResourceConverter[AIoDDataset, OrmDataset]):
+class DatasetConverter(OrmConverter[AIoDDataset, OrmDataset]):
     def aiod_to_orm(
         self, session: Session, aiod: AIoDDataset, return_existing_if_present: bool = False
     ) -> OrmDataset:

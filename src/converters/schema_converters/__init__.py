@@ -1,0 +1,3 @@
+from .dataset.dataset_schemadotorg_converter import DatasetConverterSchemaDotOrg
+
+dataset_converter_schema_dot_org_instance = DatasetConverterSchemaDotOrg()
