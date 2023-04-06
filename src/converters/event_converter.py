@@ -7,7 +7,7 @@ from converters.conversion_helpers import retrieve_related_objects_by_ids
 from converters.abstract_converter import ResourceConverter
 from database.model.ai_resource import OrmAIResource
 from database.model.general import OrmBusinessCategory
-from database.model.event import OrmEvent,OrmApplicationArea,OrmResearchArea
+from database.model.event import OrmEvent, OrmApplicationArea, OrmResearchArea
 from schemas import AIoDEvent
 
 
@@ -20,8 +20,12 @@ class EventResourceConverter(ResourceConverter[AIoDEvent, OrmEvent]):
         """
         sub_events = retrieve_related_objects_by_ids(session, aiod.sub_events, OrmEvent)
         super_events = retrieve_related_objects_by_ids(session, aiod.super_events, OrmEvent)
-        # relevant_resources = retrieve_related_objects_by_ids(session, aiod.relevant_resources, OrmAIResource)
-        # used_resources = retrieve_related_objects_by_ids(session, aiod.used_resources, OrmAIResource)
+        relevant_resources = retrieve_related_objects_by_ids(
+            session, aiod.relevant_resources, OrmAIResource
+        )
+        used_resources = retrieve_related_objects_by_ids(
+            session, aiod.used_resources, OrmAIResource
+        )
         return OrmEvent.create_or_get(
             session=session,
             create=not return_existing_if_present,
@@ -39,9 +43,8 @@ class EventResourceConverter(ResourceConverter[AIoDEvent, OrmEvent]):
             type=aiod.type,
             sub_events=sub_events,
             super_events=super_events,
-            # relevant_resources=relevant_resources,
-            # used_resources=used_resources,
-
+            relevant_resources=relevant_resources,
+            used_resources=used_resources,
             business_categories=[
                 OrmBusinessCategory.as_unique(session=session, category=category)
                 for category in aiod.business_categories
@@ -53,9 +56,9 @@ class EventResourceConverter(ResourceConverter[AIoDEvent, OrmEvent]):
             application_areas=[
                 OrmApplicationArea.as_unique(session=session, name=area)
                 for area in aiod.application_areas
-            ]
-
+            ],
         )
+
     def orm_to_aiod(self, orm: OrmEvent) -> AIoDEvent:
         """
         Converting between events representations: the database variant towards the AIoD schema.
@@ -76,13 +79,11 @@ class EventResourceConverter(ResourceConverter[AIoDEvent, OrmEvent]):
             status=orm.status,
             attendance_mode=orm.attendance_mode,
             type=orm.type,
-            sub_events=orm.sub_events,
-            super_events=orm.super_events,
-            # relevant_resources=orm.relevant_resources,
-            # used_resources=orm.used_resources,
-
+            sub_events=[event.identifier for event in orm.sub_events],
+            super_events=[event.identifier for event in orm.super_events],
+            relevant_resources=[resource.identifier for resource in orm.relevant_resources],
+            used_resources=[resource.identifier for resource in orm.used_resources],
             business_categories={c.category for c in orm.business_categories},
             research_areas={a.name for a in orm.research_areas},
             application_areas={a.name for a in orm.application_areas},
-            
         )

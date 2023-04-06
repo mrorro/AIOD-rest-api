@@ -1,7 +1,7 @@
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 from sqlite3 import Date
 
-from sqlalchemy import String, DateTime, Boolean, Interval
+from sqlalchemy import String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -11,7 +11,8 @@ from database.model.event_relationships import (
     event_research_area_relationship,
     event_application_area_relationship,
     event_event_relationship,
-    event_ai_resource_relationship
+    event_relevant_ai_resource_relationship,
+    event_used_ai_resource_relationship,
 )
 from database.model.general import OrmBusinessCategory
 from database.model.ai_resource import OrmAIResource
@@ -76,14 +77,17 @@ class OrmEvent(OrmResource):
     location: Mapped[str] = mapped_column(String(500), nullable=False)
 
     # optional fields
-    start_date: Mapped[Date] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=True)
-    end_date: Mapped[Date] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=True)
+    start_date: Mapped[Date] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=True
+    )
+    end_date: Mapped[Date] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=True
+    )
     duration: Mapped[str] = mapped_column(String(500), nullable=True)
     status: Mapped[str] = mapped_column(String(500), nullable=True)
     attendance_mode: Mapped[str] = mapped_column(String(500), nullable=True)
     type: Mapped[str] = mapped_column(String(500), nullable=True)
 
-  
     # relationships
 
     business_categories: Mapped[list["OrmBusinessCategory"]] = relationship(
@@ -105,19 +109,19 @@ class OrmEvent(OrmResource):
         default_factory=list,
     )
 
-    # relevant_resources: Mapped[list["OrmAIResource"]] = relationship(
-    #     secondary=event_ai_resource_relationship,
-    #     back_populates="events",
-    #     passive_deletes=True,
-    #     default_factory=list,
-    # )
+    relevant_resources: Mapped[list["OrmAIResource"]] = relationship(
+        secondary=event_relevant_ai_resource_relationship,
+        backref="relevant_resources",
+        passive_deletes=True,
+        default_factory=list,
+    )
 
-    # used_resources: Mapped[list["OrmAIResource"]] = relationship(
-    #     secondary=event_ai_resource_relationship,
-    #     back_populates="events",
-    #     passive_deletes=True,
-    #     default_factory=list,
-    # )
+    used_resources: Mapped[list["OrmAIResource"]] = relationship(
+        secondary=event_used_ai_resource_relationship,
+        backref="used_resources",
+        passive_deletes=True,
+        default_factory=list,
+    )
 
     sub_events: Mapped[list["OrmEvent"]] = relationship(
         default_factory=list,

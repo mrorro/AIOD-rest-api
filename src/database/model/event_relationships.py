@@ -56,8 +56,24 @@ event_event_relationship = Table(
     Column("child_id", ForeignKey("events.identifier")),
 )
 
-event_ai_resource_relationship = Table(
-    "event_ai_resource",
+event_relevant_ai_resource_relationship = Table(
+    "event_relevant_ai_resource",
+    Base.metadata,
+    Column(
+        "event_id",
+        ForeignKey("events.identifier", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "ai_resource_id",
+        ForeignKey("ai_resources.identifier", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
+
+event_used_ai_resource_relationship = Table(
+    "event_used_ai_resource",
     Base.metadata,
     Column(
         "event_id",
