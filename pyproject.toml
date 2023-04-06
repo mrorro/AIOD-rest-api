@@ -4,7 +4,7 @@ description = "A containerized demo application for AI on demand (previously AI4
 version = "0.2.20230331"
 authors = [
 
-    { name = "Antonis Gianios"},
+    { name = "Antonis Ganios"},
     { name = "Íñigo Aréjula Aísa"},
     { name = "Jos van der Velde", email = "j.d.v.d.velde@tue.nl"},
     { name = "Pieter Gijsbers", email = "p.gijsbers@tue.nl"},

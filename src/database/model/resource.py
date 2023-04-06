@@ -4,7 +4,6 @@ from sqlalchemy.orm import Mapped, mapped_column, Session
 from database.model.base import Base
 from database.model.unique_model import UniqueMixin
 
-
 class OrmResource(UniqueMixin, Base):
     """The base class of all our Resources"""
 
@@ -25,7 +24,10 @@ class OrmResource(UniqueMixin, Base):
         cls, query, *args, platform: str = "", platform_identifier: str = "", **kwargs
     ):
         return query.filter(
-            and_(cls.platform == platform, cls.platform_identifier == platform_identifier)
+            and_(
+                cls.platform == platform,
+                cls.platform_identifier == platform_identifier,
+            )
         )
 
     @classmethod
