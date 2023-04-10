@@ -5,10 +5,12 @@ from .dataset_router import DatasetRouter
 from .news_router import NewsRouter
 from .publication_router import PublicationRouter
 from .educational_resource_router import EducationalResourceRouter
+from .event_router import EventRouter
 
 routers = [
     DatasetRouter(),
     PublicationRouter(),
     NewsRouter(),
     EducationalResourceRouter(),
+    EventRouter(),
 ]  # type: typing.List[ResourceRouter]
