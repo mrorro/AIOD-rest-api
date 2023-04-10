@@ -236,3 +236,51 @@ class AIoDEvent(AIoDResource):
     )
 
     media: List[str] = Field(description="Media used in  this event", default_factory=list)
+
+
+class AIoDAgent(BaseModel):
+    """The complete metadata for agents"""
+
+    identifier: int | None
+    name: str = Field(max_length=100)
+    description: str | None = Field(max_length=500)
+    image_url: str | None = Field(max_length=500)
+    email_addresses: List[str] = Field(
+        description="Email addresses related with this agent", default_factory=list
+    )
+
+
+class AIoDOrganization(AIoDResource, AIoDAgent):
+    """The complete metadata for organization"""
+
+    connection_to_ai: str = Field(max_length=500)
+    type: str = Field(max_length=500)
+
+    logo_url: str | None
+    same_as: str | None
+    founding_date: datetime | None
+    dissolution_date: datetime | None
+    legal_name: str | None
+    alternate_name: str | None
+    address: str | None
+    telephone: str | None
+
+    parent_organization: int | None
+    subsidiary_organization: int | None
+
+    members: Set[int] = Field(
+        description="Identifiers of AIodOrganisation that are members of this organization",
+        default_factory=set,
+    )
+
+    departments: Set[int] = Field(
+        description="Identifiers of AIodOrganisation that are departments of this organization",
+        default_factory=set,
+    )
+
+    business_categories: List[str] = Field(
+        description="Business categories related with this organization", default_factory=list
+    )
+    technical_categories: List[str] = Field(
+        description="Technical categories related with this organization", default_factory=list
+    )
