@@ -20,5 +20,6 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert len(response_json) == 2
     assert {pub["name"] for pub in response_json} == {"Name 1", "Name 2"}
     assert {pub["identifier"] for pub in response_json} == {1, 2}
+    # assert {pub["keywords"] for pub in response_json} == {["k1"], ["k1","k2"]}
     for pub in response_json:
-        assert len(pub) == 3
+        assert len(pub) == 4

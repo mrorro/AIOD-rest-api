@@ -76,14 +76,15 @@ class AIoDProject(AIoDAIResource):
     coordinated_by: Optional[str]
     project_description_title: Optional[str]
     project_description_text: Optional[str]
-    # keywords: Optional[list[str]]
     programmes_url: Optional[str]
     topic_url: Optional[str]
     call_for_proposal: Optional[str]
     founding_scheme: Optional[str]
-    # partners: Optional[list[str]]
     image: Optional[str]  # url of the image
     url: Optional[str]
+
+    # partners: Optional[list[str]]
+    keywords: Set[str] = Field(default_factory=set)
 
 
 class AIoDDataset(AIoDAIResource):
