@@ -16,7 +16,8 @@ class OrganizationResourceConverter(ResourceConverter[AIoDOrganization, OrmOrgan
         self, session: Session, aiod: AIoDOrganization, return_existing_if_present: bool = False
     ) -> OrmOrganization:
         """
-        Converting between organization representations: the AIoD schema towards the database variant
+        Converting between organization representations:
+        the AIoD schema towards the database variant
         """
         members = retrieve_related_objects_by_ids(session, aiod.members, OrmOrganization)
         departments = retrieve_related_objects_by_ids(session, aiod.departments, OrmOrganization)
@@ -52,14 +53,14 @@ class OrganizationResourceConverter(ResourceConverter[AIoDOrganization, OrmOrgan
                 for category in aiod.technical_categories
             ],
             email_addresses=[
-                OrmEmail.as_unique(session=session,email=email)
-                for email in aiod.email_addresses
+                OrmEmail.as_unique(session=session, email=email) for email in aiod.email_addresses
             ],
         )
 
     def orm_to_aiod(self, orm: OrmOrganization) -> AIoDOrganization:
         """
-        Converting between organization representations: the database variant towards the AIoD schema.
+        Converting between organization representations:
+        the database variant towards the AIoD schema.
         """
         return AIoDOrganization(
             identifier=orm.identifier,
@@ -83,5 +84,4 @@ class OrganizationResourceConverter(ResourceConverter[AIoDOrganization, OrmOrgan
             email_addresses={e.email for e in orm.email_addresses},
             business_categories={c.category for c in orm.business_categories},
             technical_categories={c.category for c in orm.technical_categories},
-            
         )

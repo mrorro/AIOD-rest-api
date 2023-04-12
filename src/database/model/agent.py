@@ -1,9 +1,10 @@
-from sqlalchemy import String, ForeignKey,and_
-from sqlalchemy.orm import Mapped, mapped_column, relationship,Session
+from sqlalchemy import String, ForeignKey, and_
+from sqlalchemy.orm import Mapped, mapped_column, relationship, Session
 from sqlalchemy.ext.declarative import declared_attr
 
 from database.model.base import Base
 from database.model.unique_model import UniqueMixin
+
 
 class OrmEmail(UniqueMixin, Base):
     __tablename__ = "emails"
@@ -20,9 +21,8 @@ class OrmEmail(UniqueMixin, Base):
     identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
 
     organization_id: Mapped[int] = mapped_column(
-        ForeignKey("organizations.identifier",ondelete='cascade'), nullable=True, default=None
+        ForeignKey("organizations.identifier", ondelete="cascade"), nullable=True, default=None
     )
-
 
 
 class OrmAgent(UniqueMixin, Base):
@@ -37,21 +37,15 @@ class OrmAgent(UniqueMixin, Base):
 
     # optional fields
     image_url: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    
-    #relationships
+
+    # relationships
     @declared_attr
-    def _email_addresses(cls): 
-        return(relationship(OrmEmail))
+    def _email_addresses(cls):
+        return relationship(OrmEmail)
 
     @classmethod
-    def _unique_filter(
-        cls, query, *args, name: str = "", **kwargs
-    ):
-        return query.filter(
-            and_(
-                cls.name == name
-            )
-        )
+    def _unique_filter(cls, query, *args, name: str = "", **kwargs):
+        return query.filter(and_(cls.name == name))
 
     @classmethod
     def create_or_get(cls, session: Session, *arg, create: bool = True, **kw):
@@ -64,8 +58,3 @@ class OrmAgent(UniqueMixin, Base):
         if create:
             return cls(**kw)
         return cls.as_unique(session, **kw)
-
-
-
-
-  

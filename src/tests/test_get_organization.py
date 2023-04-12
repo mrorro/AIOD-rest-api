@@ -18,17 +18,17 @@ def test_happy_path(client: TestClient, engine: Engine, organization_id: int):
             description="string",
             connection_to_ai="string",
             type="string",
-            image_url="string"
+            image_url="string",
         ),
-         OrmOrganization(
+        OrmOrganization(
             platform="openml",
             platform_identifier=None,
             name="string2",
             description="string2",
             connection_to_ai="string2",
             type="string",
-            image_url="string"
-        ),   
+            image_url="string",
+        ),
     ]
     with Session(engine) as session:
         # Populate database
@@ -47,14 +47,15 @@ def test_happy_path(client: TestClient, engine: Engine, organization_id: int):
     assert response_json["description"] == expected.description
     assert response_json["type"] == expected.type
     assert response_json["image_url"] == expected.image_url
-    
 
 
 @pytest.mark.parametrize("organization_id", [-1, 2, 3])
 def test_empty_db(client: TestClient, engine: Engine, organization_id):
     response = client.get(f"/organizations/{organization_id}")
     assert response.status_code == 404
-    assert response.json()["detail"] == f"Organization '{organization_id}' not found in the database."
+    assert (
+        response.json()["detail"] == f"Organization '{organization_id}' not found in the database."
+    )
 
 
 @pytest.mark.parametrize("organization_id", [-1, 2, 3])
@@ -67,13 +68,15 @@ def test_organization_not_found(client: TestClient, engine: Engine, organization
             description="string",
             connection_to_ai="string",
             type="string",
-            image_url="string"
+            image_url="string",
         )
     ]
     with Session(engine) as session:
         # Populate database
         session.add_all(organizations)
         session.commit()
-    response = client.get(f"/organizations/{organization_id}") 
+    response = client.get(f"/organizations/{organization_id}")
     assert response.status_code == 404
-    assert response.json()["detail"] == f"Organization '{organization_id}' not found in the database."
+    assert (
+        response.json()["detail"] == f"Organization '{organization_id}' not found in the database."
+    )
