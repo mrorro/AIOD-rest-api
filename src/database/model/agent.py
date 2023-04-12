@@ -20,8 +20,8 @@ class OrmEmail(UniqueMixin, Base):
     email: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
 
-    organization_id: Mapped[int] = mapped_column(
-        ForeignKey("organizations.identifier", ondelete="cascade"), nullable=True, default=None
+    organisation_id: Mapped[int] = mapped_column(
+        ForeignKey("organisations.identifier", ondelete="cascade"), nullable=True, default=None
     )
 
 

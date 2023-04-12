@@ -4,12 +4,12 @@ from sqlalchemy import ForeignKey, Table, Column
 
 from database.model.base import Base
 
-organization_business_category_relationship = Table(
-    "organization_business_category",
+organisation_business_category_relationship = Table(
+    "organisation_business_category",
     Base.metadata,
     Column(
-        "organization_id",
-        ForeignKey("organizations.identifier", ondelete="CASCADE"),
+        "organisation_id",
+        ForeignKey("organisations.identifier", ondelete="CASCADE"),
         primary_key=True,
     ),
     Column(
@@ -19,12 +19,12 @@ organization_business_category_relationship = Table(
     ),
 )
 
-organization_technical_category_relationship = Table(
-    "organization_technical_category",
+organisation_technical_category_relationship = Table(
+    "organisation_technical_category",
     Base.metadata,
     Column(
-        "organization_id",
-        ForeignKey("organizations.identifier", ondelete="CASCADE"),
+        "organisation_id",
+        ForeignKey("organisations.identifier", ondelete="CASCADE"),
         primary_key=True,
     ),
     Column(
@@ -35,12 +35,12 @@ organization_technical_category_relationship = Table(
 )
 
 
-organization_organization_relationship = Table(
-    "organization_organization",
+organisation_organisation_relationship = Table(
+    "organisation_organisation",
     Base.metadata,
     Column(
         "parent_id",
-        ForeignKey("organizations.identifier", ondelete="CASCADE"),
+        ForeignKey("organisations.identifier", ondelete="CASCADE"),
         primary_key=True,
     ),
     Column(

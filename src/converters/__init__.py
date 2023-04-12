@@ -4,7 +4,7 @@ from schemas import (
     AIoDDataset,
     AIoDEvent,
     AIoDNews,
-    AIoDOrganization,
+    AIoDOrganisation,
     AIoDPublication,
     AIoDEducationalResource,
 )
@@ -14,14 +14,14 @@ from .news_converter import NewsConverter
 from .publication_converter import PublicationConverter
 from .educational_resource_converter import EducationalResourceConverter
 from .event_converter import EventResourceConverter
-from .organization_converter import OrganizationResourceConverter
+from .organisation_converter import OrganisationResourceConverter
 
 dataset_converter_instance = DatasetConverter()
 news_converter_instance = NewsConverter()
 publication_converter_instance = PublicationConverter()
 educational_resource_converter_instance = EducationalResourceConverter()
 event_converter_instance = EventResourceConverter()
-organization_converter_instance = OrganizationResourceConverter()
+organisation_converter_instance = OrganisationResourceConverter()
 
 converters = {
     AIoDDataset: dataset_converter_instance,
@@ -29,5 +29,5 @@ converters = {
     AIoDNews: news_converter_instance,
     AIoDPublication: publication_converter_instance,
     AIoDEvent: event_converter_instance,
-    AIoDOrganization: organization_converter_instance,
+    AIoDOrganisation: organisation_converter_instance,
 }  # type: dict[Type, ResourceConverter]

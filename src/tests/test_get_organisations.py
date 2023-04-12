@@ -2,12 +2,12 @@ from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from database.model.organization import OrmOrganization
+from database.model.organisation import OrmOrganisation
 
 
 def test_happy_path(client: TestClient, engine: Engine):
-    organizations = [
-        OrmOrganization(
+    organisations = [
+        OrmOrganisation(
             platform="aiod",
             platform_identifier=None,
             name="string",
@@ -16,7 +16,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             type="string",
             image_url="string",
         ),
-        OrmOrganization(
+        OrmOrganisation(
             platform="openml",
             platform_identifier=None,
             name="string2",
@@ -25,7 +25,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             type="string",
             image_url="string",
         ),
-        OrmOrganization(
+        OrmOrganisation(
             platform="other_platform",
             platform_identifier=None,
             name="string3",
@@ -37,10 +37,10 @@ def test_happy_path(client: TestClient, engine: Engine):
     ]
     with Session(engine) as session:
         # Populate database
-        session.add_all(organizations)
+        session.add_all(organisations)
         session.commit()
 
-    response = client.get("/organizations")
+    response = client.get("/organisations")
     assert response.status_code == 200
     response_json = response.json()
     assert len(response_json) == 3

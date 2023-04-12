@@ -6,7 +6,7 @@ from .news_router import NewsRouter
 from .publication_router import PublicationRouter
 from .educational_resource_router import EducationalResourceRouter
 from .event_router import EventRouter
-from .organization_router import OrganizationRouter
+from .organisation_router import OrganisationRouter
 
 routers = [
     DatasetRouter(),
@@ -14,5 +14,5 @@ routers = [
     NewsRouter(),
     EducationalResourceRouter(),
     EventRouter(),
-    OrganizationRouter(),
+    OrganisationRouter(),
 ]  # type: typing.List[ResourceRouter]

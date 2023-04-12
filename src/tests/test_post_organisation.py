@@ -6,13 +6,13 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 
-from database.model.organization import OrmOrganization
+from database.model.organisation import OrmOrganisation
 from platform_names import PlatformName
 
 
 def test_happy_path(client: TestClient, engine: Engine):
-    organizations = [
-        OrmOrganization(
+    organisations = [
+        OrmOrganisation(
             platform=PlatformName.aiod,
             platform_identifier=None,
             name="string",
@@ -21,7 +21,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             type="string",
             image_url="string",
         ),
-        OrmOrganization(
+        OrmOrganisation(
             platform=PlatformName.aiod,
             platform_identifier=None,
             name="string2",
@@ -30,7 +30,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             type="string",
             image_url="string",
         ),
-        OrmOrganization(
+        OrmOrganisation(
             platform=PlatformName.aiod,
             platform_identifier=None,
             name="string3",
@@ -43,11 +43,11 @@ def test_happy_path(client: TestClient, engine: Engine):
 
     with Session(engine) as session:
         # Populate database
-        session.add_all(organizations)
+        session.add_all(organisations)
         session.commit()
 
     response = client.post(
-        "/organizations",
+        "/organisations",
         json={
             "platform": PlatformName.aiod,
             "platform_identifier": None,
@@ -73,7 +73,7 @@ def test_happy_path(client: TestClient, engine: Engine):
 )
 def test_unicode(client: TestClient, engine: Engine, name):
     response = client.post(
-        "/organizations",
+        "/organisations",
         json={
             "platform": PlatformName.aiod,
             "platform_identifier": None,
@@ -107,7 +107,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "image_url": "string",
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
-    response = client.post("/organizations", json=data)
+    response = client.post("/organisations", json=data)
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {"loc": ["body", field], "msg": "field required", "type": "value_error.missing"}
@@ -132,7 +132,7 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "image_url": "string",
     }  # type: typing.Dict[str, typing.Any]
     data[field] = None
-    response = client.post("/organizations", json=data)
+    response = client.post("/organisations", json=data)
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {

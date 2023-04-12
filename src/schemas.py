@@ -250,8 +250,8 @@ class AIoDAgent(BaseModel):
     )
 
 
-class AIoDOrganization(AIoDResource, AIoDAgent):
-    """The complete metadata for organization"""
+class AIoDOrganisation(AIoDResource, AIoDAgent):
+    """The complete metadata for organisation"""
 
     connection_to_ai: str = Field(max_length=500)
     type: str = Field(max_length=500)
@@ -265,22 +265,22 @@ class AIoDOrganization(AIoDResource, AIoDAgent):
     address: str | None
     telephone: str | None
 
-    parent_organization: int | None
-    subsidiary_organization: int | None
+    parent_organisation: int | None
+    subsidiary_organisation: int | None
 
     members: Set[int] = Field(
-        description="Identifiers of AIodOrganisation that are members of this organization",
+        description="Identifiers of AIodOrganisation that are members of this organisation",
         default_factory=set,
     )
 
     departments: Set[int] = Field(
-        description="Identifiers of AIodOrganisation that are departments of this organization",
+        description="Identifiers of AIodOrganisation that are departments of this organisation",
         default_factory=set,
     )
 
     business_categories: List[str] = Field(
-        description="Business categories related with this organization", default_factory=list
+        description="Business categories related with this organisation", default_factory=list
     )
     technical_categories: List[str] = Field(
-        description="Technical categories related with this organization", default_factory=list
+        description="Technical categories related with this organisation", default_factory=list
     )

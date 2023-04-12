@@ -1,5 +1,5 @@
 """
-Converting between different organization representations
+Converting between different organisation representations
 """
 from sqlalchemy.orm import Session
 from converters.conversion_helpers import retrieve_related_objects_by_ids
@@ -7,22 +7,22 @@ from converters.conversion_helpers import retrieve_related_objects_by_ids
 from converters.abstract_converter import ResourceConverter
 from database.model.agent import OrmEmail
 from database.model.general import OrmBusinessCategory, OrmTechnicalCategory
-from database.model.organization import OrmOrganization
-from schemas import AIoDOrganization
+from database.model.organisation import OrmOrganisation
+from schemas import AIoDOrganisation
 
 
-class OrganizationResourceConverter(ResourceConverter[AIoDOrganization, OrmOrganization]):
+class OrganisationResourceConverter(ResourceConverter[AIoDOrganisation, OrmOrganisation]):
     def aiod_to_orm(
-        self, session: Session, aiod: AIoDOrganization, return_existing_if_present: bool = False
-    ) -> OrmOrganization:
+        self, session: Session, aiod: AIoDOrganisation, return_existing_if_present: bool = False
+    ) -> OrmOrganisation:
         """
-        Converting between organization representations:
+        Converting between organisation representations:
         the AIoD schema towards the database variant
         """
-        members = retrieve_related_objects_by_ids(session, aiod.members, OrmOrganization)
-        departments = retrieve_related_objects_by_ids(session, aiod.departments, OrmOrganization)
+        members = retrieve_related_objects_by_ids(session, aiod.members, OrmOrganisation)
+        departments = retrieve_related_objects_by_ids(session, aiod.departments, OrmOrganisation)
 
-        return OrmOrganization.create_or_get(
+        return OrmOrganisation.create_or_get(
             session=session,
             create=not return_existing_if_present,
             platform=aiod.platform,
@@ -42,8 +42,8 @@ class OrganizationResourceConverter(ResourceConverter[AIoDOrganization, OrmOrgan
             telephone=aiod.telephone,
             members=members,
             departments=departments,
-            parent_organization_id=aiod.parent_organization,
-            subsidiary_organization_id=aiod.subsidiary_organization,
+            parent_organisation_id=aiod.parent_organisation,
+            subsidiary_organisation_id=aiod.subsidiary_organisation,
             business_categories=[
                 OrmBusinessCategory.as_unique(session=session, category=category)
                 for category in aiod.business_categories
@@ -57,12 +57,12 @@ class OrganizationResourceConverter(ResourceConverter[AIoDOrganization, OrmOrgan
             ],
         )
 
-    def orm_to_aiod(self, orm: OrmOrganization) -> AIoDOrganization:
+    def orm_to_aiod(self, orm: OrmOrganisation) -> AIoDOrganisation:
         """
-        Converting between organization representations:
+        Converting between organisation representations:
         the database variant towards the AIoD schema.
         """
-        return AIoDOrganization(
+        return AIoDOrganisation(
             identifier=orm.identifier,
             name=orm.name,
             description=orm.description,
@@ -79,8 +79,8 @@ class OrganizationResourceConverter(ResourceConverter[AIoDOrganization, OrmOrgan
             telephone=orm.telephone,
             members={member for member in orm.members},
             departments={department for department in orm.departments},
-            parent_organization=orm.parent_organization_id,
-            subsidiary_organization=orm.subsidiary_organization_id,
+            parent_organisation=orm.parent_organisation_id,
+            subsidiary_organisation=orm.subsidiary_organisation_id,
             email_addresses={e.email for e in orm.email_addresses},
             business_categories={c.category for c in orm.business_categories},
             technical_categories={c.category for c in orm.technical_categories},

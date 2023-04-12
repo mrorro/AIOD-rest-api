@@ -4,20 +4,20 @@ from datetime import datetime
 from sqlalchemy import String, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.model.organization_relationships import (
-    organization_business_category_relationship,
-    organization_technical_category_relationship,
-    organization_organization_relationship,
+from database.model.organisation_relationships import (
+    organisation_business_category_relationship,
+    organisation_technical_category_relationship,
+    organisation_organisation_relationship,
 )
 from database.model.general import OrmBusinessCategory, OrmTechnicalCategory
 from database.model.agent import OrmAgent, OrmEmail
 from database.model.resource import OrmResource
 
 
-class OrmOrganization(OrmResource, OrmAgent):
-    """Any organization resource"""
+class OrmOrganisation(OrmResource, OrmAgent):
+    """Any organisation resource"""
 
-    __tablename__ = "organizations"
+    __tablename__ = "organisations"
 
     identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
 
@@ -36,24 +36,24 @@ class OrmOrganization(OrmResource, OrmAgent):
     address: Mapped[str] = mapped_column(String(500), nullable=True, default=None)
     telephone: Mapped[str] = mapped_column(String(500), nullable=True, default=None)
 
-    parent_organization_id: Mapped[int] = mapped_column(
-        ForeignKey("organizations.identifier"), nullable=True, default=None
+    parent_organisation_id: Mapped[int] = mapped_column(
+        ForeignKey("organisations.identifier"), nullable=True, default=None
     )
 
-    subsidiary_organization_id: Mapped[int] = mapped_column(
-        ForeignKey("organizations.identifier"), nullable=True, default=None
+    subsidiary_organisation_id: Mapped[int] = mapped_column(
+        ForeignKey("organisations.identifier"), nullable=True, default=None
     )
 
     business_categories: Mapped[list["OrmBusinessCategory"]] = relationship(
-        secondary=organization_business_category_relationship,
-        back_populates="organizations",
+        secondary=organisation_business_category_relationship,
+        back_populates="organisations",
         passive_deletes=True,
         default_factory=list,
     )
 
     technical_categories: Mapped[list["OrmTechnicalCategory"]] = relationship(
-        secondary=organization_technical_category_relationship,
-        back_populates="organizations",
+        secondary=organisation_technical_category_relationship,
+        back_populates="organisations",
         passive_deletes=True,
         default_factory=list,
     )
@@ -62,17 +62,17 @@ class OrmOrganization(OrmResource, OrmAgent):
         default_factory=list,
     )
 
-    members: Mapped[list["OrmOrganization"]] = relationship(
+    members: Mapped[list["OrmOrganisation"]] = relationship(
         default_factory=list,
         back_populates="members",
-        primaryjoin=organization_organization_relationship.c.parent_id == identifier,
-        secondary=organization_organization_relationship,
-        secondaryjoin=organization_organization_relationship.c.child_id == identifier,
+        primaryjoin=organisation_organisation_relationship.c.parent_id == identifier,
+        secondary=organisation_organisation_relationship,
+        secondaryjoin=organisation_organisation_relationship.c.child_id == identifier,
     )
-    departments: Mapped[list["OrmOrganization"]] = relationship(
+    departments: Mapped[list["OrmOrganisation"]] = relationship(
         default_factory=list,
         back_populates="departments",
-        primaryjoin=organization_organization_relationship.c.parent_id == identifier,
-        secondary=organization_organization_relationship,
-        secondaryjoin=organization_organization_relationship.c.child_id == identifier,
+        primaryjoin=organisation_organisation_relationship.c.parent_id == identifier,
+        secondary=organisation_organisation_relationship,
+        secondaryjoin=organisation_organisation_relationship.c.child_id == identifier,
     )
