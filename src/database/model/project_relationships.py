@@ -6,5 +6,5 @@ project_keyword_relationship = Table(
     "projects_keyword",
     Base.metadata,
     Column("keyword_id", ForeignKey("keywords.identifier")),
-    Column("dataset_id", ForeignKey("projects.identifier")),
+    Column("project_id", ForeignKey("projects.identifier")),
 )
