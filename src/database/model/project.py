@@ -45,7 +45,7 @@ class OrmProject(OrmAIResource):
         back_populates="datasets",
         secondary=project_keyword_relationship,
     )
-
+    # TODO: Person/organization needed
     # partners: Mapped[list[str]] = mapped_column(String(250), nullable=True, default=None)
 
     __mapper_args__ = {
