@@ -238,10 +238,9 @@ class AIoDEvent(AIoDResource):
     media: List[str] = Field(description="Media used in  this event", default_factory=list)
 
 
-class AIoDAgent(BaseModel):
+class AIoDAgent(AIoDResource):
     """The complete metadata for agents"""
 
-    identifier: int | None
     name: str = Field(max_length=100)
     description: str | None = Field(max_length=500)
     image_url: str | None = Field(max_length=500)
@@ -250,7 +249,7 @@ class AIoDAgent(BaseModel):
     )
 
 
-class AIoDOrganisation(AIoDResource, AIoDAgent):
+class AIoDOrganisation(AIoDAgent):
     """The complete metadata for organisation"""
 
     connection_to_ai: str = Field(max_length=500)
@@ -268,13 +267,13 @@ class AIoDOrganisation(AIoDResource, AIoDAgent):
     parent_organisation: int | None
     subsidiary_organisation: int | None
 
-    members: Set[int] = Field(
-        description="Identifiers of AIodOrganisation that are members of this organisation",
+    members: List[AIoDAgent] = Field(
+        description="AIoDAgents that are members of this organisation",
         default_factory=set,
     )
 
-    departments: Set[int] = Field(
-        description="Identifiers of AIodOrganisation that are departments of this organisation",
+    departments: List[AIoDAgent] = Field(
+        description="AIoDAgents that are departments of this organisation",
         default_factory=set,
     )
 

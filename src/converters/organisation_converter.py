@@ -2,13 +2,12 @@
 Converting between different organisation representations
 """
 from sqlalchemy.orm import Session
-from converters.conversion_helpers import retrieve_related_objects_by_ids
 
 from converters.abstract_converter import ResourceConverter
-from database.model.agent import OrmEmail
+from database.model.agent import OrmAgent, OrmEmail
 from database.model.general import OrmBusinessCategory, OrmTechnicalCategory
 from database.model.organisation import OrmOrganisation
-from schemas import AIoDOrganisation
+from schemas import AIoDOrganisation, AIoDAgent
 
 
 class OrganisationResourceConverter(ResourceConverter[AIoDOrganisation, OrmOrganisation]):
@@ -19,8 +18,6 @@ class OrganisationResourceConverter(ResourceConverter[AIoDOrganisation, OrmOrgan
         Converting between organisation representations:
         the AIoD schema towards the database variant
         """
-        members = retrieve_related_objects_by_ids(session, aiod.members, OrmOrganisation)
-        departments = retrieve_related_objects_by_ids(session, aiod.departments, OrmOrganisation)
 
         return OrmOrganisation.create_or_get(
             session=session,
@@ -40,8 +37,26 @@ class OrganisationResourceConverter(ResourceConverter[AIoDOrganisation, OrmOrgan
             alternate_name=aiod.alternate_name,
             address=aiod.address,
             telephone=aiod.telephone,
-            members=members,
-            departments=departments,
+            members=[
+                OrmAgent(
+                    platform=v.platform,
+                    platform_identifier=v.platform_identifier,
+                    name=v.name,
+                    description=v.description,
+                    image_url=v.image_url,
+                )
+                for v in aiod.members
+            ],
+            departments=[
+                OrmAgent(
+                    platform=v.platform,
+                    platform_identifier=v.platform_identifier,
+                    name=v.name,
+                    description=v.description,
+                    image_url=v.image_url,
+                )
+                for v in aiod.departments
+            ],
             parent_organisation_id=aiod.parent_organisation,
             subsidiary_organisation_id=aiod.subsidiary_organisation,
             business_categories=[
@@ -77,8 +92,24 @@ class OrganisationResourceConverter(ResourceConverter[AIoDOrganisation, OrmOrgan
             alternate_name=orm.alternate_name,
             address=orm.address,
             telephone=orm.telephone,
-            members={member for member in orm.members},
-            departments={department for department in orm.departments},
+            members=[
+                AIoDAgent(
+                    platform=v.platform,
+                    platform_identifier=v.platform_identifier,
+                    name=v.name,
+                    description=v.description,
+                )
+                for v in orm.members
+            ],
+            departments=[
+                AIoDAgent(
+                    platform=v.platform,
+                    platform_identifier=v.platform_identifier,
+                    name=v.name,
+                    description=v.description,
+                )
+                for v in orm.departments
+            ],
             parent_organisation=orm.parent_organisation_id,
             subsidiary_organisation=orm.subsidiary_organisation_id,
             email_addresses={e.email for e in orm.email_addresses},

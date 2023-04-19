@@ -7,20 +7,21 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database.model.organisation_relationships import (
     organisation_business_category_relationship,
     organisation_technical_category_relationship,
-    organisation_organisation_relationship,
+    organisation_member_agent_relationship,
+    organisation_department_agent_relationship,
 )
 from database.model.general import OrmBusinessCategory, OrmTechnicalCategory
 from database.model.agent import OrmAgent, OrmEmail
-from database.model.resource import OrmResource
 
 
-class OrmOrganisation(OrmResource, OrmAgent):
+class OrmOrganisation(OrmAgent):
     """Any organisation resource"""
 
     __tablename__ = "organisations"
 
-    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
-
+    identifier: Mapped[int] = mapped_column(
+        ForeignKey("agents.identifier"), init=False, primary_key=True
+    )
     # required fields
 
     connection_to_ai: Mapped[str] = mapped_column(String(500), nullable=False)
@@ -62,17 +63,20 @@ class OrmOrganisation(OrmResource, OrmAgent):
         default_factory=list,
     )
 
-    members: Mapped[list["OrmOrganisation"]] = relationship(
+    members: Mapped[list["OrmAgent"]] = relationship(
+        secondary=organisation_member_agent_relationship,
+        backref="members1",
+        passive_deletes=True,
         default_factory=list,
-        back_populates="members",
-        primaryjoin=organisation_organisation_relationship.c.parent_id == identifier,
-        secondary=organisation_organisation_relationship,
-        secondaryjoin=organisation_organisation_relationship.c.child_id == identifier,
     )
-    departments: Mapped[list["OrmOrganisation"]] = relationship(
+    departments: Mapped[list["OrmAgent"]] = relationship(
+        secondary=organisation_department_agent_relationship,
+        backref="departments1",
+        passive_deletes=True,
         default_factory=list,
-        back_populates="departments",
-        primaryjoin=organisation_organisation_relationship.c.parent_id == identifier,
-        secondary=organisation_organisation_relationship,
-        secondaryjoin=organisation_organisation_relationship.c.child_id == identifier,
     )
+
+    __mapper_args__ = {
+        "polymorphic_identity": "organisation",
+        "inherit_condition": identifier == OrmAgent.identifier,
+    }
