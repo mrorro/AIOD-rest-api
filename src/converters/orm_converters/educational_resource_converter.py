@@ -3,7 +3,7 @@ Converting between different educational resource representations
 """
 from sqlalchemy.orm import Session
 
-from converters.orm_converters.abstract_converter import OrmConverter
+from converters.orm_converters.orm_converter import OrmConverter
 from database.model.educational_resource import (
     OrmEducationalResource,
     OrmLanguage,

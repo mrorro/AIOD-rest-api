@@ -1,9 +1,9 @@
 from typing import Type
 
 from converters import publication_converter_instance
-from converters.orm_converters.abstract_converter import OrmConverter
+from converters.orm_converters.orm_converter import OrmConverter
 from database.model.publication import OrmPublication
-from routers.abstract_router import ResourceRouter
+from routers.resource_router import ResourceRouter
 from schemas import AIoDPublication
 
 

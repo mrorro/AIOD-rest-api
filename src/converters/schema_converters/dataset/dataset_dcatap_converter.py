@@ -41,6 +41,9 @@ class DatasetConverterDcatAP(SchemaConverter[AIoDDataset, DcatApWrapper]):
             title=aiod.name,
             keyword=list(aiod.keywords),
             theme=[measured_value.variable for measured_value in aiod.measured_values],
+            release_date=aiod.date_published,
+            update_date=aiod.date_modified,
+            version=aiod.version,
         )
         graph: list[DcatAPObject] = [dataset]
         if aiod.contact is not None and len(aiod.contact) > 0:
@@ -49,6 +52,13 @@ class DatasetConverterDcatAP(SchemaConverter[AIoDDataset, DcatApWrapper]):
             )
             graph.append(contact)
             dataset.contact_point = [DcatAPIdentifier(id_=contact.id_)]
+        if aiod.creator is not None and len(aiod.creator) > 0:
+            creator = VCardIndividual(
+                id_=_replace_special_chars("individual_{}".format(aiod.creator)), fn=aiod.creator
+            )
+            if creator.id_ not in {obj.id_ for obj in graph}:
+                graph.append(creator)
+            dataset.creator = [DcatAPIdentifier(id_=creator.id_)]
         if aiod.publisher is not None and len(aiod.publisher) > 0:
             publisher = VCardIndividual(
                 id_=_replace_special_chars("individual_{}".format(aiod.publisher)),

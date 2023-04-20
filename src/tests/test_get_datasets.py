@@ -49,4 +49,4 @@ def test_happy_path(client: TestClient, engine: Engine):
         "other_platform.eu/2",
     }
     for ds in response_json:
-        assert len(ds) == 13
+        assert len(ds) == 14

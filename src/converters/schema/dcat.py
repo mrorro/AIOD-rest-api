@@ -15,6 +15,8 @@ class DcatAPContext(BaseModel):
 
 
 class DcatAPObject(BaseModel, ABC):
+    """Base class for all DCAT-AP objects"""
+
     id_: str = Field(alias="@id")
 
     class Config:
@@ -50,7 +52,7 @@ class SpdxChecksum(DcatAPObject):
 
 
 class DcatAPIdentifier(DcatAPObject):
-    pass
+    """Identifying another DcatAPObject. Contains only an id."""
 
 
 class DcatAPDistribution(DcatAPObject):
@@ -68,7 +70,7 @@ class DcatAPDataset(DcatAPObject):
     type_: str = Field(default="dcat:Dataset", alias="@type", const=True)
     description: str = Field(
         alias="dct:description",
-        description="This property contains a free-text accountof the Dataset",
+        description="This property contains a free-text account of the Dataset",
     )
     title: str = Field(
         alias="dct:title",
@@ -76,8 +78,8 @@ class DcatAPDataset(DcatAPObject):
     )
     contact_point: list[DcatAPIdentifier] = Field(
         alias="dcat:contactPoint",
-        description="This property "
-        "contains contact information that can be used for sending comments about the Dataset.",
+        description="This property contains contact information that can be used for sending "
+        "comments about the Dataset.",
         default_factory=list,
     )
     distribution: list[DcatAPIdentifier] = Field(
@@ -87,7 +89,7 @@ class DcatAPDataset(DcatAPObject):
     )
     keyword: list[str] = Field(
         alias="dcat:keyword",
-        description="This property contains a " "keyword or tag describing the " "Dataset",
+        description="This property contains a keyword or tag describing the Dataset",
         default_factory=list,
     )
     publisher: DcatAPIdentifier | None = Field(
@@ -104,9 +106,8 @@ class DcatAPDataset(DcatAPObject):
     )
     theme: list[str] = Field(
         alias="dcat:theme",
-        description="This property refers to a category of the "
-        "Dataset. A Dataset may be associated with "
-        "multiple themes.",
+        description="This property refers to a category of the Dataset. A Dataset may be "
+        "associated with multiple themes.",
         default_factory=list,
     )
 
@@ -118,6 +119,8 @@ class DcatAPDataset(DcatAPObject):
 
 
 class DcatApWrapper(BaseModel):
+    """The resulting class, containing a dataset and related entities in the graph"""
+
     context_: DcatAPContext = Field(default=DcatAPContext(), alias="@context", const=True)
     # instead of list[DcatAPObject], a union with all the possible values is necessary. See
     # https://stackoverflow.com/questions/58301364/pydantic-and-subclasses-of-abstract-class

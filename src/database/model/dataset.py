@@ -55,7 +55,7 @@ class OrmDataset(OrmAIResource):
     date_published: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=None)
     funder: Mapped[str] = mapped_column(String(150), default=None, nullable=True)
     # TODO(issue 9): funder repeated organization/person
-    is_accessible_for_free: Mapped[bool] = mapped_column(Boolean, default=None, nullable=True)
+    is_accessible_for_free: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     issn: Mapped[str] = mapped_column(String(8), default=None, nullable=True)
     size: Mapped[int] = mapped_column(default=None, nullable=True)
     spatial_coverage: Mapped[str] = mapped_column(String(500), default=None, nullable=True)

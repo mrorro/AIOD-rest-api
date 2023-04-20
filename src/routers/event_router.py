@@ -2,7 +2,7 @@ from typing import Type
 
 from converters import event_converter_instance, OrmConverter
 from database.model.event import OrmEvent
-from routers.abstract_router import ResourceRouter
+from routers.resource_router import ResourceRouter
 from schemas import AIoDEvent
 
 

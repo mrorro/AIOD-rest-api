@@ -108,7 +108,7 @@ class AIoDDataset(AIoDAIResource):
     date_modified: datetime | None
     date_published: datetime | None
     funder: str | None
-    is_accessible_for_free: bool | None
+    is_accessible_for_free: bool = Field(default=True)
     issn: str | None = Field(max_length=8, min_length=8)
     publisher: str | None = Field(max_length=150)
     size: int | None

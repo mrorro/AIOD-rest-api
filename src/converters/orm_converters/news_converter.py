@@ -3,7 +3,7 @@ Converting between different news representations
 """
 from sqlalchemy.orm import Session
 
-from converters.orm_converters.abstract_converter import OrmConverter
+from converters.orm_converters.orm_converter import OrmConverter
 from database.model.general import OrmKeyword, OrmBusinessCategory
 from database.model.news import OrmMedia, OrmNews, OrmNewsCategory
 from schemas import AIoDNews

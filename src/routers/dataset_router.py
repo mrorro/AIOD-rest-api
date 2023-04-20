@@ -1,7 +1,7 @@
 from typing import Type
 
 from converters import dataset_converter_instance
-from converters.orm_converters.abstract_converter import OrmConverter
+from converters.orm_converters.orm_converter import OrmConverter
 from converters.schema.dcat import DcatApWrapper
 from converters.schema.schema_dot_org import SchemaDotOrgDataset
 from converters.schema_converters import (
@@ -10,7 +10,7 @@ from converters.schema_converters import (
 )
 from converters.schema_converters.schema_converter import SchemaConverter
 from database.model.dataset import OrmDataset
-from routers.abstract_router import ResourceRouter
+from routers.resource_router import ResourceRouter
 from schemas import AIoDDataset
 
 

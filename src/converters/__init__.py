@@ -8,7 +8,7 @@ from schemas import (
     AIoDPublication,
     AIoDEducationalResource,
 )
-from .orm_converters.abstract_converter import OrmConverter  # noqa:F401
+from .orm_converters.orm_converter import OrmConverter  # noqa:F401
 from .orm_converters.dataset_converter import DatasetConverter
 from .orm_converters.educational_resource_converter import EducationalResourceConverter
 from .orm_converters.event_converter import EventResourceConverter

@@ -1,9 +1,9 @@
 from typing import Type
 
 from converters import news_converter_instance
-from converters.orm_converters.abstract_converter import OrmConverter
+from converters.orm_converters.orm_converter import OrmConverter
 from database.model.news import OrmNews
-from routers.abstract_router import ResourceRouter
+from routers.resource_router import ResourceRouter
 from schemas import AIoDNews
 
 

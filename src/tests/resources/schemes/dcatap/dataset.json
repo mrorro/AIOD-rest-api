@@ -34,16 +34,25 @@
             "dcat:theme": [
                 "variable"
             ],
-            "dcat:creator": [],
+            "dcat:creator": [
+                {
+                    "@id": "individual_creator"
+                }
+            ],
             "foaf:page": [],
-            "dct:issued": null,
-            "dct:modified": null,
-            "owl:versionInfo": null
+            "dct:issued": "2001-01-01T00:00:00",
+            "dct:modified": "2002-01-01T00:00:00",
+            "owl:versionInfo": "version1"
         },
         {
             "@id": "individual_contact",
             "@type": "vcard:Individual",
             "vcard:fn": "contact"
+        },
+        {
+            "@id": "individual_creator",
+            "@type": "vcard:Individual",
+            "vcard:fn": "creator"
         },
         {
             "@id": "spatial_coverage",

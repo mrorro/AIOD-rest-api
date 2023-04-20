@@ -1,9 +1,9 @@
 from typing import Type
 
 from converters import educational_resource_converter_instance
-from converters.orm_converters.abstract_converter import OrmConverter
+from converters.orm_converters.orm_converter import OrmConverter
 from database.model.educational_resource import OrmEducationalResource
-from routers.abstract_router import ResourceRouter
+from routers.resource_router import ResourceRouter
 from schemas import AIoDEducationalResource
 
 

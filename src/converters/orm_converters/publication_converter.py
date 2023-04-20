@@ -3,7 +3,7 @@ Converting between different dataset representations
 """
 from sqlalchemy.orm import Session
 
-from converters.orm_converters.abstract_converter import OrmConverter
+from converters.orm_converters.orm_converter import OrmConverter
 from converters.orm_converters.dataset_converter import retrieve_related_objects_by_ids
 from database.model.dataset import OrmDataset
 from database.model.publication import OrmPublication

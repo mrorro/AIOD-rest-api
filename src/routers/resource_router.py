@@ -8,7 +8,7 @@ from sqlalchemy import Engine, select, and_, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from converters.orm_converters.abstract_converter import OrmConverter
+from converters.orm_converters.orm_converter import OrmConverter
 from converters.schema_converters.schema_converter import SchemaConverter
 from database.model.resource import OrmResource
 from platform_names import PlatformName
