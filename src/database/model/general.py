@@ -31,6 +31,8 @@ from database.model.educational_resource_relationships import (
     educational_resource_technical_category_relationship,
 )
 
+
+from database.model.project_relationships import project_keyword_relationship
 from database.model.event_relationships import event_business_category_relationship
 
 from database.model.unique_model import UniqueMixin
@@ -40,6 +42,7 @@ if TYPE_CHECKING:  # avoid circular imports; only import while type checking
     from database.model.news import OrmNews
     from database.model.educational_resource import OrmEducationalResource
     from database.model.event import OrmEvent
+    from database.model.project import OrmProject
 
 
 class OrmLicense(UniqueMixin, Base):
@@ -94,6 +97,9 @@ class OrmKeyword(UniqueMixin, Base):
         default_factory=list,
         back_populates="keywords",
         secondary=educational_resource_keyword_relationship,
+    )
+    projects: Mapped[list["OrmProject"]] = relationship(
+        default_factory=list, back_populates="keywords", secondary=project_keyword_relationship
     )
 
 

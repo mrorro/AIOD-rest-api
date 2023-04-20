@@ -68,6 +68,31 @@ class AIoDPublication(AIoDAIResource):
     )
 
 
+class AIoDProject(AIoDAIResource):
+    """The complete metadata of a project. For now, only a couple of fields are shown,
+    we have to decide which fields to use."""
+
+    name: str | None = Field(max_length=250)
+    doi: Optional[str]
+    start_date: Optional[datetime]
+    end_date: Optional[datetime]
+    founded_under: Optional[str]
+    total_cost_euro: Optional[float]
+    eu_contribution_euro: Optional[float]
+    coordinated_by: Optional[str]
+    project_description_title: Optional[str]
+    project_description_text: Optional[str]
+    programmes_url: Optional[str]
+    topic_url: Optional[str]
+    call_for_proposal: Optional[str]
+    founding_scheme: Optional[str]
+    image: Optional[str]  # url of the image
+    url: Optional[str]
+
+    # partners: Optional[list[str]]
+    keywords: Set[str] = Field(default_factory=set)
+
+
 class AIoDDataset(AIoDAIResource):
     """
     The complete metadata of a dataset in AIoD format.

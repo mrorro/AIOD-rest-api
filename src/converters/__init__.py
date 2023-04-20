@@ -1,16 +1,25 @@
 from typing import Type  # noqa:F401
 
-from schemas import AIoDDataset, AIoDNews, AIoDPublication, AIoDEducationalResource
+from schemas import (
+    AIoDDataset,
+    AIoDEvent,
+    AIoDNews,
+    AIoDProject,
+    AIoDPublication,
+    AIoDEducationalResource,
+)
 from .orm_converters.abstract_converter import OrmConverter  # noqa:F401
 from .orm_converters.dataset_converter import DatasetConverter
 from .orm_converters.educational_resource_converter import EducationalResourceConverter
 from .orm_converters.event_converter import EventResourceConverter
 from .orm_converters.news_converter import NewsConverter
+from .orm_converters.project_converter import ProjectConverter  # noqa:F401
 from .orm_converters.publication_converter import PublicationConverter
 
 dataset_converter_instance = DatasetConverter()
 news_converter_instance = NewsConverter()
 publication_converter_instance = PublicationConverter()
+project_converter_instance = ProjectConverter()
 educational_resource_converter_instance = EducationalResourceConverter()
 event_converter_instance = EventResourceConverter()
 
@@ -19,4 +28,6 @@ converters = {
     AIoDEducationalResource: educational_resource_converter_instance,
     AIoDNews: news_converter_instance,
     AIoDPublication: publication_converter_instance,
+    AIoDProject: project_converter_instance,
+    AIoDEvent: event_converter_instance,
 }  # type: dict[Type, OrmConverter]
