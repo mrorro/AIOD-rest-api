@@ -21,10 +21,17 @@ class PublicationConverter(ResourceConverter[AIoDPublication, OrmPublication]):
         return OrmPublication.create_or_get(
             session=session,
             create=not return_existing_if_present,
-            doi=aiod.doi,
             platform=aiod.platform,
             platform_identifier=aiod.platform_identifier,
             title=aiod.title,
+            doi=aiod.doi,
+            creators=aiod.creators,
+            access_right=aiod.access_right,
+            license=aiod.license,
+            publication_type=aiod.publication_type,
+            date_created=aiod.date_created,
+            date_published=aiod.date_published,
+            notes=aiod.notes,
             url=aiod.url,
             datasets=datasets,
         )
@@ -36,10 +43,17 @@ class PublicationConverter(ResourceConverter[AIoDPublication, OrmPublication]):
         """
         return AIoDPublication(
             identifier=orm.identifier,
-            doi=orm.doi,
             platform=orm.platform,
             platform_identifier=orm.platform_identifier,
             title=orm.title,
+            doi=orm.doi,
+            creators=orm.creators,
+            access_right=orm.access_right,
+            license=orm.license,
+            publication_type=orm.publication_type,
+            date_created=orm.date_created,
+            date_published=orm.date_published,
+            notes=orm.notes,
             url=orm.url,
             datasets=[d.identifier for d in orm.datasets],
         )

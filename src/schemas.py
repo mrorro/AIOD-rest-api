@@ -53,8 +53,16 @@ class AIoDPublication(AIoDAIResource):
     """The complete metadata of a publication. For now, only a couple of fields are shown,
     we have to decide which fields to use."""
 
-    doi: str | None = Field(max_length=150)
     title: str = Field(max_length=250)
+    doi: str | None = Field(max_length=150)
+    creators: str | None = Field(max_length=450)
+    access_right: str | None = Field(max_length=150)
+    license: str | None = Field(max_length=150)
+    publication_type: str | None = Field(max_length=150)
+    date_created: datetime | None
+    date_published: datetime | None
+    notes: str | None = Field(max_length=450)
+
     url: str | None = Field(max_length=250)
     datasets: Set[int] = Field(
         description="Identifiers of datasets that are connected to this publication",
