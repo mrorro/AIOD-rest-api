@@ -1,0 +1,75 @@
+{
+    "@context": {
+        "dcat": "http://www.w3.org/ns/dcat",
+        "dct": "http://purl.org/dc/terms/",
+        "vcard": "https://www.w3.org/2006/vcard/ns#"
+    },
+    "@graph": [
+        {
+            "@id": "dataset_name1",
+            "@type": "dcat:Dataset",
+            "dct:description": "description",
+            "dct:title": "name1",
+            "dcat:contactPoint": [
+                {
+                    "@id": "individual_contact"
+                }
+            ],
+            "dcat:distribution": [
+                {
+                    "@id": "distr.content_url"
+                }
+            ],
+            "dcat:keyword": [
+                "a",
+                "b",
+                "c"
+            ],
+            "dct:publisher": null,
+            "dct:spatial": [
+                {
+                    "@id": "spatial_coverage"
+                }
+            ],
+            "dcat:theme": [
+                "variable"
+            ],
+            "dcat:creator": [],
+            "foaf:page": [],
+            "dct:issued": null,
+            "dct:modified": null,
+            "owl:versionInfo": null
+        },
+        {
+            "@id": "individual_contact",
+            "@type": "vcard:Individual",
+            "vcard:fn": "contact"
+        },
+        {
+            "@id": "spatial_coverage",
+            "@type": "dct:Location",
+            "dcat:bbox": null,
+            "dcat:centroid": null,
+            "dcat:geometry": "spatial_coverage"
+        },
+        {
+            "@id": "md5hash",
+            "@type": "spdx:Checksum",
+            "algorithm": "md5",
+            "checksumValue": "md5hash"
+        },
+        {
+            "@id": "distr.content_url",
+            "@type": "dcat:Distribution",
+            "dcat:accessURL": "distr.content_url",
+            "dcat:byteSize": null,
+            "spdx:checksum": {
+                "@id": "md5hash"
+            },
+            "dct:description": "distr.description",
+            "dcat:downloadURL": "distr.content_url",
+            "dcat:mediaType": "distr.encoding_format",
+            "dct:title": "distr.name"
+        }
+    ]
+}

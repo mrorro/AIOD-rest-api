@@ -1,0 +1,53 @@
+{
+    "@context": {
+        "@vocab": "http://schema.org/"
+    },
+    "@type": "Dataset",
+    "name": "name1",
+    "description": "description",
+    "identifier": "7",
+    "maintainer": {
+        "@type": "Organization",
+        "name": "platform"
+    },
+    "alternateName": [
+        "alternative_1",
+        "alternative_2"
+    ],
+    "citation": null,
+    "creator": {
+        "@type": "Organization",
+        "name": "creator"
+    },
+    "dateModified": "2002-01-01T00:00:00",
+    "datePublished": "2001-01-01T00:00:00",
+    "isAccessibleForFree": true,
+    "keywords": [
+        "a",
+        "b",
+        "c"
+    ],
+    "sameAs": "same_as",
+    "version": "version1",
+    "url": "https://aiod.eu/api/datasets/7",
+    "distribution": {
+        "@type": "DataDownload",
+        "name": "distr.name",
+        "contentUrl": "distr.content_url",
+        "contentSize": "123",
+        "encodingFormat": "distr.encoding_format"
+    },
+    "funder": {
+        "@type": "Organization",
+        "name": "funder"
+    },
+    "hasPart": null,
+    "isPartOf": null,
+    "issn": "12345678",
+    "license": "license.name",
+    "measurementTechnique": "technique",
+    "size": "100",
+    "spatialCoverage": "spatial_coverage",
+    "temporalCoverage": "2000-01-01 00:00:00/2000-01-02 00:00:00",
+    "variableMeasured": "variable"
+}

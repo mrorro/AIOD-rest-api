@@ -13,6 +13,8 @@ from database.model.dataset_relationships import (
     dataset_license_relationship,
     dataset_publication_relationship,
     dataset_measuredValue_relationship,
+    checksum_algorithm_relationship,
+    datadownload_checksum_relationship,
 )
 from database.model.general import OrmKeyword, OrmLicense
 from database.model.base import Base
@@ -45,8 +47,10 @@ class OrmDataset(OrmAIResource):
     same_as: Mapped[str] = mapped_column(String(150), unique=True, nullable=False)
 
     # Recommended fields
+    contact: Mapped[str] = mapped_column(String(150), default=None, nullable=True)
     creator: Mapped[str] = mapped_column(String(150), default=None, nullable=True)
-    # TODO(issue 9): creator repeated organization/person
+    publisher: Mapped[str] = mapped_column(String(150), default=None, nullable=True)
+    # TODO(issue 9): contact + creator + publisher repeated organization/person
     date_modified: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=None)
     date_published: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=None)
     funder: Mapped[str] = mapped_column(String(150), default=None, nullable=True)
@@ -122,6 +126,11 @@ class OrmDataDownload(Base):
     dataset: Mapped["OrmDataset"] = relationship(
         back_populates="distributions", secondary=dataset_distribution_relationship, init=False
     )
+    checksum: Mapped[list["OrmChecksum"]] = relationship(
+        back_populates="distribution",
+        secondary=datadownload_checksum_relationship,
+        default_factory=list,
+    )
 
 
 class OrmMeasuredValue(UniqueMixin, Base):
@@ -177,4 +186,37 @@ class OrmAlternateName(UniqueMixin, Base):
         default_factory=list,
         back_populates="alternate_names",
         secondary=dataset_alternateName_relationship,
+    )
+
+
+class OrmChecksumAlgorithm(UniqueMixin, Base):
+    """A checksum algorithm (such as MD5)"""
+
+    @classmethod
+    def _unique_hash(cls, name):
+        return name
+
+    @classmethod
+    def _unique_filter(cls, query, name):
+        return query.filter(cls.name == name)
+
+    __tablename__ = "checksum_algorithms"
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
+    name: Mapped[str] = mapped_column(String(150), unique=True)
+
+
+class OrmChecksum(Base):
+    """
+    A checksum.
+    """
+
+    __tablename__ = "checksums"
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
+    value: Mapped[str] = mapped_column(String(500))
+    algorithm: Mapped["OrmChecksumAlgorithm"] = relationship(
+        default_factory=list,
+        secondary=checksum_algorithm_relationship,
+    )
+    distribution: Mapped["OrmDataDownload"] = relationship(
+        default=None, secondary=datadownload_checksum_relationship
     )

@@ -1,10 +1,11 @@
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 from sqlite3 import Date
 
-from sqlalchemy import String, DateTime, Numeric
+from sqlalchemy import String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
+from database.model.ai_resource import OrmAIResource
 from database.model.base import Base
 from database.model.event_relationships import (
     event_business_category_relationship,
@@ -15,10 +16,7 @@ from database.model.event_relationships import (
     event_used_ai_resource_relationship,
 )
 from database.model.general import OrmBusinessCategory
-from database.model.ai_resource import OrmAIResource
 from database.model.resource import OrmResource
-
-
 from database.model.unique_model import UniqueMixin
 
 
@@ -33,7 +31,6 @@ class OrmResearchArea(UniqueMixin, Base):
     def _unique_filter(cls, query, name):
         return query.filter(cls.name == name)
 
-    jos: Mapped[str] = mapped_column(Numeric(scale=9, precision=2), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     events: Mapped[list["OrmEvent"]] = relationship(

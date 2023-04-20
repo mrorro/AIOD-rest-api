@@ -6,13 +6,20 @@ from sqlalchemy.orm import Session
 
 from converters.orm_converters.abstract_converter import OrmConverter
 from converters.orm_converters.conversion_helpers import retrieve_related_objects_by_ids
-from database.model.dataset import OrmDataset, OrmDataDownload, OrmMeasuredValue, OrmAlternateName
+from database.model.dataset import (
+    OrmDataset,
+    OrmDataDownload,
+    OrmMeasuredValue,
+    OrmAlternateName,
+    OrmChecksum,
+    OrmChecksumAlgorithm,
+)
 from database.model.general import (
     OrmLicense,
     OrmKeyword,
 )
 from database.model.publication import OrmPublication
-from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue
+from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue, AIoDChecksum
 
 
 class DatasetConverter(OrmConverter[AIoDDataset, OrmDataset]):
@@ -35,12 +42,14 @@ class DatasetConverter(OrmConverter[AIoDDataset, OrmDataset]):
             platform=aiod.platform,
             platform_identifier=aiod.platform_identifier,
             same_as=aiod.same_as,
+            contact=aiod.contact,
             creator=aiod.creator,
             date_modified=aiod.date_modified,
             date_published=aiod.date_published,
             funder=aiod.funder,
             is_accessible_for_free=aiod.is_accessible_for_free,
             issn=aiod.issn,
+            publisher=aiod.publisher,
             size=aiod.size,
             spatial_coverage=aiod.spatial_coverage,
             temporal_coverage_from=aiod.temporal_coverage_from,
@@ -58,13 +67,22 @@ class DatasetConverter(OrmConverter[AIoDDataset, OrmDataset]):
             citations=citations,
             distributions=[
                 OrmDataDownload(
-                    content_url=orm_distr.content_url,
-                    content_size_kb=orm_distr.content_size_kb,
-                    description=orm_distr.description,
-                    name=orm_distr.name,
-                    encoding_format=orm_distr.encoding_format,
+                    content_url=distr.content_url,
+                    content_size_kb=distr.content_size_kb,
+                    description=distr.description,
+                    name=distr.name,
+                    encoding_format=distr.encoding_format,
+                    checksum=[
+                        OrmChecksum(
+                            algorithm=OrmChecksumAlgorithm.as_unique(
+                                session=session, name=checksum.algorithm
+                            ),
+                            value=checksum.value,
+                        )
+                        for checksum in distr.checksum
+                    ],
                 )
-                for orm_distr in aiod.distributions
+                for distr in aiod.distributions
             ],
             keywords=[
                 OrmKeyword.as_unique(session=session, name=keyword) for keyword in aiod.keywords
@@ -96,6 +114,7 @@ class DatasetConverter(OrmConverter[AIoDDataset, OrmDataset]):
             funder=orm.funder,
             is_accessible_for_free=orm.is_accessible_for_free,
             issn=orm.issn,
+            publisher=orm.publisher,
             size=orm.size,
             spatial_coverage=orm.spatial_coverage,
             temporal_coverage_from=orm.temporal_coverage_from,
@@ -113,6 +132,10 @@ class DatasetConverter(OrmConverter[AIoDDataset, OrmDataset]):
                     description=orm_distr.description,
                     name=orm_distr.name,
                     encoding_format=orm_distr.encoding_format,
+                    checksum=[
+                        AIoDChecksum(algorithm=checksum.algorithm.name, value=checksum.value)
+                        for checksum in orm_distr.checksum
+                    ],
                 )
                 for orm_distr in orm.distributions
             ],

@@ -36,12 +36,18 @@ class AIoDAIResource(AIoDResource):
     pass
 
 
+class AIoDChecksum(BaseModel):
+    algorithm: str = Field(max_length=150)
+    value: str = Field(max_length=500)
+
+
 class AIoDDistribution(BaseModel):
     content_url: str = Field(max_length=150)
     content_size_kb: int | None
     description: str | None = Field(max_length=5000)
     name: str | None = Field(max_length=150)
     encoding_format: str | None = Field(max_length=150)
+    checksum: list[AIoDChecksum] = Field(default_factory=list)
 
 
 class AIoDMeasurementValue(BaseModel):
@@ -72,12 +78,14 @@ class AIoDDataset(AIoDAIResource):
     same_as: str = Field(max_length=150)
 
     # Recommended fields
+    contact: str | None = Field(max_length=150)
     creator: str | None = Field(max_length=150)
     date_modified: datetime | None
     date_published: datetime | None
     funder: str | None
     is_accessible_for_free: bool | None
     issn: str | None = Field(max_length=8, min_length=8)
+    publisher: str | None = Field(max_length=150)
     size: int | None
     spatial_coverage: str | None = Field(max_length=500)
     temporal_coverage_from: datetime | None
@@ -93,13 +101,13 @@ class AIoDDataset(AIoDAIResource):
     is_part: Set[int] = Field(
         description="Identifiers of datasets this dataset is part of.", default_factory=set
     )
-    alternate_names: Set[str] = Field(default_factory=set)
+    alternate_names: List[str] = Field(default_factory=list)
     citations: Set[int] = Field(
         description="Identifiers of publications linked to this dataset",
         default_factory=set,
     )
     distributions: List[AIoDDistribution] = []
-    keywords: Set[str] = Field(default_factory=set)
+    keywords: list[str] = Field(default_factory=list)
     measured_values: List[AIoDMeasurementValue] = Field(default_factory=list)
 
 

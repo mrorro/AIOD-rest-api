@@ -84,10 +84,14 @@ def test_aiod_to_orm_happy_path(
         assert all({ds.identifier for ds in p.datasets} == {orm.identifier} for p in orm.citations)
 
         assert len(orm.distributions) == 1
+        assert len(orm.distributions[0].checksum) == 1
+        assert orm.distributions[0].checksum[0].algorithm.name == "md5"
+        assert orm.distributions[0].checksum[0].value == "md5hash"
         for field, expected_value in aiod.distributions[0].__dict__.items():
-            assert orm.distributions[0].__getattribute__(field) == expected_value, (
-                f"Error on " f"field {field}"
-            )
+            if field != "checksum":
+                assert orm.distributions[0].__getattribute__(field) == expected_value, (
+                    f"Error on " f"field {field}"
+                )
 
         assert len(orm.measured_values) == 1
         assert orm.measured_values[0].variable == "variable"
@@ -163,9 +167,9 @@ def test_orm_to_aiod(
     assert aiod.license == orm.license.name
     assert aiod.has_parts == has_parts
     assert aiod.is_part == is_part
-    assert aiod.alternate_names == {"alias1", "alias2"}
+    assert aiod.alternate_names == ["alias1", "alias2"]
     assert aiod.citations == citations
-    assert aiod.keywords == {"a", "b"}
+    assert aiod.keywords == ["a", "b"]
     assert len(aiod.distributions) == 1
     for field, actual_value in aiod.distributions[0].__dict__.items():
         expected_value = orm_data_download.__getattribute__(field)

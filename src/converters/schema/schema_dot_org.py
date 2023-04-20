@@ -7,6 +7,10 @@ import datetime
 from pydantic import BaseModel, Field, Extra
 
 
+class SchemaDotOrgContext(BaseModel):
+    vocab_: str = Field(default="http://schema.org/", alias="@vocab", constant=True)
+
+
 class SchemaDotOrgDataDownload(BaseModel):
     """A dataset in downloadable form.
 
@@ -57,6 +61,9 @@ class SchemaDotOrgPerson(BaseModel):
 
 
 class SchemaDotOrgDataset(BaseModel):
+    context_: SchemaDotOrgContext = Field(
+        default=SchemaDotOrgContext(), alias="@context", constant=True
+    )
     type_: str = Field(default="Dataset", alias="@type", constant=True)
 
     name: str = Field(description="The name of the item.")
@@ -196,9 +203,8 @@ class SchemaDotOrgDataset(BaseModel):
     variableMeasured: str | list[str] | None = Field(
         default=None,
         description="The variableMeasured property can indicate (repeated as necessary) the "
-        "variables "
-        "that are measured in some dataset, either described as text or as pairs of identifier "
-        "and description using PropertyValue.",
+        "variables that are measured in some dataset, either described as text or as pairs of "
+        "identifier and description using PropertyValue.",
     )
 
     class Config:

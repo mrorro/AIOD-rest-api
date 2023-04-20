@@ -1,6 +1,6 @@
 from typing import Type, TypeVar
 
-from converters.schema.dataset.dataset_schema_dot_org import (
+from converters.schema.schema_dot_org import (
     SchemaDotOrgDataset,
     SchemaDotOrgOrganization,
     SchemaDotOrgPerson,
