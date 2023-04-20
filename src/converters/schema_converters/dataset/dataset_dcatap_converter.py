@@ -21,16 +21,6 @@ class DatasetConverterDcatAP(SchemaConverter[AIoDDataset, DcatApWrapper]):
     """
 
     @property
-    def schema_documentation(self) -> str:
-        return (
-            "The DCAT Application Profile for data portals in Europe (DCAT-AP) is a specification "
-            "based on W3C's Data Catalogue vocabulary (DCAT) for describing public sector datasets "
-            "in Europe. Its basic use case is to enable a cross-data portal search for datasets "
-            "and make public sector data better searchable across borders and sectors. This can "
-            "be achieved by the exchange of descriptions of data sets among data portals."
-        )
-
-    @property
     def to_class(self) -> Type[DcatApWrapper]:
         return DcatApWrapper
 

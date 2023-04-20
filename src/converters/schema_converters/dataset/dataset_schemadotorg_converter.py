@@ -16,14 +16,6 @@ class DatasetConverterSchemaDotOrg(SchemaConverter[AIoDDataset, SchemaDotOrgData
     """
 
     @property
-    def schema_documentation(self) -> str:
-        return (
-            "Schema.org Dataset is an industry standard to describe Dataset Metadata. Founded "
-            "by Google, Microsoft, Yahoo and Yandex, Schema.org vocabularies are developed by "
-            "an open community process. See https://schema.org/Dataset."
-        )
-
-    @property
     def to_class(self) -> Type[SchemaDotOrgDataset]:
         return SchemaDotOrgDataset
 

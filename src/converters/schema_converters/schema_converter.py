@@ -10,13 +10,6 @@ SCHEMA_CLASS = TypeVar("SCHEMA_CLASS")
 class SchemaConverter(abc.ABC, Generic[AIOD_CLASS, SCHEMA_CLASS]):
     @property
     @abc.abstractmethod
-    def schema_documentation(self) -> str:
-        """
-        Information regarding the schema to be used in the swagger documentation
-        """
-
-    @property
-    @abc.abstractmethod
     def to_class(self) -> Type[SCHEMA_CLASS]:
         pass
 

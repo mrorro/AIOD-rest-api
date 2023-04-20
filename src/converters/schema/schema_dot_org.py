@@ -1,4 +1,8 @@
 """
+Schema.org Dataset is an industry standard to describe Dataset Metadata. Founded by Google,
+Microsoft, Yahoo and Yandex, Schema.org vocabularies are developed by an open community process.
+See https://schema.org/Dataset.
+
 Using pydantic_schemaorg was not possible. Swagger does not play nicely with the circular
 references present in the schema.
 """
