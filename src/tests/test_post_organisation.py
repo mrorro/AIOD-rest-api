@@ -92,7 +92,6 @@ def test_unicode(client: TestClient, engine: Engine, name):
 @pytest.mark.parametrize(
     "field",
     [
-        "connection_to_ai",
         "type",
     ],
 )
@@ -117,7 +116,6 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
 @pytest.mark.parametrize(
     "field",
     [
-        "connection_to_ai",
         "type",
     ],
 )

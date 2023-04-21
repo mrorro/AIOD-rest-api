@@ -277,7 +277,7 @@ class AIoDAgent(AIoDResource):
 class AIoDOrganisation(AIoDAgent):
     """The complete metadata for organisation"""
 
-    connection_to_ai: str = Field(max_length=500)
+    connection_to_ai: str | None
     type: str = Field(max_length=500)
 
     logo_url: str | None

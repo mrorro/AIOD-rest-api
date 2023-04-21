@@ -24,10 +24,10 @@ class OrmOrganisation(OrmAgent):
     )
     # required fields
 
-    connection_to_ai: Mapped[str] = mapped_column(String(500), nullable=False)
     type: Mapped[str] = mapped_column(String(500), nullable=False)
 
     # optional fields
+    connection_to_ai: Mapped[str] = mapped_column(String(500), nullable=True, default=None)
     logo_url: Mapped[str] = mapped_column(String(500), nullable=True, default=None)
     same_as: Mapped[str] = mapped_column(String(500), nullable=True, default=None)
     founding_date: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=None)
