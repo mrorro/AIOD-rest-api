@@ -25,6 +25,7 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["name"] == "anneal"
     assert response_json["description"] == "description text"
     assert response_json["identifier"] == 1
+    assert "deprecated" not in response.headers
 
 
 def test_dataset_not_found_in_local_db(client: TestClient, engine: Engine):

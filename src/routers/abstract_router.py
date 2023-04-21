@@ -287,6 +287,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
                     )
                     session.execute(statement)
                     session.commit()
+                return self._wrap_with_headers(None)
             except Exception as e:
                 raise _wrap_as_http_exception(e)
 
