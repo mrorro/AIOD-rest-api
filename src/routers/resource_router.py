@@ -55,6 +55,15 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
 
     @property
     def schema_converters(self) -> dict[str, SchemaConverter[AIOD_CLASS, Any]]:
+        """
+        If a resource can be served in different formats, the resource converter should return
+        a dictionary of schema converters.
+
+        Returns:
+            a dictionary containing as key the name of a schema, and as value the schema
+            converter. The key "aiod" should not be in this dictionary, as it is the default
+            value and should result in just returning the AIOD_CLASS without conversion.
+        """
         return {}
 
     @property
