@@ -17,7 +17,7 @@ Then, open a terminal in the root folder to run the mysql server:
 Open another terminal in the root folder to build and run the api:
 ```
 docker build --tag ai4eu_server_demo:latest -f Dockerfile .
-echo "# Authentication\nKEYCLOAK_CLIENT_ID=aiod-api\nKEYCLOAK_CLIENT_SECRET=7qpbFTGpONBPIn9nBovgd2843BK8Khjg" > src/.env
+printf "# Authentication\nKEYCLOAK_CLIENT_ID=aiod-api\nKEYCLOAK_CLIENT_SECRET=7qpbFTGpONBPIn9nBovgd2843BK8Khjg" > src/.env
 ./scripts/run_apiserver.sh
 ```
 
