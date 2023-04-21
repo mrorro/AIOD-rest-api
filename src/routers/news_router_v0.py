@@ -7,7 +7,11 @@ from routers.abstract_router import ResourceRouter, AIOD_CLASS, ORM_CLASS
 from schemas import AIoDNews
 
 
-class NewsRouter(ResourceRouter[OrmNews, AIoDNews]):
+class NewsRouterV0(ResourceRouter[OrmNews, AIoDNews]):
+    @property
+    def version(self) -> int:
+        return 0
+
     @property
     def resource_name(self) -> str:
         return "news"

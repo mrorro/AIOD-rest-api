@@ -7,7 +7,11 @@ from routers.abstract_router import ResourceRouter, AIOD_CLASS, ORM_CLASS
 from schemas import AIoDEducationalResource
 
 
-class EducationalResourceRouter(ResourceRouter[OrmEducationalResource, AIoDEducationalResource]):
+class EducationalResourceRouterV0(ResourceRouter[OrmEducationalResource, AIoDEducationalResource]):
+    @property
+    def version(self) -> int:
+        return 0
+
     @property
     def resource_name(self) -> str:
         return "educational_resources"

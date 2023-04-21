@@ -7,7 +7,11 @@ from routers.abstract_router import ResourceRouter, AIOD_CLASS, ORM_CLASS
 from schemas import AIoDEvent
 
 
-class EventRouter(ResourceRouter[OrmEvent, AIoDEvent]):
+class EventRouterV0(ResourceRouter[OrmEvent, AIoDEvent]):
+    @property
+    def version(self) -> int:
+        return 0
+
     @property
     def resource_name(self) -> str:
         return "event"

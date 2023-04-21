@@ -7,7 +7,11 @@ from routers.abstract_router import ResourceRouter, AIOD_CLASS, ORM_CLASS
 from schemas import AIoDDataset
 
 
-class DatasetRouter(ResourceRouter[OrmDataset, AIoDDataset]):
+class DatasetRouterV0(ResourceRouter[OrmDataset, AIoDDataset]):
+    @property
+    def version(self) -> int:
+        return 0
+
     @property
     def resource_name(self) -> str:
         return "dataset"
