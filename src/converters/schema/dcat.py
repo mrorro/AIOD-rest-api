@@ -57,6 +57,21 @@ class SpdxChecksum(DcatAPObject):
     checksumValue: str = Field()
 
 
+class XSDDateTime(BaseModel):
+    type_: str = Field(default="xsd:dateTime", alias="@type", const=True)
+    value_: datetime.datetime | datetime.date = Field(alias="@value")
+
+    class Config:
+        extra = Extra.forbid
+        allow_population_by_field_name = True
+
+
+class DctPeriodOfTime(DcatAPObject):
+    type_: str = Field(default="dct:PeriodOfTime", alias="@type", const=True)
+    start_date: XSDDateTime | None = Field(alias="dcat:startDate", default=None)
+    end_date: XSDDateTime | None = Field(alias="dcat:endDate", default=None)
+
+
 class DcatAPIdentifier(DcatAPObject):
     """Identifying another DcatAPObject. Contains only an id."""
 
@@ -68,7 +83,8 @@ class DcatAPDistribution(DcatAPObject):
     checksum: DcatAPIdentifier | None = Field(alias="spdx:checksum", default=None)
     description: str | None = Field(alias="dct:description", default=None)
     download_url: str | None = Field(alias="dcat:downloadURL", default=None)
-    media_type: str | None = Field(alias="dcat:mediaType", default=None)
+    format: str | None = Field(alias="dct:format", default=None)
+    license: str | None = Field(alias="dct:license", default=None)
     title: str | None = Field(alias="dct:title", default=None)
 
 
@@ -88,26 +104,21 @@ class DcatAPDataset(DcatAPObject):
         "comments about the Dataset.",
         default_factory=list,
     )
-    distribution: list[DcatAPIdentifier] = Field(
-        alias="dcat:distribution",
-        description="This property links the Dataset to an available Distribution.",
-        default_factory=list,
-    )
-    keyword: list[str] = Field(
-        alias="dcat:keyword",
-        description="This property contains a keyword or tag describing the Dataset",
-        default_factory=list,
-    )
+    distribution: list[DcatAPIdentifier] = Field(alias="dcat:distribution", default_factory=list)
+    keyword: list[str] = Field(alias="dcat:keyword", default_factory=list)
     publisher: DcatAPIdentifier | None = Field(
         alias="dct:publisher",
         description="This property refers to an entity (organisation) responsible for making the "
         "Dataset available.",
     )
+    temporal_coverage: list[DcatAPIdentifier] = Field(
+        alias="dct:temporal",
+        description="This property refers to a temporal period that the Dataset covers.",
+        default_factory=list,
+    )
     spatial_coverage: list[DcatAPIdentifier] = Field(
         alias="dct:spatial",
-        description="This property refers to a "
-        "geographic region that is covered "
-        "by the Dataset.",
+        description="This property refers to a geographic region that is covered by the Dataset.",
         default_factory=list,
     )
     theme: list[str] = Field(
@@ -118,9 +129,17 @@ class DcatAPDataset(DcatAPObject):
     )
 
     creator: list[DcatAPIdentifier] = Field(alias="dcat:creator", default_factory=list)
-    documentation: list[DcatAPIdentifier] = Field(alias="foaf:page", default_factory=list)
-    release_date: datetime.datetime | datetime.date | None = Field(alias="dct:issued")
-    update_date: datetime.datetime | datetime.date | None = Field(alias="dct:modified")
+    documentation: list[str] = Field(alias="foaf:page", default_factory=list)
+    landing_page: list[str] = Field(
+        alias="dcat:landingPage",
+        description="This property refers to a web page that provides access to the Dataset, "
+        "its Distributions and/or additional information. It is intended to point to "
+        "a landing page at the original data provider, not to a page on a site of a "
+        "third party, such as an aggregator.",
+        default_factory=list,
+    )
+    release_date: XSDDateTime | None = Field(alias="dct:issued")
+    update_date: XSDDateTime | None = Field(alias="dct:modified")
     version: str | None = Field(alias="owl:versionInfo")
 
 
@@ -138,6 +157,7 @@ class DcatApWrapper(BaseModel):
             SpdxChecksum,
             VCardOrganisation,
             VCardIndividual,
+            DctPeriodOfTime,
         ]
     ] = Field(alias="@graph")
 

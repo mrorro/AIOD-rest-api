@@ -1,4 +1,5 @@
 import abc
+import datetime
 from typing import Generic, TypeVar
 
 from sqlalchemy.orm import Session
@@ -36,3 +37,15 @@ class OrmConverter(abc.ABC, Generic[AIOD_CLASS, ORM_CLASS]):
         Convert a database representation into an AIoD representation
         """
         pass
+
+
+def datetime_or_date(value: datetime.datetime | None) -> datetime.datetime | datetime.date | None:
+    """
+    Return None if the value is None, a date if the value does not has only a date and no time,
+    otherwise return a datetime.
+    """
+    if value is None:
+        return None
+    if value.time() == datetime.time.min:
+        return value.date()
+    return value

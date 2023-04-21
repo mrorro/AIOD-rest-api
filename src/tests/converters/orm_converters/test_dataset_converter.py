@@ -1,4 +1,5 @@
 import copy
+import datetime
 
 import pytest
 from fastapi import HTTPException
@@ -63,6 +64,10 @@ def test_aiod_to_orm_happy_path(
         session.add(orm)
         session.commit()
         for field, expected_value in aiod.__dict__.items():
+            if type(expected_value) is datetime.date:
+                expected_value = datetime.datetime(
+                    expected_value.year, expected_value.month, expected_value.day
+                )
             if field not in DATASET_RELATION_FIELDS and field != "identifier":
                 assert orm.__getattribute__(field) == expected_value, f"Error for field {field}"
 
@@ -162,6 +167,11 @@ def test_orm_to_aiod(
     for field, actual_value in aiod.__dict__.items():
         if field not in DATASET_RELATION_FIELDS:
             expected_value = orm.__getattribute__(field)
+            if (
+                type(expected_value) is datetime.datetime
+                and expected_value.time() == datetime.time.min
+            ):
+                expected_value = expected_value.date()
             assert actual_value == expected_value, f"Error for field {field}"
 
     assert aiod.license == orm.license.name

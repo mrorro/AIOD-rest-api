@@ -21,7 +21,7 @@ class DatasetConverterSchemaDotOrg(SchemaConverter[AIoDDataset, SchemaDotOrgData
 
     def convert(self, aiod: AIoDDataset) -> SchemaDotOrgDataset:
         temporal_coverage_parts = [
-            str(d)
+            d.isoformat()
             for d in [aiod.temporal_coverage_from, aiod.temporal_coverage_to]
             if d is not None
         ]

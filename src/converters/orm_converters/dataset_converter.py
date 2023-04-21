@@ -4,7 +4,7 @@ Converting between different dataset representations
 
 from sqlalchemy.orm import Session
 
-from converters.orm_converters.orm_converter import OrmConverter
+from converters.orm_converters.orm_converter import OrmConverter, datetime_or_date
 from converters.orm_converters.conversion_helpers import retrieve_related_objects_by_ids
 from database.model.dataset import (
     OrmDataset,
@@ -109,16 +109,16 @@ class DatasetConverter(OrmConverter[AIoDDataset, OrmDataset]):
             platform_identifier=orm.platform_identifier,
             same_as=orm.same_as,
             creator=orm.creator,
-            date_modified=orm.date_modified,
-            date_published=orm.date_published,
+            date_modified=datetime_or_date(orm.date_modified),
+            date_published=datetime_or_date(orm.date_published),
             funder=orm.funder,
             is_accessible_for_free=orm.is_accessible_for_free,
             issn=orm.issn,
             publisher=orm.publisher,
             size=orm.size,
             spatial_coverage=orm.spatial_coverage,
-            temporal_coverage_from=orm.temporal_coverage_from,
-            temporal_coverage_to=orm.temporal_coverage_to,
+            temporal_coverage_from=datetime_or_date(orm.temporal_coverage_from),
+            temporal_coverage_to=datetime_or_date(orm.temporal_coverage_to),
             version=orm.version,
             license=orm.license.name if orm.license is not None else None,
             has_parts=[part.identifier for part in orm.has_parts],

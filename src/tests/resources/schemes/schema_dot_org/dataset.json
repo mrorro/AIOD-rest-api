@@ -19,8 +19,8 @@
         "@type": "Organization",
         "name": "creator"
     },
-    "dateModified": "2002-01-01T00:00:00",
-    "datePublished": "2001-01-01T00:00:00",
+    "dateModified": "2002-01-01",
+    "datePublished": "2001-01-01T08:00:00",
     "isAccessibleForFree": true,
     "keywords": [
         "a",
@@ -48,6 +48,6 @@
     "measurementTechnique": "technique",
     "size": "100",
     "spatialCoverage": "spatial_coverage",
-    "temporalCoverage": "2000-01-01 00:00:00/2000-01-02 00:00:00",
+    "temporalCoverage": "2000-01-01/2000-01-02T06:00:00",
     "variableMeasured": "variable"
 }

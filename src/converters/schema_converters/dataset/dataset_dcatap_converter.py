@@ -10,6 +10,8 @@ from converters.schema.dcat import (
     SpdxChecksum,
     DcatLocation,
     DcatAPObject,
+    XSDDateTime,
+    DctPeriodOfTime,
 )
 from converters.schema_converters.schema_converter import SchemaConverter
 from schemas import AIoDDataset
@@ -25,14 +27,21 @@ class DatasetConverterDcatAP(SchemaConverter[AIoDDataset, DcatApWrapper]):
         return DcatApWrapper
 
     def convert(self, aiod: AIoDDataset) -> DcatApWrapper:
+        release_date = (
+            XSDDateTime(value_=aiod.date_published) if aiod.date_published is not None else None
+        )
+        update_date = (
+            XSDDateTime(value_=aiod.date_modified) if aiod.date_modified is not None else None
+        )
         dataset = DcatAPDataset(
-            id_="dataset_" + aiod.name,
+            id_=aiod.identifier,
             description=aiod.description,
             title=aiod.name,
             keyword=list(aiod.keywords),
+            landing_page=[aiod.same_as] if aiod.same_as is not None else [],
             theme=[measured_value.variable for measured_value in aiod.measured_values],
-            release_date=aiod.date_published,
-            update_date=aiod.date_modified,
+            release_date=release_date,
+            update_date=update_date,
             version=aiod.version,
         )
         graph: list[DcatAPObject] = [dataset]
@@ -61,7 +70,17 @@ class DatasetConverterDcatAP(SchemaConverter[AIoDDataset, DcatApWrapper]):
             location = DcatLocation(id_=aiod.spatial_coverage, geometry=aiod.spatial_coverage)
             dataset.spatial_coverage = [DcatAPIdentifier(id_=location.id_)]
             graph.append(location)
-
+        from_, to_ = aiod.temporal_coverage_from, aiod.temporal_coverage_to
+        if from_ is not None or to_ is not None:
+            from_str = from_.isoformat() if from_ else "-"
+            to_str = to_.isoformat() if to_ else "-"
+            period = DctPeriodOfTime(id_=f"period_{from_str}_to_{to_str}")
+            if from_:
+                period.start_date = XSDDateTime(value_=from_)
+            if to_ is not None:
+                period.end_date = XSDDateTime(value_=to_)
+            graph.append(period)
+            dataset.temporal_coverage = [DcatAPIdentifier(id_=period.id_)]
         for aiod_distribution in aiod.distributions:
             checksum: SpdxChecksum | None = None
             if len(aiod_distribution.checksum) > 0:
@@ -79,7 +98,8 @@ class DatasetConverterDcatAP(SchemaConverter[AIoDDataset, DcatApWrapper]):
                 checksum=DcatAPIdentifier(id_=checksum.id_) if checksum is not None else None,
                 download_url=aiod_distribution.content_url,
                 description=aiod_distribution.description,
-                media_type=aiod_distribution.encoding_format,
+                format=aiod_distribution.encoding_format,
+                license=aiod.license,
             )
             dataset.distribution.append(DcatAPIdentifier(id_=aiod_distribution.content_url))
             graph.append(distribution)
