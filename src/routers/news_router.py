@@ -1,33 +1,33 @@
 from typing import Type
 
-from converters import event_converter_instance
+from converters import news_converter_instance
 from converters.abstract_converter import ResourceConverter
-from database.model.event import OrmEvent
+from database.model.news import OrmNews
 from routers.abstract_router import ResourceRouter, AIOD_CLASS, ORM_CLASS
-from schemas import AIoDEvent
+from schemas import AIoDNews
 
 
-class EventRouterV0(ResourceRouter[OrmEvent, AIoDEvent]):
+class NewsRouter(ResourceRouter[OrmNews, AIoDNews]):
     @property
     def version(self) -> int:
         return 0
 
     @property
     def resource_name(self) -> str:
-        return "event"
+        return "news"
 
     @property
     def resource_name_plural(self) -> str:
-        return "events"
+        return "news"
 
     @property
     def aiod_class(self) -> Type[AIOD_CLASS]:
-        return AIoDEvent
+        return AIoDNews
 
     @property
     def orm_class(self) -> Type[ORM_CLASS]:
-        return OrmEvent
+        return OrmNews
 
     @property
     def converter(self) -> ResourceConverter[AIOD_CLASS, ORM_CLASS]:
-        return event_converter_instance
+        return news_converter_instance

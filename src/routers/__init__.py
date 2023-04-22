@@ -2,18 +2,18 @@ import typing  # noqa:F401
 
 
 from .abstract_router import ResourceRouter  # noqa:F401
-from .dataset_router_v0 import DatasetRouterV0
-from .news_router_v0 import NewsRouterV0
-from .publication_router_v0 import PublicationRouterV0
-from .educational_resource_router_v0 import EducationalResourceRouterV0
-from .event_router_v0 import EventRouterV0
-from .project_router_v0 import ProjectRouterV0
+from .dataset_router import DatasetRouter
+from .news_router import NewsRouter
+from .publication_router import PublicationRouter
+from .educational_resource_router import EducationalResourceRouter
+from .event_router import EventRouter
+from .project_router import ProjectRouter
 
 routers = [
-    DatasetRouterV0(),
-    PublicationRouterV0(),
-    NewsRouterV0(),
-    EducationalResourceRouterV0(),
-    EventRouterV0(),
-    ProjectRouterV0(),
+    DatasetRouter(),
+    PublicationRouter(),
+    NewsRouter(),
+    EducationalResourceRouter(),
+    EventRouter(),
+    ProjectRouter(),
 ]  # type: typing.List[ResourceRouter]

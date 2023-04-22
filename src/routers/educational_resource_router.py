@@ -1,33 +1,33 @@
 from typing import Type
 
-from converters import publication_converter_instance
+from converters import educational_resource_converter_instance
 from converters.abstract_converter import ResourceConverter
-from database.model.publication import OrmPublication
+from database.model.educational_resource import OrmEducationalResource
 from routers.abstract_router import ResourceRouter, AIOD_CLASS, ORM_CLASS
-from schemas import AIoDPublication
+from schemas import AIoDEducationalResource
 
 
-class PublicationRouterV0(ResourceRouter[OrmPublication, AIoDPublication]):
+class EducationalResourceRouter(ResourceRouter[OrmEducationalResource, AIoDEducationalResource]):
     @property
     def version(self) -> int:
         return 0
 
     @property
     def resource_name(self) -> str:
-        return "publication"
+        return "educational_resources"
 
     @property
     def resource_name_plural(self) -> str:
-        return "publications"
+        return "educational_resources"
 
     @property
     def aiod_class(self) -> Type[AIOD_CLASS]:
-        return AIoDPublication
+        return AIoDEducationalResource
 
     @property
     def orm_class(self) -> Type[ORM_CLASS]:
-        return OrmPublication
+        return OrmEducationalResource
 
     @property
     def converter(self) -> ResourceConverter[AIOD_CLASS, ORM_CLASS]:
-        return publication_converter_instance
+        return educational_resource_converter_instance

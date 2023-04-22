@@ -1,33 +1,33 @@
 from typing import Type
 
-from converters import project_converter_instance
+from converters import dataset_converter_instance
 from converters.abstract_converter import ResourceConverter
-from database.model.project import OrmProject
+from database.model.dataset import OrmDataset
 from routers.abstract_router import ResourceRouter, AIOD_CLASS, ORM_CLASS
-from schemas import AIoDProject
+from schemas import AIoDDataset
 
 
-class ProjectRouterV0(ResourceRouter[OrmProject, AIoDProject]):
+class DatasetRouter(ResourceRouter[OrmDataset, AIoDDataset]):
     @property
     def version(self) -> int:
         return 0
 
     @property
     def resource_name(self) -> str:
-        return "project"
+        return "dataset"
 
     @property
     def resource_name_plural(self) -> str:
-        return "projects"
+        return "datasets"
 
     @property
     def aiod_class(self) -> Type[AIOD_CLASS]:
-        return AIoDProject
+        return AIoDDataset
 
     @property
     def orm_class(self) -> Type[ORM_CLASS]:
-        return OrmProject
+        return OrmDataset
 
     @property
     def converter(self) -> ResourceConverter[AIOD_CLASS, ORM_CLASS]:
-        return project_converter_instance
+        return dataset_converter_instance
