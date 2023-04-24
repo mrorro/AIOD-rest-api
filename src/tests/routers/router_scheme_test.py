@@ -84,38 +84,82 @@ def populated_test_engine() -> Engine:
     return engine
 
 
-def test_router_without_schema_converters(populated_test_engine: Engine):
+@pytest.fixture(scope="module")
+def client_without_schema_converters(populated_test_engine: Engine) -> TestClient:
     app = FastAPI()
     app.include_router(RouterWithoutSchemaConverters().create(populated_test_engine, ""))
-    client = TestClient(app)
-    for url in ["/test_resources", "/test_resources?schema=aiod"]:
-        response = client.get(url)
-        assert response.status_code == 200
-        assert len(response.json()) == 1
-    response = client.get("/test_resources?schema=other-schema")
-    assert response.status_code == 422
-    assert response.json()["detail"][0]["msg"] == "unexpected value; permitted: 'aiod'"
+    return TestClient(app)
 
 
-def test_router_with_schema_converters(populated_test_engine: Engine):
+@pytest.fixture(scope="module")
+def client_with_schema_converters(populated_test_engine: Engine) -> TestClient:
     app = FastAPI()
     app.include_router(RouterWithSchemaConverters().create(populated_test_engine, ""))
-    client = TestClient(app)
-    for url in ["/test_resources", "/test_resources?schema=aiod"]:
-        response = client.get(url)
+    return TestClient(app)
+
+
+@pytest.mark.parametrize("schema_string", ["", "?schema=aiod"])
+def test_resources_aiod(
+    client_without_schema_converters: TestClient,
+    client_with_schema_converters: TestClient,
+    schema_string: str,
+):
+    for client in [client_with_schema_converters, client_without_schema_converters]:
+        response = client.get("/test_resources" + schema_string)
         assert response.status_code == 200
         json_ = response.json()
         assert len(json_) == 1
         assert json_[0]["title"] == "A title"
         assert "title_with_alternative_name" not in json_[0]
-    response = client.get("/test_resources?schema=other-schema")
+
+
+@pytest.mark.parametrize("schema_string", ["", "?schema=aiod"])
+def test_resource_aiod(
+    client_without_schema_converters: TestClient,
+    client_with_schema_converters: TestClient,
+    schema_string: str,
+):
+    for client in [client_with_schema_converters, client_without_schema_converters]:
+        response = client.get("/test_resources/1" + schema_string)
+        assert response.status_code == 200
+        json_ = response.json()
+        assert json_["title"] == "A title"
+        assert "title_with_alternative_name" not in json_
+
+
+@pytest.mark.parametrize("url_part", ["?schema=other-schema", "/1?schema=other-schema"])
+def test_without_schema_converters_other_schema(
+    client_without_schema_converters: TestClient, url_part: str
+):
+    response = client_without_schema_converters.get("/test_resources" + url_part)
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["msg"] == "unexpected value; permitted: 'aiod'"
+
+
+def test_resources_with_schema_converters_other_schema(client_with_schema_converters: TestClient):
+    response = client_with_schema_converters.get("/test_resources?schema=other-schema")
     assert response.status_code == 200
     json_ = response.json()
     assert len(json_) == 1
     assert json_[0]["title_with_alternative_name"] == "A title"
     assert "title" not in json_[0]
 
-    response = client.get("/test_resources?schema=nonexistent-schema")
+
+def test_resource_with_schema_converters_other_schema(client_with_schema_converters: TestClient):
+    response = client_with_schema_converters.get("/test_resources/1?schema=other-schema")
+    assert response.status_code == 200
+    json_ = response.json()
+    assert json_["title_with_alternative_name"] == "A title"
+    assert "title" not in json_
+
+
+@pytest.mark.parametrize(
+    "url", ["/test_resources?schema=unexisting", "/test_resources/1?schema=unexisting"]
+)
+def test_with_schema_converters_unexisting_schema(
+    client_with_schema_converters: TestClient, url: str
+):
+    response = client_with_schema_converters.get(url)
     assert response.status_code == 422
-    error_msg = response.json()["detail"][0]["msg"]
-    assert error_msg == "unexpected value; permitted: 'aiod', 'other-schema'"
+    msg = response.json()["detail"][0]["msg"]
+    assert msg == "unexpected value; permitted: 'aiod', 'other-schema'"
