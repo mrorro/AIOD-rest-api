@@ -9,6 +9,10 @@ from schemas import AIoDOrganisation
 
 class OrganisationRouter(ResourceRouter[OrmOrganisation, AIoDOrganisation]):
     @property
+    def version(self) -> int:
+        return 0
+
+    @property
     def resource_name(self) -> str:
         return "organisation"
 

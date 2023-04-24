@@ -47,7 +47,7 @@ def test_happy_path(client: TestClient, engine: Engine):
         session.commit()
 
     response = client.post(
-        "/organisations",
+        "/organisations/v0",
         json={
             "platform": PlatformName.aiod,
             "platform_identifier": None,
@@ -73,7 +73,7 @@ def test_happy_path(client: TestClient, engine: Engine):
 )
 def test_unicode(client: TestClient, engine: Engine, name):
     response = client.post(
-        "/organisations",
+        "/organisations/v0",
         json={
             "platform": PlatformName.aiod,
             "platform_identifier": None,
@@ -106,7 +106,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "image_url": "string",
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
-    response = client.post("/organisations", json=data)
+    response = client.post("/organisations/v0", json=data)
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {"loc": ["body", field], "msg": "field required", "type": "value_error.missing"}
@@ -130,7 +130,7 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "image_url": "string",
     }  # type: typing.Dict[str, typing.Any]
     data[field] = None
-    response = client.post("/organisations", json=data)
+    response = client.post("/organisations/v0", json=data)
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {
