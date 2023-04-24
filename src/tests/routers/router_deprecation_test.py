@@ -113,4 +113,4 @@ def test_deprecated_router(verb: str, url: str):
     response = getattr(client, verb)(url, **kwargs)
     assert response.status_code == 200
     assert "deprecated" in response.headers
-    assert response.headers.get("deprecated") == "Wed, 20 Apr 2022 22:00:00 GMT"
+    assert response.headers.get("deprecated") == "Thu, 21 Apr 2022 00:00:00 GMT"

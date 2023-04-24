@@ -322,7 +322,9 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
     def _wrap_with_headers(self, resource):
         if self.deprecated_from is None:
             return resource
-        timestamp = datetime.datetime.combine(self.deprecated_from, datetime.time.min).timestamp()
+        timestamp = datetime.datetime.combine(
+            self.deprecated_from, datetime.time.min, tzinfo=datetime.timezone.utc
+        ).timestamp()
         headers = {"Deprecated": format_date_time(timestamp)}
         return JSONResponse(content=jsonable_encoder(resource, exclude_none=True), headers=headers)
 
