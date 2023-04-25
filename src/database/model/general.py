@@ -37,6 +37,12 @@ from database.model.organisation_relationships import (
 )
 
 
+from database.model.publication_relationships import (
+    publication_license_relationship,
+    publication_resource_type_relationship,
+)
+
+
 from database.model.project_relationships import project_keyword_relationship
 from database.model.event_relationships import event_business_category_relationship
 
@@ -49,6 +55,7 @@ if TYPE_CHECKING:  # avoid circular imports; only import while type checking
     from database.model.event import OrmEvent
     from database.model.organisation import OrmOrganisation
     from database.model.project import OrmProject
+    from database.model.publication import OrmPublication
 
 
 class OrmLicense(UniqueMixin, Base):
@@ -71,6 +78,34 @@ class OrmLicense(UniqueMixin, Base):
     name: Mapped[str] = mapped_column(String(150), unique=True)
     datasets: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list, back_populates="license", secondary=dataset_license_relationship
+    )
+    publications: Mapped[list["OrmPublication"]] = relationship(
+        default_factory=list, back_populates="license", secondary=publication_license_relationship
+    )
+
+
+class OrmResourcetype(UniqueMixin, Base):
+    """
+    A resorce type
+
+    For now only related to publications, it can be extended with relationships to other resources.
+    """
+
+    @classmethod
+    def _unique_hash(cls, name):
+        return name
+
+    @classmethod
+    def _unique_filter(cls, query, name):
+        return query.filter(cls.name == name)
+
+    __tablename__ = "resource_types"
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
+    name: Mapped[str] = mapped_column(String(150), unique=True)
+    publications: Mapped[list["OrmPublication"]] = relationship(
+        default_factory=list,
+        back_populates="resource_type",
+        secondary=publication_resource_type_relationship,
     )
 
 
