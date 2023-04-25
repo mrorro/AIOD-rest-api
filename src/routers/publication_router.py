@@ -9,6 +9,10 @@ from schemas import AIoDPublication
 
 class PublicationRouter(ResourceRouter[OrmPublication, AIoDPublication]):
     @property
+    def version(self) -> int:
+        return 0
+
+    @property
     def resource_name(self) -> str:
         return "publication"
 
