@@ -58,7 +58,7 @@ class AIoDPublication(AIoDAIResource):
     creators: str | None = Field(max_length=450)
     access_right: str | None = Field(max_length=150)
     license: str | None = Field(max_length=150)
-    publication_type: str | None = Field(max_length=150)
+    resource_type: str | None = Field(max_length=150)
     date_created: datetime | None
     date_published: datetime | None
 
