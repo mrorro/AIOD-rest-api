@@ -1,12 +1,17 @@
 import abc
+import datetime
 import traceback
-from typing import Generic, TypeVar, Type, Literal, Union, Any
+from typing import Generic, TypeVar, Type
+from typing import Literal, Union, Any
+from wsgiref.handlers import format_date_time
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy import Engine, select, and_, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
 
 from converters.orm_converters.orm_converter import OrmConverter
 from converters.schema_converters.schema_converter import SchemaConverter
@@ -37,6 +42,25 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
     - PUT /[resource]s/{identifier}
     - DELETE /[resource]s/{identifier}
     """
+
+    @property
+    @abc.abstractmethod
+    def version(self) -> int:
+        """
+        The API version.
+
+        When introducing a breaking change, the current version should be deprecated, any previous
+        versions removed, and a new version should be created. The breaking changes should only
+        be implemented in the new version.
+        """
+
+    @property
+    def deprecated_from(self) -> datetime.date | None:
+        """
+        The deprecation date. This should be the date of the release in which the resource has
+        been deprecated.
+        """
+        return None
 
     @property
     @abc.abstractmethod
@@ -78,6 +102,11 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
 
     def create(self, engine: Engine, url_prefix: str) -> APIRouter:
         router = APIRouter()
+        version = f"v{self.version}"
+        default_kwargs = {
+            "response_model_exclude_none": True,
+            "deprecated": self.deprecated_from is not None,
+        }
 
         available_schemas: list[Type] = [c.to_class for c in self.schema_converters.values()]
         response_model = Union[self.aiod_class, *available_schemas]  # type:ignore
@@ -86,55 +115,56 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         ]
 
         router.add_api_route(
-            path=url_prefix + f"/{self.resource_name_plural}/",
+            path=f"{url_prefix}/{self.resource_name_plural}/{version}",
             endpoint=self.get_resources_func(engine),
             response_model=response_model_plural,  # type: ignore
-            response_model_exclude_none=True,
             name=f"List {self.resource_name_plural}",
+            **default_kwargs,
         )
         router.add_api_route(
-            path=url_prefix + f"/platforms/{{platform}}/{self.resource_name_plural}",
-            endpoint=self.get_platform_resources_func(engine),
-            response_model=response_model_plural,  # type: ignore
-            response_model_exclude_none=True,
-            name=f"List {self.resource_name_plural}",
-        )
-
-        router.add_api_route(
-            path=url_prefix + f"/{self.resource_name_plural}/{{identifier}}",
-            endpoint=self.get_resource_func(engine),
-            response_model=response_model,
-            response_model_exclude_none=True,
-            name=self.resource_name,
-        )
-        router.add_api_route(
-            path=url_prefix + f"/platforms/{{platform}}/{self.resource_name_plural}/{{identifier}}",
-            endpoint=self.get_platform_resource_func(engine),
-            response_model=response_model,
-            response_model_exclude_none=True,
-            name=self.resource_name,
-        )
-        router.add_api_route(
-            path=url_prefix + f"/{self.resource_name_plural}/",
+            path=f"{url_prefix}/{self.resource_name_plural}/{version}",
             methods={"POST"},
             endpoint=self.register_resource_func(engine),
             response_model=self.aiod_class,  # type: ignore
-            response_model_exclude_none=True,
             name=self.resource_name,
+            **default_kwargs,
         )
         router.add_api_route(
-            path=url_prefix + f"/{self.resource_name_plural}/{{identifier}}",
+            path=url_prefix + f"/{self.resource_name_plural}/{version}/{{identifier}}",
+            endpoint=self.get_resource_func(engine),
+            response_model=response_model,  # type: ignore
+            name=self.resource_name,
+            **default_kwargs,
+        )
+        router.add_api_route(
+            path=f"{url_prefix}/{self.resource_name_plural}/{version}/{{identifier}}",
             methods={"PUT"},
             endpoint=self.put_resource_func(engine),
             response_model=self.aiod_class,  # type: ignore
-            response_model_exclude_none=True,
             name=self.resource_name,
+            **default_kwargs,
         )
         router.add_api_route(
-            path=f"{url_prefix}/{self.resource_name_plural}/{{identifier}}",
+            path=f"{url_prefix}/{self.resource_name_plural}/{version}/{{identifier}}",
             methods={"DELETE"},
             endpoint=self.delete_resource_func(engine),
             name=self.resource_name,
+            **default_kwargs,
+        )
+        router.add_api_route(
+            path=f"{url_prefix}/platforms/{{platform}}/{self.resource_name_plural}/{version}",
+            endpoint=self.get_platform_resources_func(engine),
+            response_model=response_model_plural,  # type: ignore
+            name=f"List {self.resource_name_plural}",
+            **default_kwargs,
+        )
+        router.add_api_route(
+            path=f"{url_prefix}/platforms/{{platform}}/{self.resource_name_plural}/{version}"
+            f"/{{identifier}}",
+            endpoint=self.get_platform_resource_func(engine),
+            response_model=response_model,  # type: ignore
+            name=self.resource_name,
+            **default_kwargs,
         )
         return router
 
@@ -142,7 +172,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         self, engine: Engine, schema: str, pagination: Pagination, platform: str | None = None
     ):
         """Fetch all resources of this platform in given schema, using pagination"""
-        _raise_error_on_invalid_schema(self.possible_schemas, schema)
+        _raise_error_on_invalid_schema(self._possible_schemas, schema)
         convert_schema = (
             self.schema_converters[schema].convert if schema != "aiod" else (lambda x: x)
         )
@@ -158,10 +188,12 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
                     .limit(pagination.limit)
                 )
 
-                return [
-                    convert_schema(self.converter.orm_to_aiod(resource))
-                    for resource in session.scalars(query).all()
-                ]
+                return self._wrap_with_headers(
+                    [
+                        convert_schema(self.converter.orm_to_aiod(resource))
+                        for resource in session.scalars(query).all()
+                    ]
+                )
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
@@ -172,40 +204,39 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         Get the resource identified by AIoD identifier (if platform is None) or by platform AND
         platform-identifier (if platform is not None), return in given schema.
         """
-        _raise_error_on_invalid_schema(self.possible_schemas, schema)
+        _raise_error_on_invalid_schema(self._possible_schemas, schema)
         try:
             with Session(engine) as session:
                 resource = self._retrieve_resource(session, identifier, platform=platform)
                 aiod = self.converter.orm_to_aiod(resource)
                 if schema != "aiod":
                     return self.schema_converters[schema].convert(aiod)
-                return aiod
+                return self._wrap_with_headers(aiod)
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
     def get_resources_func(self, engine: Engine):
         """
         Return a function that can be used to retrieve a list of resources.
-
         This function returns a function (instead of being that function directly) because the
         docstring and the variables are dynamic, and used in Swagger.
         """
 
         def get_resources(
             pagination: Pagination = Depends(Pagination),
-            schema: Literal[tuple(self.possible_schemas)] = "aiod",  # type:ignore
+            schema: Literal[tuple(self._possible_schemas)] = "aiod",  # type:ignore
         ):
             f"""Retrieve all meta-data of the {self.resource_name_plural}."""
-            return self.get_resources(
+            resources = self.get_resources(
                 engine=engine, pagination=pagination, schema=schema, platform=None
             )
+            return self._wrap_with_headers(resources)
 
         return get_resources
 
     def get_platform_resources_func(self, engine: Engine):
         """
         Return a function that can be used to retrieve a list of resources for a platform.
-
         This function returns a function (instead of being that function directly) because the
         docstring and the variables are dynamic, and used in Swagger.
         """
@@ -213,38 +244,39 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         def get_resources(
             platform: str,
             pagination: Pagination = Depends(Pagination),
-            schema: Literal[tuple(self.possible_schemas)] = "aiod",  # type:ignore
+            schema: Literal[tuple(self._possible_schemas)] = "aiod",  # type:ignore
         ):
             f"""Retrieve all meta-data of the {self.resource_name_plural} of given platform."""
-            return self.get_resources(
+            resources = self.get_resources(
                 engine=engine, pagination=pagination, schema=schema, platform=platform
             )
+            return self._wrap_with_headers(resources)
 
         return get_resources
 
     def get_resource_func(self, engine: Engine):
         """
         Return a function that can be used to retrieve a single resource.
-
         This function returns a function (instead of being that function directly) because the
         docstring and the variables are dynamic, and used in Swagger.
         """
 
         def get_resource(
-            identifier: str, schema: Literal[tuple(self.possible_schemas)] = "aiod"  # type:ignore
+            identifier: str, schema: Literal[tuple(self._possible_schemas)] = "aiod"  # type:ignore
         ):
-            f"""Retrieve all meta-data for a {self.resource_name} identified by the AIoD " \
-                f"identifier."""
-            return self.get_resource(
+            f"""
+            Retrieve all meta-data for a {self.resource_name} identified by the AIoD identifier.
+            """
+            resource = self.get_resource(
                 engine=engine, identifier=identifier, schema=schema, platform=None
             )
+            return self._wrap_with_headers(resource)
 
         return get_resource
 
     def get_platform_resource_func(self, engine: Engine):
         """
         Return a function that can be used to retrieve a single resource of a platform.
-
         This function returns a function (instead of being that function directly) because the
         docstring and the variables are dynamic, and used in Swagger.
         """
@@ -252,7 +284,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         def get_resource(
             identifier: str,
             platform: str,
-            schema: Literal[tuple(self.possible_schemas)] = "aiod",  # type:ignore
+            schema: Literal[tuple(self._possible_schemas)] = "aiod",  # type:ignore
         ):
             f"""Retrieve all meta-data for a {self.resource_name} identified by the
             platform-specific-identifier."""
@@ -265,7 +297,6 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
     def register_resource_func(self, engine: Engine):
         """
         Return a function that can be used to register a resource.
-
         This function returns a function (instead of being that function directly) because the
         docstring is dynamic and used in Swagger.
         """
@@ -296,7 +327,8 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
                             f"platform and name, with identifier={existing_resource.identifier}.",
                         )
 
-                    return self.converter.orm_to_aiod(resource)
+                    converted = self.converter.orm_to_aiod(resource)
+                    return self._wrap_with_headers(converted)
             except Exception as e:
                 raise _wrap_as_http_exception(e)
 
@@ -305,7 +337,6 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
     def put_resource_func(self, engine: Engine):
         """
         Return a function that can be used to update a resource.
-
         This function returns a function (instead of being that function directly) because the
         docstring is dynamic and used in Swagger.
         """
@@ -324,7 +355,8 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
                     session.merge(resource_orm)
                     session.commit()
                     new_resource = self._retrieve_resource(session, identifier)
-                    return self.converter.orm_to_aiod(new_resource)
+                    converted = self.converter.orm_to_aiod(new_resource)
+                    return self._wrap_with_headers(converted)
             except Exception as e:
                 raise _wrap_as_http_exception(e)
 
@@ -333,7 +365,6 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
     def delete_resource_func(self, engine: Engine):
         """
         Return a function that can be used to delete a resource.
-
         This function returns a function (instead of being that function directly) because the
         docstring is dynamic and used in Swagger.
         """
@@ -347,6 +378,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
                     )
                     session.execute(statement)
                     session.commit()
+                return self._wrap_with_headers(None)
             except Exception as e:
                 raise _wrap_as_http_exception(e)
 
@@ -379,8 +411,17 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         return resource
 
     @property
-    def possible_schemas(self) -> list[str]:
+    def _possible_schemas(self) -> list[str]:
         return ["aiod"] + list(self.schema_converters.keys())
+
+    def _wrap_with_headers(self, resource):
+        if self.deprecated_from is None:
+            return resource
+        timestamp = datetime.datetime.combine(
+            self.deprecated_from, datetime.time.min, tzinfo=datetime.timezone.utc
+        ).timestamp()
+        headers = {"Deprecated": format_date_time(timestamp)}
+        return JSONResponse(content=jsonable_encoder(resource, exclude_none=True), headers=headers)
 
 
 def _wrap_as_http_exception(exception: Exception) -> HTTPException:

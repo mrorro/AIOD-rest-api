@@ -37,7 +37,7 @@ def test_happy_path(client: TestClient, engine: Engine, organisation_id: int):
         session.add_all(copy.deepcopy(organisations))
         session.commit()
 
-    response = client.get(f"/organisations/{organisation_id}")
+    response = client.get(f"/organisations/v0/{organisation_id}")
     assert response.status_code == 200
     response_json = response.json()
 
@@ -51,7 +51,7 @@ def test_happy_path(client: TestClient, engine: Engine, organisation_id: int):
 
 @pytest.mark.parametrize("organisation_id", [-1, 2, 3])
 def test_empty_db(client: TestClient, engine: Engine, organisation_id):
-    response = client.get(f"/organisations/{organisation_id}")
+    response = client.get(f"/organisations/v0/{organisation_id}")
     assert response.status_code == 404
     assert (
         response.json()["detail"] == f"Organisation '{organisation_id}' not found in the database."
@@ -75,7 +75,7 @@ def test_organisation_not_found(client: TestClient, engine: Engine, organisation
         # Populate database
         session.add_all(organisations)
         session.commit()
-    response = client.get(f"/organisations/{organisation_id}")
+    response = client.get(f"/organisations/v0/{organisation_id}")
     assert response.status_code == 404
     assert (
         response.json()["detail"] == f"Organisation '{organisation_id}' not found in the database."

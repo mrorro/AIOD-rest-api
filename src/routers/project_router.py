@@ -8,6 +8,10 @@ from schemas import AIoDProject
 
 class ProjectRouter(ResourceRouter[OrmProject, AIoDProject]):
     @property
+    def version(self) -> int:
+        return 0
+
+    @property
     def resource_name(self) -> str:
         return "project"
 

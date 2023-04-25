@@ -40,7 +40,7 @@ def test_happy_path(client: TestClient, engine: Engine):
         session.add_all(organisations)
         session.commit()
 
-    response = client.get("/organisations")
+    response = client.get("/organisations/v0")
     assert response.status_code == 200
     response_json = response.json()
     assert len(response_json) == 3
