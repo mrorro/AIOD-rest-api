@@ -37,6 +37,9 @@ from database.model.organisation_relationships import (
 )
 
 
+from database.model.publication_relationships import publication_license_relationship
+
+
 from database.model.project_relationships import project_keyword_relationship
 from database.model.event_relationships import event_business_category_relationship
 
@@ -49,6 +52,7 @@ if TYPE_CHECKING:  # avoid circular imports; only import while type checking
     from database.model.event import OrmEvent
     from database.model.organisation import OrmOrganisation
     from database.model.project import OrmProject
+    from database.model.publication import OrmPublication
 
 
 class OrmLicense(UniqueMixin, Base):
@@ -71,6 +75,9 @@ class OrmLicense(UniqueMixin, Base):
     name: Mapped[str] = mapped_column(String(150), unique=True)
     datasets: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list, back_populates="license", secondary=dataset_license_relationship
+    )
+    publications: Mapped[list["OrmPublication"]] = relationship(
+        default_factory=list, back_populates="license", secondary=publication_license_relationship
     )
 
 
