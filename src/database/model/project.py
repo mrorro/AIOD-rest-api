@@ -27,12 +27,8 @@ class OrmProject(OrmAIResource):
     start_date: Mapped[datetime] = mapped_column(Date, nullable=True, default=None)
     end_date: Mapped[datetime] = mapped_column(Date, nullable=True, default=None)
     founded_under: Mapped[str] = mapped_column(String(250), nullable=True, default=None)
-    total_cost_euro: Mapped[float] = mapped_column(
-        Numeric(scale=10, precision=2), nullable=True, default=None
-    )
-    eu_contribution_euro: Mapped[float] = mapped_column(
-        Numeric(scale=10, precision=2), nullable=True, default=None
-    )
+    total_cost_euro: Mapped[float] = mapped_column(Numeric(20, 2), nullable=True, default=None)
+    eu_contribution_euro: Mapped[float] = mapped_column(Numeric(20, 2), nullable=True, default=None)
     coordinated_by: Mapped[str] = mapped_column(String(250), nullable=True, default=None)
     project_description_title: Mapped[str] = mapped_column(String(500), nullable=True, default=None)
     project_description_text: Mapped[str] = mapped_column(String(500), nullable=True, default=None)
