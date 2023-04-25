@@ -61,7 +61,6 @@ class AIoDPublication(AIoDAIResource):
     publication_type: str | None = Field(max_length=150)
     date_created: datetime | None
     date_published: datetime | None
-    notes: str | None = Field(max_length=450)
 
     url: str | None = Field(max_length=250)
     datasets: Set[int] = Field(

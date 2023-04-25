@@ -29,7 +29,7 @@ class OrmPublication(OrmAIResource):
     publication_type: Mapped[str] = mapped_column(String(150), nullable=True, default=None)
     date_created: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=None)
     date_published: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=None)
-    notes: Mapped[str] = mapped_column(String(450), nullable=True, default=None)
+
     url: Mapped[str] = mapped_column(String(250), nullable=True, default=None)
 
     datasets: Mapped[list["OrmDataset"]] = relationship(

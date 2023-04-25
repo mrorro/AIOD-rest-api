@@ -31,7 +31,6 @@ class PublicationConverter(ResourceConverter[AIoDPublication, OrmPublication]):
             publication_type=aiod.publication_type,
             date_created=aiod.date_created,
             date_published=aiod.date_published,
-            notes=aiod.notes,
             url=aiod.url,
             datasets=datasets,
         )
@@ -53,7 +52,6 @@ class PublicationConverter(ResourceConverter[AIoDPublication, OrmPublication]):
             publication_type=orm.publication_type,
             date_created=orm.date_created,
             date_published=orm.date_published,
-            notes=orm.notes,
             url=orm.url,
             datasets=[d.identifier for d in orm.datasets],
         )
