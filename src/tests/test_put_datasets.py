@@ -33,8 +33,8 @@ def test_happy_path(
         json={
             "name": name,
             "platform": platform,
-            "platform_identifier": platform_identifier,
-            "same_as": same_as,
+            "platformIdentifier": platform_identifier,
+            "sameAs": same_as,
             "description": description,
         },
     )
@@ -42,9 +42,9 @@ def test_happy_path(
     response_json = response.json()
     assert response_json["name"] == name
     assert response_json["platform"] == platform
-    assert response_json["platform_identifier"] == platform_identifier
+    assert response_json["platformIdentifier"] == platform_identifier
     assert response_json["identifier"] == identifier
-    assert response_json["same_as"] == same_as
+    assert response_json["sameAs"] == same_as
     assert response_json["description"] == description
     assert len(response_json) == 13
 
@@ -58,8 +58,8 @@ def test_non_existent(client: TestClient, engine: Engine):
             "name": "name",
             "platform": "platform",
             "description": "description",
-            "same_as": "url",
-            "platform_identifier": "id",
+            "sameAs": "url",
+            "platformIdentifier": "id",
         },
     )
     assert response.status_code == 404
@@ -78,7 +78,7 @@ def test_partial_update(client: TestClient, engine: Engine):
     response_json = response.json()
     assert response_json["detail"] == [
         {"loc": ["body", "description"], "msg": "field required", "type": "value_error.missing"},
-        {"loc": ["body", "same_as"], "msg": "field required", "type": "value_error.missing"},
+        {"loc": ["body", "sameAs"], "msg": "field required", "type": "value_error.missing"},
     ]
 
 
@@ -92,8 +92,8 @@ def test_too_long_name(client: TestClient, engine: Engine):
             "name": name,
             "platform": "platform",
             "description": "description",
-            "same_as": "url",
-            "platform_identifier": "id",
+            "sameAs": "url",
+            "platformIdentifier": "id",
         },
     )
     assert response.status_code == 422

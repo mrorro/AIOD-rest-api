@@ -46,7 +46,7 @@ def test_happy_path(client: TestClient, engine: Engine, organisation_id: int):
     assert response_json["name"] == expected.name
     assert response_json["description"] == expected.description
     assert response_json["type"] == expected.type
-    assert response_json["image_url"] == expected.image_url
+    assert response_json["imageUrl"] == expected.image_url
 
 
 @pytest.mark.parametrize("organisation_id", [-1, 2, 3])

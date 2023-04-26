@@ -41,9 +41,9 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert {ds["name"] for ds in response_json} == {"dset1", "dset2"}
     assert {ds["description"] for ds in response_json} == {"a", "b", "c"}
     assert {ds["platform"] for ds in response_json} == {"openml", "other_platform"}
-    assert {ds["platform_identifier"] for ds in response_json} == {"1", "2"}
+    assert {ds["platformIdentifier"] for ds in response_json} == {"1", "2"}
     assert {ds["identifier"] for ds in response_json} == {1, 2, 3}
-    assert {ds["same_as"] for ds in response_json} == {
+    assert {ds["sameAs"] for ds in response_json} == {
         "openml.eu/1",
         "other_platform.eu/1",
         "other_platform.eu/2",

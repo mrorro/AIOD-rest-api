@@ -50,7 +50,7 @@ def test_happy_path(client: TestClient, engine: Engine):
         "/organisations/v0",
         json={
             "platform": PlatformName.aiod,
-            "platform_identifier": None,
+            "platformIdentifier": None,
             "name": "string",
             "description": "string",
             "connection_to_ai": "string",
@@ -62,7 +62,7 @@ def test_happy_path(client: TestClient, engine: Engine):
     response_json = response.json()
     assert response_json["name"] == "string"
     assert response_json["description"] == "string"
-    assert response_json["connection_to_ai"] == "string"
+    assert response_json["connectionToAi"] == "string"
     assert response_json["type"] == "string"
     assert response_json["identifier"] == 4
 
@@ -76,7 +76,7 @@ def test_unicode(client: TestClient, engine: Engine, name):
         "/organisations/v0",
         json={
             "platform": PlatformName.aiod,
-            "platform_identifier": None,
+            "platformIdentifier": None,
             "name": name,
             "description": "string",
             "connection_to_ai": "string",
@@ -98,12 +98,12 @@ def test_unicode(client: TestClient, engine: Engine, name):
 def test_missing_value(client: TestClient, engine: Engine, field: str):
     data = {
         "platform": PlatformName.aiod,
-        "platform_identifier": None,
+        "platformIdentifier": None,
         "name": "string",
         "description": "string",
-        "connection_to_ai": "string",
+        "connectionToAi": "string",
         "type": "string",
-        "image_url": "string",
+        "imageUrl": "string",
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
     response = client.post("/organisations/v0", json=data)
@@ -122,7 +122,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
 def test_null_value(client: TestClient, engine: Engine, field: str):
     data = {
         "platform": PlatformName.aiod,
-        "platform_identifier": None,
+        "platformIdentifier": None,
         "name": "string",
         "description": "string",
         "connection_to_ai": "string",

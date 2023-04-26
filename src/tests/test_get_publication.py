@@ -42,7 +42,7 @@ def test_happy_path(client: TestClient, engine: Engine, publication_id: int):
     assert response_json["title"] == expected.title
     assert response_json["doi"] == expected.doi
     assert response_json["platform"] == expected.platform
-    assert response_json["platform_identifier"] == expected.platform_identifier
+    assert response_json["platformIdentifier"] == expected.platform_identifier
     assert response_json["identifier"] == publication_id
     assert len(response_json["datasets"]) == 0
     assert len(response_json) == 6
