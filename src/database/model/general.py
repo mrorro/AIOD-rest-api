@@ -187,17 +187,17 @@ class OrmBusinessCategory(UniqueMixin, Base):
     """Any business category"""
 
     @classmethod
-    def _unique_hash(cls, category):
-        return category
+    def _unique_hash(cls, name):
+        return name
 
     @classmethod
-    def _unique_filter(cls, query, category):
-        return query.filter(cls.category == category)
+    def _unique_filter(cls, query, name):
+        return query.filter(cls.name == name)
 
     __tablename__ = "business_categories"
 
     identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
-    category: Mapped[str] = mapped_column(String(250), unique=True)
+    name: Mapped[str] = mapped_column(String(250), unique=True)
 
     case_studies: Mapped[list["OrmCaseStudy"]] = relationship(
         default_factory=list,
@@ -230,16 +230,16 @@ class OrmTechnicalCategory(UniqueMixin, Base):
     """Any technical category"""
 
     @classmethod
-    def _unique_hash(cls, category):
-        return category
+    def _unique_hash(cls, name):
+        return name
 
     @classmethod
-    def _unique_filter(cls, query, category):
-        return query.filter(cls.category == category)
+    def _unique_filter(cls, query, name):
+        return query.filter(cls.name == name)
 
     __tablename__ = "technical_categories"
 
-    category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
 
     case_studies: Mapped[list["OrmCaseStudy"]] = relationship(

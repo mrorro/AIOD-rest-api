@@ -29,8 +29,8 @@ class OrmCaseStudy(OrmResource):
     # TODO(issue 9): contact + creator + publisher repeated organization/person
     date_modified: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=None)
     date_published: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=None)
-    same_as: Mapped[str] = mapped_column(String(150), unique=True, default=None)
-    url: Mapped[str] = mapped_column(String(150), unique=True, default=None)
+    same_as: Mapped[str] = mapped_column(String(150), nullable=True, default=None)
+    url: Mapped[str] = mapped_column(String(150), nullable=True, default=None)
     is_accessible_for_free: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     # Relations
