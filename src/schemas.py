@@ -55,6 +55,25 @@ class AIoDMeasurementValue(BaseModel):
     technique: str | None
 
 
+class AIoDCaseStudy(AIoDResource):
+    description: str = Field(max_length=5000)
+    name: str = Field(max_length=150)
+
+    # Recommended fields
+    creator: str | None = Field(max_length=150)
+    date_modified: datetime | date | None
+    date_published: datetime | date | None
+    is_accessible_for_free: bool = Field(default=True)
+    publisher: str | None = Field(max_length=150)
+    same_as: str | None = Field(max_length=150)
+
+    # Relations
+    alternate_names: List[str] = Field(default_factory=list)
+    business_categories: List[str] = Field(default_factory=list)
+    keywords: List[str] = Field(default_factory=list)
+    technical_categories: List[str] = Field(default_factory=list)
+
+
 class AIoDPublication(AIoDAIResource):
     """The complete metadata of a publication. For now, only a couple of fields are shown,
     we have to decide which fields to use."""
