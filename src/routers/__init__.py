@@ -1,7 +1,7 @@
 import typing  # noqa:F401
 
 
-from .abstract_router import ResourceRouter  # noqa:F401
+from .resource_router import ResourceRouter  # noqa:F401
 from .dataset_router import DatasetRouter
 from .news_router import NewsRouter
 from .publication_router import PublicationRouter

@@ -2,16 +2,16 @@
 Converting between different event representations
 """
 from sqlalchemy.orm import Session
-from converters.conversion_helpers import retrieve_related_objects_by_ids
 
-from converters.abstract_converter import ResourceConverter
+from converters import OrmConverter
+from converters.orm_converters.conversion_helpers import retrieve_related_objects_by_ids
 from database.model.ai_resource import OrmAIResource
 from database.model.general import OrmBusinessCategory
 from database.model.event import OrmEvent, OrmApplicationArea, OrmResearchArea
 from schemas import AIoDEvent
 
 
-class EventResourceConverter(ResourceConverter[AIoDEvent, OrmEvent]):
+class EventResourceConverter(OrmConverter[AIoDEvent, OrmEvent]):
     def aiod_to_orm(
         self, session: Session, aiod: AIoDEvent, return_existing_if_present: bool = False
     ) -> OrmEvent:

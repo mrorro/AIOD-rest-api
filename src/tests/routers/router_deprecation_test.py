@@ -1,37 +1,16 @@
 import datetime
 import tempfile
-from typing import Type
-from unittest.mock import Mock
 
 import pytest
 from fastapi import FastAPI
-from pydantic import Field
-from sqlalchemy import String, create_engine
-from sqlalchemy.orm import mapped_column, Mapped, Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from converters import ResourceConverter
-from database.model.resource import OrmResource
-from routers import ResourceRouter
-from schemas import AIoDResource
+from tests.testutils.test_resource import OrmTestResource, AIoDTestResource, RouterTestResource
 
 
-class OrmTestResource(OrmResource):
-    __tablename__ = "test_resource"
-    title: Mapped[str] = mapped_column(String(250), nullable=False)
-
-
-class AIoDTestResource(AIoDResource):
-    title: str = Field(max_length=250)
-
-
-converter = Mock(spec=ResourceConverter)
-converter.orm_to_aiod = Mock(
-    return_value=AIoDTestResource(title="test", platform="example", platform_identifier=1)
-)
-
-
-class DeprecatedRouter(ResourceRouter[OrmTestResource, AIoDResource]):
+class DeprecatedRouter(RouterTestResource):
     """A deprecated router, just used for testing."""
 
     @property
@@ -39,28 +18,8 @@ class DeprecatedRouter(ResourceRouter[OrmTestResource, AIoDResource]):
         return 1
 
     @property
-    def deprecated_from(self) -> datetime.date | None:
-        return datetime.date(2022, 4, 21)
-
-    @property
-    def resource_name(self) -> str:
-        return "test_resource"
-
-    @property
-    def resource_name_plural(self) -> str:
-        return "test_resources"
-
-    @property
-    def aiod_class(self) -> Type[AIoDTestResource]:
-        return AIoDTestResource
-
-    @property
-    def orm_class(self) -> Type[OrmTestResource]:
-        return OrmTestResource
-
-    @property
-    def converter(self) -> ResourceConverter[AIoDTestResource, OrmTestResource]:
-        return converter
+    def deprecated_from(self, date=datetime.date(2022, 4, 21)) -> datetime.date | None:
+        return date
 
 
 @pytest.mark.parametrize(
@@ -91,25 +50,12 @@ def test_deprecated_router(verb: str, url: str):
     client = TestClient(app)
 
     kwargs = {}
-    if verb == "post":
-        converter.aiod_to_orm = Mock(
-            return_value=OrmTestResource(title="test", platform="example", platform_identifier=1)
-        )
+    if verb in ("post", "put"):
         kwargs = {
             "json": AIoDTestResource(
                 title="Another title", platform="example", platform_identifier="2"
             ).dict()
         }
-    elif verb == "put" or verb == "delete":
-        orm_resource = OrmTestResource(title="test", platform="example", platform_identifier=1)
-        orm_resource.identifier = 1
-        converter.aiod_to_orm = Mock(return_value=orm_resource)
-        if verb == "put":
-            kwargs = {
-                "json": AIoDTestResource(
-                    title="Title change", platform="example", platform_identifier="2"
-                ).dict()
-            }
     response = getattr(client, verb)(url, **kwargs)
     assert response.status_code == 200
     assert "deprecated" in response.headers

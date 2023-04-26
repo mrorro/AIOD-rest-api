@@ -3,7 +3,7 @@ Converting between different educational resource representations
 """
 from sqlalchemy.orm import Session
 
-from converters.abstract_converter import ResourceConverter
+from converters.orm_converters.orm_converter import OrmConverter
 from database.model.educational_resource import (
     OrmEducationalResource,
     OrmLanguage,
@@ -13,9 +13,7 @@ from database.model.general import OrmKeyword, OrmBusinessCategory, OrmTechnical
 from schemas import AIoDEducationalResource
 
 
-class EducationalResourceConverter(
-    ResourceConverter[AIoDEducationalResource, OrmEducationalResource]
-):
+class EducationalResourceConverter(OrmConverter[AIoDEducationalResource, OrmEducationalResource]):
     def aiod_to_orm(
         self, session: Session, aiod: AIoDEducationalResource, return_existing_if_present=False
     ) -> OrmEducationalResource:

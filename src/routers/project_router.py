@@ -1,9 +1,8 @@
 from typing import Type
 
-from converters import project_converter_instance
-from converters.abstract_converter import ResourceConverter
+from converters import project_converter_instance, OrmConverter
 from database.model.project import OrmProject
-from routers.abstract_router import ResourceRouter, AIOD_CLASS, ORM_CLASS
+from routers.resource_router import ResourceRouter
 from schemas import AIoDProject
 
 
@@ -21,13 +20,13 @@ class ProjectRouter(ResourceRouter[OrmProject, AIoDProject]):
         return "projects"
 
     @property
-    def aiod_class(self) -> Type[AIOD_CLASS]:
+    def aiod_class(self) -> Type[AIoDProject]:
         return AIoDProject
 
     @property
-    def orm_class(self) -> Type[ORM_CLASS]:
+    def orm_class(self) -> Type[OrmProject]:
         return OrmProject
 
     @property
-    def converter(self) -> ResourceConverter[AIOD_CLASS, ORM_CLASS]:
+    def converter(self) -> OrmConverter[AIoDProject, OrmProject]:
         return project_converter_instance

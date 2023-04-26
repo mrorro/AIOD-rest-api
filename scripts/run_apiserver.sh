@@ -14,5 +14,5 @@ docker run \
 	--rebuild-db only-if-empty \
 	--populate-datasets example \
 	--populate-publications example \
-	--limit-number-of-datasets 10 \
+	--limit 10 \
 	--url-prefix ""

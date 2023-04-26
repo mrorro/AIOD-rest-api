@@ -8,7 +8,7 @@ which should be a separate object inside a separate table in the database (so th
 search for all datasets having the same keyword). In the external schema, a set of strings is
 easier.
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import Set, List, Optional
 
 from pydantic import BaseModel, Field, Extra
@@ -51,12 +51,18 @@ class AIoDAIResource(AIoDResource):
     pass
 
 
+class AIoDChecksum(PydanticBase):
+    algorithm: str = Field(max_length=150)
+    value: str = Field(max_length=500)
+
+
 class AIoDDistribution(PydanticBase):
     content_url: str = Field(max_length=150)
     content_size_kb: int | None
     description: str | None = Field(max_length=5000)
     name: str | None = Field(max_length=150)
     encoding_format: str | None = Field(max_length=150)
+    checksum: list[AIoDChecksum] = Field(default_factory=list)
 
 
 class AIoDMeasurementValue(PydanticBase):
@@ -119,16 +125,18 @@ class AIoDDataset(AIoDAIResource):
     same_as: str = Field(max_length=150)
 
     # Recommended fields
+    contact: str | None = Field(max_length=150)
     creator: str | None = Field(max_length=150)
-    date_modified: datetime | None
-    date_published: datetime | None
+    date_modified: datetime | date | None
+    date_published: datetime | date | None
     funder: str | None
-    is_accessible_for_free: bool | None
+    is_accessible_for_free: bool = Field(default=True)
     issn: str | None = Field(max_length=8, min_length=8)
+    publisher: str | None = Field(max_length=150)
     size: int | None
     spatial_coverage: str | None = Field(max_length=500)
-    temporal_coverage_from: datetime | None
-    temporal_coverage_to: datetime | None
+    temporal_coverage_from: datetime | date | None
+    temporal_coverage_to: datetime | date | None
     version: str | None = Field(max_length=150)
 
     # Relations
@@ -140,13 +148,13 @@ class AIoDDataset(AIoDAIResource):
     is_part: Set[int] = Field(
         description="Identifiers of datasets this dataset is part of.", default_factory=set
     )
-    alternate_names: Set[str] = Field(default_factory=set)
+    alternate_names: List[str] = Field(default_factory=list)
     citations: Set[int] = Field(
         description="Identifiers of publications linked to this dataset",
         default_factory=set,
     )
     distributions: List[AIoDDistribution] = []
-    keywords: Set[str] = Field(default_factory=set)
+    keywords: list[str] = Field(default_factory=list)
     measured_values: List[AIoDMeasurementValue] = Field(default_factory=list)
 
 

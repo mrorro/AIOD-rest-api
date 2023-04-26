@@ -55,7 +55,7 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["platform"] == "openml"
     assert response_json["platformIdentifier"] == "2"
     assert response_json["identifier"] == 4
-    assert len(response_json) == 13
+    assert len(response_json) == 14
 
 
 @pytest.mark.parametrize(

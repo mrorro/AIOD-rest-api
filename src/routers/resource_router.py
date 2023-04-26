@@ -1,7 +1,8 @@
 import abc
 import datetime
 import traceback
-from typing import Generic, TypeVar, Type, List
+from typing import Generic, TypeVar, Type
+from typing import Literal, Union, Any
 from wsgiref.handlers import format_date_time
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -12,7 +13,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
-from converters.abstract_converter import ResourceConverter
+from converters.orm_converters.orm_converter import OrmConverter
+from converters.schema_converters.schema_converter import SchemaConverter
 from database.model.resource import OrmResource
 from platform_names import PlatformName
 from schemas import AIoDResource
@@ -72,8 +74,21 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
 
     @property
     @abc.abstractmethod
-    def converter(self) -> ResourceConverter[AIOD_CLASS, ORM_CLASS]:
+    def converter(self) -> OrmConverter[AIOD_CLASS, ORM_CLASS]:
         pass
+
+    @property
+    def schema_converters(self) -> dict[str, SchemaConverter[AIOD_CLASS, Any]]:
+        """
+        If a resource can be served in different formats, the resource converter should return
+        a dictionary of schema converters.
+
+        Returns:
+            a dictionary containing as key the name of a schema, and as value the schema
+            converter. The key "aiod" should not be in this dictionary, as it is the default
+            value and should result in just returning the AIOD_CLASS without conversion.
+        """
+        return {}
 
     @property
     @abc.abstractmethod
@@ -93,10 +108,16 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             "deprecated": self.deprecated_from is not None,
         }
 
+        available_schemas: list[Type] = [c.to_class for c in self.schema_converters.values()]
+        response_model = Union[self.aiod_class, *available_schemas]  # type:ignore
+        response_model_plural = Union[  # type:ignore
+            list[self.aiod_class], *[list[s] for s in available_schemas]  # type:ignore
+        ]
+
         router.add_api_route(
             path=f"{url_prefix}/{self.resource_name_plural}/{version}",
-            endpoint=self.list_resources_func(engine),
-            response_model=List[self.aiod_class],  # type: ignore
+            endpoint=self.get_resources_func(engine),
+            response_model=response_model_plural,  # type: ignore
             name=f"List {self.resource_name_plural}",
             **default_kwargs,
         )
@@ -111,7 +132,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         router.add_api_route(
             path=url_prefix + f"/{self.resource_name_plural}/{version}/{{identifier}}",
             endpoint=self.get_resource_func(engine),
-            response_model=self.aiod_class,  # type: ignore
+            response_model=response_model,  # type: ignore
             name=self.resource_name,
             **default_kwargs,
         )
@@ -132,8 +153,8 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         )
         router.add_api_route(
             path=f"{url_prefix}/platforms/{{platform}}/{self.resource_name_plural}/{version}",
-            endpoint=self.list_platform_resources_func(engine),
-            response_model=List[self.aiod_class],  # type: ignore
+            endpoint=self.get_platform_resources_func(engine),
+            response_model=response_model_plural,  # type: ignore
             name=f"List {self.resource_name_plural}",
             **default_kwargs,
         )
@@ -141,86 +162,144 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             path=f"{url_prefix}/platforms/{{platform}}/{self.resource_name_plural}/{version}"
             f"/{{identifier}}",
             endpoint=self.get_platform_resource_func(engine),
-            response_model=self.aiod_class,  # type: ignore
+            response_model=response_model,  # type: ignore
             name=self.resource_name,
             **default_kwargs,
         )
         return router
 
-    def list_resources_func(self, engine: Engine):
-        def list_resources(pagination: Pagination = Depends(Pagination)):
-            f"""
-            Lists all {self.resource_name_plural} registered with AIoD.
+    def get_resources(
+        self, engine: Engine, schema: str, pagination: Pagination, platform: str | None = None
+    ):
+        """Fetch all resources of this platform in given schema, using pagination"""
+        _raise_error_on_invalid_schema(self._possible_schemas, schema)
+        convert_schema = (
+            self.schema_converters[schema].convert if schema != "aiod" else (lambda x: x)
+        )
+        try:
+            with Session(engine) as session:
+                where_clause = (
+                    (self.orm_class.platform == platform) if platform is not None else True
+                )
+                query = (
+                    select(self.orm_class)
+                    .where(where_clause)
+                    .offset(pagination.offset)
+                    .limit(pagination.limit)
+                )
 
-            Query Parameter
-            ------
-             * platforms, list[str], optional: if provided, list only resources from the given
-             platform.
-            """
-            try:
-                with Session(engine) as session:
-                    query = select(self.orm_class).offset(pagination.offset).limit(pagination.limit)
-                    return self._wrap_with_headers(
-                        [
-                            self.converter.orm_to_aiod(resource)
-                            for resource in session.scalars(query).all()
-                        ]
-                    )
-            except Exception as e:
-                raise _wrap_as_http_exception(e)
+                return self._wrap_with_headers(
+                    [
+                        convert_schema(self.converter.orm_to_aiod(resource))
+                        for resource in session.scalars(query).all()
+                    ]
+                )
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
 
-        return list_resources
+    def get_resource(
+        self, engine: Engine, identifier: str, schema: str, platform: str | None = None
+    ):
+        """
+        Get the resource identified by AIoD identifier (if platform is None) or by platform AND
+        platform-identifier (if platform is not None), return in given schema.
+        """
+        _raise_error_on_invalid_schema(self._possible_schemas, schema)
+        try:
+            with Session(engine) as session:
+                resource = self._retrieve_resource(session, identifier, platform=platform)
+                aiod = self.converter.orm_to_aiod(resource)
+                if schema != "aiod":
+                    return self.schema_converters[schema].convert(aiod)
+                return self._wrap_with_headers(aiod)
+        except Exception as e:
+            raise _wrap_as_http_exception(e)
 
-    def list_platform_resources_func(self, engine: Engine):
-        def list_resources(platform: str, pagination: Pagination = Depends(Pagination)):
-            f"""Retrieve all meta-data of the {self.resource_name_plural} of a single platform."""
-            try:
-                with Session(engine) as session:
-                    query = (
-                        select(self.orm_class)
-                        .where(self.orm_class.platform == platform)
-                        .offset(pagination.offset)
-                        .limit(pagination.limit)
-                    )
-                    return self._wrap_with_headers(
-                        [
-                            self.converter.orm_to_aiod(resource)
-                            for resource in session.scalars(query).all()
-                        ]
-                    )
-            except Exception as e:
-                raise _wrap_as_http_exception(e)
+    def get_resources_func(self, engine: Engine):
+        """
+        Return a function that can be used to retrieve a list of resources.
+        This function returns a function (instead of being that function directly) because the
+        docstring and the variables are dynamic, and used in Swagger.
+        """
 
-        return list_resources
+        def get_resources(
+            pagination: Pagination = Depends(Pagination),
+            schema: Literal[tuple(self._possible_schemas)] = "aiod",  # type:ignore
+        ):
+            f"""Retrieve all meta-data of the {self.resource_name_plural}."""
+            resources = self.get_resources(
+                engine=engine, pagination=pagination, schema=schema, platform=None
+            )
+            return self._wrap_with_headers(resources)
+
+        return get_resources
+
+    def get_platform_resources_func(self, engine: Engine):
+        """
+        Return a function that can be used to retrieve a list of resources for a platform.
+        This function returns a function (instead of being that function directly) because the
+        docstring and the variables are dynamic, and used in Swagger.
+        """
+
+        def get_resources(
+            platform: str,
+            pagination: Pagination = Depends(Pagination),
+            schema: Literal[tuple(self._possible_schemas)] = "aiod",  # type:ignore
+        ):
+            f"""Retrieve all meta-data of the {self.resource_name_plural} of given platform."""
+            resources = self.get_resources(
+                engine=engine, pagination=pagination, schema=schema, platform=platform
+            )
+            return self._wrap_with_headers(resources)
+
+        return get_resources
 
     def get_resource_func(self, engine: Engine):
-        def get_resource(identifier: str):
-            f"""Retrieve all meta-data for a specific {self.resource_name}."""
-            try:
-                with Session(engine) as session:
-                    resource = self._retrieve_resource(session, identifier)
-                    aiod_resource = self.converter.orm_to_aiod(resource)
-                    return self._wrap_with_headers(aiod_resource)
-            except Exception as e:
-                raise _wrap_as_http_exception(e)
+        """
+        Return a function that can be used to retrieve a single resource.
+        This function returns a function (instead of being that function directly) because the
+        docstring and the variables are dynamic, and used in Swagger.
+        """
+
+        def get_resource(
+            identifier: str, schema: Literal[tuple(self._possible_schemas)] = "aiod"  # type:ignore
+        ):
+            f"""
+            Retrieve all meta-data for a {self.resource_name} identified by the AIoD identifier.
+            """
+            resource = self.get_resource(
+                engine=engine, identifier=identifier, schema=schema, platform=None
+            )
+            return self._wrap_with_headers(resource)
 
         return get_resource
 
     def get_platform_resource_func(self, engine: Engine):
-        def get_resource(platform: str, identifier: str):
-            f"""Retrieve all meta-data for a specific {self.resource_name} identified by the
+        """
+        Return a function that can be used to retrieve a single resource of a platform.
+        This function returns a function (instead of being that function directly) because the
+        docstring and the variables are dynamic, and used in Swagger.
+        """
+
+        def get_resource(
+            identifier: str,
+            platform: str,
+            schema: Literal[tuple(self._possible_schemas)] = "aiod",  # type:ignore
+        ):
+            f"""Retrieve all meta-data for a {self.resource_name} identified by the
             platform-specific-identifier."""
-            try:
-                with Session(engine) as session:
-                    resource = self._retrieve_resource(session, identifier, platform=platform)
-                    aiod_resource = self.converter.orm_to_aiod(resource)
-                    return self._wrap_with_headers(aiod_resource)
-            except Exception as e:
-                raise _wrap_as_http_exception(e)
+            return self.get_resource(
+                engine=engine, identifier=identifier, schema=schema, platform=platform
+            )
 
         return get_resource
 
     def register_resource_func(self, engine: Engine):
+        """
+        Return a function that can be used to register a resource.
+        This function returns a function (instead of being that function directly) because the
+        docstring is dynamic and used in Swagger.
+        """
         clz = self.aiod_class
 
         def register_resource(resource: clz):  # type: ignore
@@ -248,14 +327,20 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
                             f"platform and name, with identifier={existing_resource.identifier}.",
                         )
 
-                    aiod_resource = self.converter.orm_to_aiod(resource)
-                    return self._wrap_with_headers(aiod_resource)
+                    converted = self.converter.orm_to_aiod(resource)
+                    return self._wrap_with_headers(converted)
             except Exception as e:
                 raise _wrap_as_http_exception(e)
 
         return register_resource
 
     def put_resource_func(self, engine: Engine):
+        """
+        Return a function that can be used to update a resource.
+        This function returns a function (instead of being that function directly) because the
+        docstring is dynamic and used in Swagger.
+        """
+
         clz = self.aiod_class
 
         def put_resource(identifier: str, resource: clz):  # type: ignore
@@ -278,6 +363,12 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         return put_resource
 
     def delete_resource_func(self, engine: Engine):
+        """
+        Return a function that can be used to delete a resource.
+        This function returns a function (instead of being that function directly) because the
+        docstring is dynamic and used in Swagger.
+        """
+
         def delete_resource(identifier: str):
             try:
                 with Session(engine) as session:
@@ -319,6 +410,10 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             raise HTTPException(status_code=404, detail=msg)
         return resource
 
+    @property
+    def _possible_schemas(self) -> list[str]:
+        return ["aiod"] + list(self.schema_converters.keys())
+
     def _wrap_with_headers(self, resource):
         if self.deprecated_from is None:
             return resource
@@ -343,3 +438,11 @@ def _wrap_as_http_exception(exception: Exception) -> HTTPException:
             "Unexpected exception while processing your request. Please contact the maintainers."
         ),
     )
+
+
+def _raise_error_on_invalid_schema(possible_schemas, schema):
+    if schema not in possible_schemas:
+        raise HTTPException(
+            detail=f"Invalid schema {schema}. Expected {' or '.join(possible_schemas)}",
+            status_code=400,
+        )
