@@ -4,18 +4,25 @@ Converting between different dataset representations
 
 from sqlalchemy.orm import Session
 
-from converters.abstract_converter import ResourceConverter
-from converters.conversion_helpers import retrieve_related_objects_by_ids
-from database.model.dataset import OrmDataset, OrmDataDownload, OrmMeasuredValue, OrmAlternateName
+from converters.orm_converters.orm_converter import OrmConverter, datetime_or_date
+from converters.orm_converters.conversion_helpers import retrieve_related_objects_by_ids
+from database.model.dataset import (
+    OrmDataset,
+    OrmDataDownload,
+    OrmMeasuredValue,
+    OrmAlternateName,
+    OrmChecksum,
+    OrmChecksumAlgorithm,
+)
 from database.model.general import (
     OrmLicense,
     OrmKeyword,
 )
 from database.model.publication import OrmPublication
-from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue
+from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue, AIoDChecksum
 
 
-class DatasetConverter(ResourceConverter[AIoDDataset, OrmDataset]):
+class DatasetConverter(OrmConverter[AIoDDataset, OrmDataset]):
     def aiod_to_orm(
         self, session: Session, aiod: AIoDDataset, return_existing_if_present: bool = False
     ) -> OrmDataset:
@@ -35,12 +42,14 @@ class DatasetConverter(ResourceConverter[AIoDDataset, OrmDataset]):
             platform=aiod.platform,
             platform_identifier=aiod.platform_identifier,
             same_as=aiod.same_as,
+            contact=aiod.contact,
             creator=aiod.creator,
             date_modified=aiod.date_modified,
             date_published=aiod.date_published,
             funder=aiod.funder,
             is_accessible_for_free=aiod.is_accessible_for_free,
             issn=aiod.issn,
+            publisher=aiod.publisher,
             size=aiod.size,
             spatial_coverage=aiod.spatial_coverage,
             temporal_coverage_from=aiod.temporal_coverage_from,
@@ -58,13 +67,22 @@ class DatasetConverter(ResourceConverter[AIoDDataset, OrmDataset]):
             citations=citations,
             distributions=[
                 OrmDataDownload(
-                    content_url=orm_distr.content_url,
-                    content_size_kb=orm_distr.content_size_kb,
-                    description=orm_distr.description,
-                    name=orm_distr.name,
-                    encoding_format=orm_distr.encoding_format,
+                    content_url=distr.content_url,
+                    content_size_kb=distr.content_size_kb,
+                    description=distr.description,
+                    name=distr.name,
+                    encoding_format=distr.encoding_format,
+                    checksum=[
+                        OrmChecksum(
+                            algorithm=OrmChecksumAlgorithm.as_unique(
+                                session=session, name=checksum.algorithm
+                            ),
+                            value=checksum.value,
+                        )
+                        for checksum in distr.checksum
+                    ],
                 )
-                for orm_distr in aiod.distributions
+                for distr in aiod.distributions
             ],
             keywords=[
                 OrmKeyword.as_unique(session=session, name=keyword) for keyword in aiod.keywords
@@ -91,15 +109,16 @@ class DatasetConverter(ResourceConverter[AIoDDataset, OrmDataset]):
             platform_identifier=orm.platform_identifier,
             same_as=orm.same_as,
             creator=orm.creator,
-            date_modified=orm.date_modified,
-            date_published=orm.date_published,
+            date_modified=datetime_or_date(orm.date_modified),
+            date_published=datetime_or_date(orm.date_published),
             funder=orm.funder,
             is_accessible_for_free=orm.is_accessible_for_free,
             issn=orm.issn,
+            publisher=orm.publisher,
             size=orm.size,
             spatial_coverage=orm.spatial_coverage,
-            temporal_coverage_from=orm.temporal_coverage_from,
-            temporal_coverage_to=orm.temporal_coverage_to,
+            temporal_coverage_from=datetime_or_date(orm.temporal_coverage_from),
+            temporal_coverage_to=datetime_or_date(orm.temporal_coverage_to),
             version=orm.version,
             license=orm.license.name if orm.license is not None else None,
             has_parts=[part.identifier for part in orm.has_parts],
@@ -113,6 +132,10 @@ class DatasetConverter(ResourceConverter[AIoDDataset, OrmDataset]):
                     description=orm_distr.description,
                     name=orm_distr.name,
                     encoding_format=orm_distr.encoding_format,
+                    checksum=[
+                        AIoDChecksum(algorithm=checksum.algorithm.name, value=checksum.value)
+                        for checksum in orm_distr.checksum
+                    ],
                 )
                 for orm_distr in orm.distributions
             ],

@@ -5,6 +5,7 @@ from sqlalchemy import String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
+from database.model.ai_resource import OrmAIResource
 from database.model.base import Base
 from database.model.event_relationships import (
     event_business_category_relationship,
@@ -15,10 +16,7 @@ from database.model.event_relationships import (
     event_used_ai_resource_relationship,
 )
 from database.model.general import OrmBusinessCategory
-from database.model.ai_resource import OrmAIResource
 from database.model.resource import OrmResource
-
-
 from database.model.unique_model import UniqueMixin
 
 

@@ -46,7 +46,7 @@ def test_happy_path(
     assert response_json["identifier"] == identifier
     assert response_json["same_as"] == same_as
     assert response_json["description"] == description
-    assert len(response_json) == 13
+    assert len(response_json) == 14
 
 
 def test_non_existent(client: TestClient, engine: Engine):

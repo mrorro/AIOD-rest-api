@@ -3,14 +3,14 @@ Converting between different organisation representations
 """
 from sqlalchemy.orm import Session
 
-from converters.abstract_converter import ResourceConverter
+from converters.orm_converters.orm_converter import OrmConverter
 from database.model.agent import OrmAgent, OrmEmail
 from database.model.general import OrmBusinessCategory, OrmTechnicalCategory
 from database.model.organisation import OrmOrganisation
 from schemas import AIoDOrganisation, AIoDAgent
 
 
-class OrganisationResourceConverter(ResourceConverter[AIoDOrganisation, OrmOrganisation]):
+class OrganisationResourceConverter(OrmConverter[AIoDOrganisation, OrmOrganisation]):
     def aiod_to_orm(
         self, session: Session, aiod: AIoDOrganisation, return_existing_if_present: bool = False
     ) -> OrmOrganisation:

@@ -1,0 +1,111 @@
+{
+    "@context": {
+        "dcat": "http://www.w3.org/ns/dcat",
+        "dct": "http://purl.org/dc/terms/",
+        "vcard": "https://www.w3.org/2006/vcard/ns#"
+    },
+    "@graph": [
+        {
+            "@id": "7",
+            "@type": "dcat:Dataset",
+            "dct:description": "description",
+            "dct:title": "name1",
+            "dcat:contactPoint": [
+                {
+                    "@id": "individual_contact"
+                }
+            ],
+            "dcat:distribution": [
+                {
+                    "@id": "distr.content_url"
+                }
+            ],
+            "dcat:keyword": [
+                "a",
+                "b",
+                "c"
+            ],
+            "dct:publisher": null,
+            "dct:temporal": [
+                {
+                    "@id": "period_2000-01-01_to_2000-01-02T06:00:00"
+                }
+            ],
+            "dct:spatial": [
+                {
+                    "@id": "spatial_coverage"
+                }
+            ],
+            "dcat:theme": [
+                "variable"
+            ],
+            "dcat:creator": [
+                {
+                    "@id": "individual_creator"
+                }
+            ],
+            "foaf:page": [],
+            "dcat:landingPage": [
+                "same_as"
+            ],
+            "dct:issued": {
+                "@type": "xsd:dateTime",
+                "@value": "2001-01-01T08:00:00"
+            },
+            "dct:modified": {
+                "@type": "xsd:dateTime",
+                "@value": "2002-01-01"
+            },
+            "owl:versionInfo": "version1"
+        },
+        {
+            "@id": "individual_contact",
+            "@type": "vcard:Individual",
+            "vcard:fn": "contact"
+        },
+        {
+            "@id": "individual_creator",
+            "@type": "vcard:Individual",
+            "vcard:fn": "creator"
+        },
+        {
+            "@id": "spatial_coverage",
+            "@type": "dct:Location",
+            "dcat:bbox": null,
+            "dcat:centroid": null,
+            "dcat:geometry": "spatial_coverage"
+        },
+        {
+            "@id": "period_2000-01-01_to_2000-01-02T06:00:00",
+            "@type": "dct:PeriodOfTime",
+            "dcat:startDate": {
+                "@type": "xsd:dateTime",
+                "@value": "2000-01-01"
+            },
+            "dcat:endDate": {
+                "@type": "xsd:dateTime",
+                "@value": "2000-01-02T06:00:00"
+            }
+        },
+        {
+            "@id": "md5hash",
+            "@type": "spdx:Checksum",
+            "algorithm": "md5",
+            "checksumValue": "md5hash"
+        },
+        {
+            "@id": "distr.content_url",
+            "@type": "dcat:Distribution",
+            "dcat:accessURL": "distr.content_url",
+            "dcat:byteSize": null,
+            "spdx:checksum": {
+                "@id": "md5hash"
+            },
+            "dct:description": "distr.description",
+            "dcat:downloadURL": "distr.content_url",
+            "dct:format": "distr.encoding_format",
+            "dct:license": "license.name",
+            "dct:title": "distr.name"
+        }
+    ]
+}

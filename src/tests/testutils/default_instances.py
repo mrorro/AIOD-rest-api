@@ -11,7 +11,7 @@ import pytest
 
 from database.model.dataset import OrmDataset, OrmDataDownload
 from database.model.publication import OrmPublication
-from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue
+from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue, AIoDChecksum
 
 
 @pytest.fixture(scope="session")
@@ -23,16 +23,17 @@ def aiod_dataset() -> AIoDDataset:
         platform="platform",
         platform_identifier="1",
         same_as="same_as",
+        contact="contact",
         creator="creator",
-        date_modified=datetime.datetime(2002, 1, 1),
-        date_published=datetime.datetime(2001, 1, 1),
+        date_modified=datetime.date(2002, 1, 1),
+        date_published=datetime.datetime(2001, 1, 1, 8),
         funder="funder",
         is_accessible_for_free=True,
         issn="12345678",
         size=100,
         spatial_coverage="spatial_coverage",
-        temporal_coverage_from=datetime.datetime(2000, 1, 1),
-        temporal_coverage_to=datetime.datetime(2000, 1, 2),
+        temporal_coverage_from=datetime.date(2000, 1, 1),
+        temporal_coverage_to=datetime.datetime(2000, 1, 2, 6),
         version="version1",
         license="license.name",
         has_parts=[],
@@ -46,6 +47,7 @@ def aiod_dataset() -> AIoDDataset:
                 description="distr.description",
                 name="distr.name",
                 encoding_format="distr.encoding_format",
+                checksum=[AIoDChecksum(algorithm="md5", value="md5hash")],
             )
         ],
         keywords=["a", "b", "c"],
