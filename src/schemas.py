@@ -357,3 +357,22 @@ class AIoDOrganisation(AIoDAgent):
     technical_categories: List[str] = Field(
         description="Technical categories related with this organisation", default_factory=list
     )
+
+
+class AIoDPresentation(AIoDAIResource):
+    """The complete metadata for presentation entity"""
+
+    name: str = Field(max_length=500)
+
+    # Recommended fields
+    author: Optional[str]
+    description: Optional[str]
+    url: Optional[str]
+    datePublished: Optional[datetime | date]
+    publisher: Optional[str]
+    image: Optional[str]
+    is_accessible_for_free: Optional[bool]
+
+    # relations
+    # keywords
+    # publisher

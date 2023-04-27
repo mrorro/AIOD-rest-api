@@ -4,6 +4,7 @@ from schemas import (
     AIoDDataset,
     AIoDEducationalResource,
     AIoDNews,
+    AIoDPresentation,
     AIoDPublication,
     AIoDProject,
     AIoDEvent,
@@ -20,6 +21,7 @@ from .orm_converters.event_converter import EventResourceConverter
 from .orm_converters.news_converter import NewsConverter
 from .orm_converters.project_converter import ProjectConverter  # noqa:F401
 from .orm_converters.publication_converter import PublicationConverter
+from .orm_converters.presentation_converter import PresentationConverter
 
 
 case_study_converter_instance = CaseStudyConverter()
@@ -30,6 +32,7 @@ project_converter_instance = ProjectConverter()
 educational_resource_converter_instance = EducationalResourceConverter()
 event_converter_instance = EventResourceConverter()
 organisation_converter_instance = OrganisationResourceConverter()
+presentation_converter_instance = PresentationConverter()
 
 converters = {
     AIoDCaseStudy: case_study_converter_instance,
@@ -40,4 +43,5 @@ converters = {
     AIoDProject: project_converter_instance,
     AIoDEvent: event_converter_instance,
     AIoDOrganisation: organisation_converter_instance,
+    AIoDPresentation: presentation_converter_instance,
 }  # type: dict[Type, OrmConverter]
