@@ -1,6 +1,5 @@
 from typing import Type  # noqa:F401
 
-from converters.orm_converters.organisation_converter import OrganisationResourceConverter
 from schemas import (
     AIoDDataset,
     AIoDEducationalResource,
@@ -10,7 +9,10 @@ from schemas import (
     AIoDProject,
     AIoDEvent,
     AIoDOrganisation,
+    AIoDCaseStudy,
 )
+from .orm_converters.case_study_converter import CaseStudyConverter
+from .orm_converters.organisation_converter import OrganisationResourceConverter
 
 from .orm_converters.orm_converter import OrmConverter  # noqa:F401
 from .orm_converters.dataset_converter import DatasetConverter
@@ -22,6 +24,7 @@ from .orm_converters.publication_converter import PublicationConverter
 from .orm_converters.presentation_converter import PresentationConverter
 
 
+case_study_converter_instance = CaseStudyConverter()
 dataset_converter_instance = DatasetConverter()
 news_converter_instance = NewsConverter()
 publication_converter_instance = PublicationConverter()
@@ -32,6 +35,7 @@ organisation_converter_instance = OrganisationResourceConverter()
 presentation_converter_instance = PresentationConverter()
 
 converters = {
+    AIoDCaseStudy: case_study_converter_instance,
     AIoDDataset: dataset_converter_instance,
     AIoDEducationalResource: educational_resource_converter_instance,
     AIoDNews: news_converter_instance,

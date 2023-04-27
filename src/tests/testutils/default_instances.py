@@ -9,16 +9,58 @@ import datetime
 
 import pytest
 
+from database.model.case_study import OrmCaseStudy
 from database.model.dataset import OrmDataset, OrmDataDownload
 from database.model.presentation import OrmPresentation
 from database.model.publication import OrmPublication
+
 from schemas import (
+    AIoDCaseStudy,
     AIoDDataset,
     AIoDDistribution,
     AIoDMeasurementValue,
     AIoDChecksum,
     AIoDPresentation,
 )
+
+
+@pytest.fixture(scope="session")
+def aiod_case_study() -> AIoDCaseStudy:
+    return AIoDCaseStudy(
+        identifier=7,
+        description="description",
+        name="name1",
+        platform="platform",
+        platform_identifier="1",
+        same_as="same_as",
+        creator="creator",
+        date_modified=datetime.date(2002, 1, 1),
+        date_published=datetime.datetime(2001, 1, 1, 8),
+        is_accessible_for_free=True,
+        alternate_names=["alternative_1", "alternative_2"],
+        business_categories=["business-cat1", "business-cat2"],
+        keywords=["a", "b", "c"],
+        technical_categories=["technical-cat1", "technical-cat2"],
+    )
+
+
+@pytest.fixture(scope="session")
+def orm_case_study() -> OrmCaseStudy:
+    return OrmCaseStudy(
+        description="description",
+        name="name2",
+        platform="example",
+        platform_identifier="1",
+        same_as="same_as",
+        creator="creator",
+        date_modified=datetime.datetime(2002, 1, 1),
+        date_published=datetime.datetime(2001, 1, 1),
+        is_accessible_for_free=True,
+        alternate_names=[],
+        business_categories=[],
+        keywords=[],
+        technical_categories=[],
+    )
 
 
 @pytest.fixture(scope="session")

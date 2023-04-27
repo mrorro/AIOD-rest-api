@@ -1,6 +1,6 @@
 import typing  # noqa:F401
 
-
+from .case_study_router import CaseStudyRouter
 from .resource_router import ResourceRouter  # noqa:F401
 from .dataset_router import DatasetRouter
 from .news_router import NewsRouter
@@ -12,12 +12,13 @@ from .project_router import ProjectRouter
 from .presentation_router import PresentationRouter
 
 routers = [
+    CaseStudyRouter(),
     DatasetRouter(),
-    PublicationRouter(),
-    NewsRouter(),
     EducationalResourceRouter(),
     EventRouter(),
+    NewsRouter(),
     OrganisationRouter(),
+    PublicationRouter(),
     ProjectRouter(),
     PresentationRouter(),
 ]  # type: typing.List[ResourceRouter]

@@ -14,11 +14,11 @@ class EducationalResourceRouter(ResourceRouter[OrmEducationalResource, AIoDEduca
 
     @property
     def resource_name(self) -> str:
-        return "educational_resource"
+        return "educational-resource"
 
     @property
     def resource_name_plural(self) -> str:
-        return "educational_resources"
+        return "educational-resources"
 
     @property
     def aiod_class(self) -> Type[AIoDEducationalResource]:

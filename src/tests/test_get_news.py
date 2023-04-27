@@ -26,7 +26,7 @@ def test_happy_path_for_all(client: TestClient, engine: Engine):
             alternative_headline="ah1",
             word_count=10,
             news_categories=[OrmNewsCategory(category="something")],
-            business_categories=[OrmBusinessCategory(category="something")],
+            business_categories=[OrmBusinessCategory(name="something")],
             keywords=[OrmKeyword(name="something")],
         ),
         OrmNews(
@@ -94,7 +94,7 @@ def test_happy_path_for_one(client: TestClient, engine: Engine, news_id: int):
             alternative_headline="ah1",
             word_count=10,
             news_categories=[OrmNewsCategory(category="something")],
-            business_categories=[OrmBusinessCategory(category="something")],
+            business_categories=[OrmBusinessCategory(name="something")],
             keywords=[OrmKeyword(name="something")],
         ),
         OrmNews(

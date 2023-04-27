@@ -1,10 +1,11 @@
 from datetime import datetime
 
+from sqlalchemy import ForeignKey
 from sqlalchemy import UniqueConstraint, String, DateTime, Boolean, and_
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
 from database.model.ai_resource import OrmAIResource
+from database.model.base import Base
 from database.model.dataset_relationships import (
     dataset_alternateName_relationship,
     dataset_distribution_relationship,
@@ -16,11 +17,9 @@ from database.model.dataset_relationships import (
     checksum_algorithm_relationship,
     datadownload_checksum_relationship,
 )
-from database.model.general import OrmKeyword, OrmLicense
-from database.model.base import Base
+from database.model.general import OrmKeyword, OrmLicense, OrmAlternateName
 from database.model.publication import OrmPublication
 from database.model.unique_model import UniqueMixin
-from sqlalchemy import ForeignKey
 
 
 class OrmDataset(OrmAIResource):
@@ -160,32 +159,6 @@ class OrmMeasuredValue(UniqueMixin, Base):
         default_factory=list,
         back_populates="measured_values",
         secondary=dataset_measuredValue_relationship,
-    )
-
-
-class OrmAlternateName(UniqueMixin, Base):
-    """
-    An alias for a dataset
-
-    Only related to datasets. If another resource needs an alias as well, we should
-    probably define a new table.
-    """
-
-    @classmethod
-    def _unique_hash(cls, name):
-        return name
-
-    @classmethod
-    def _unique_filter(cls, query, name):
-        return query.filter(cls.name == name)
-
-    __tablename__ = "alternate_names"
-    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
-    name: Mapped[str] = mapped_column(String(150), unique=True)
-    datasets: Mapped[list["OrmDataset"]] = relationship(
-        default_factory=list,
-        back_populates="alternate_names",
-        secondary=dataset_alternateName_relationship,
     )
 
 
