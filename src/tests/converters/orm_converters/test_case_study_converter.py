@@ -8,7 +8,6 @@ from converters import case_study_converter_instance
 from database.model.case_study import OrmCaseStudy
 from database.model.dataset import OrmAlternateName
 from database.model.general import OrmKeyword, OrmBusinessCategory, OrmTechnicalCategory
-from database.model.publication import OrmPublication
 from schemas import AIoDCaseStudy
 
 CASE_STUDY_RELATION_FIELDS = (
@@ -20,10 +19,7 @@ CASE_STUDY_RELATION_FIELDS = (
 
 
 def test_aiod_to_orm_happy_path(
-    engine: Engine,
-    orm_case_study: OrmCaseStudy,
-    aiod_case_study: AIoDCaseStudy,
-    orm_publication: OrmPublication,
+    engine: Engine, orm_case_study: OrmCaseStudy, aiod_case_study: AIoDCaseStudy
 ):
 
     aiod = copy.deepcopy(aiod_case_study)
