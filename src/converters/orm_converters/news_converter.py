@@ -35,13 +35,13 @@ class NewsConverter(OrmConverter[AIoDNews, OrmNews]):
             if aiod.keywords
             else [],
             business_categories=[
-                OrmBusinessCategory.as_unique(session=session, category=category)
+                OrmBusinessCategory.as_unique(session=session, name=category)
                 for category in aiod.business_categories
             ]
             if aiod.business_categories
             else [],
             news_categories=[
-                OrmNewsCategory.as_unique(session=session, category=category)
+                OrmNewsCategory.as_unique(session=session, name=category)
                 for category in aiod.news_categories
             ]
             if aiod.news_categories
@@ -70,7 +70,7 @@ class NewsConverter(OrmConverter[AIoDNews, OrmNews]):
             section=orm.section,
             word_count=orm.word_count,
             keywords={k.name for k in orm.keywords},
-            business_categories={c.category for c in orm.business_categories},
+            business_categories={c.name for c in orm.business_categories},
             news_categories={c.category for c in orm.news_categories},
             media={m.name for m in orm.media},
         )

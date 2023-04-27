@@ -60,11 +60,11 @@ class OrganisationResourceConverter(OrmConverter[AIoDOrganisation, OrmOrganisati
             parent_organisation_id=aiod.parent_organisation,
             subsidiary_organisation_id=aiod.subsidiary_organisation,
             business_categories=[
-                OrmBusinessCategory.as_unique(session=session, category=category)
+                OrmBusinessCategory.as_unique(session=session, name=category)
                 for category in aiod.business_categories
             ],
             technical_categories=[
-                OrmTechnicalCategory.as_unique(session=session, category=category)
+                OrmTechnicalCategory.as_unique(session=session, name=category)
                 for category in aiod.technical_categories
             ],
             email_addresses=[
@@ -113,6 +113,6 @@ class OrganisationResourceConverter(OrmConverter[AIoDOrganisation, OrmOrganisati
             parent_organisation=orm.parent_organisation_id,
             subsidiary_organisation=orm.subsidiary_organisation_id,
             email_addresses={e.email for e in orm.email_addresses},
-            business_categories={c.category for c in orm.business_categories},
-            technical_categories={c.category for c in orm.technical_categories},
+            business_categories={c.name for c in orm.business_categories},
+            technical_categories={c.name for c in orm.technical_categories},
         )
