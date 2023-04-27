@@ -38,6 +38,7 @@ class PresentationConverter(OrmConverter[AIoDPresentation, OrmPresentation]):
         """
         return AIoDPresentation(
             identifier=orm.identifier,
+            name=orm.name,
             platform=orm.platform,
             platform_identifier=orm.platform_identifier,
             author=orm.author,
