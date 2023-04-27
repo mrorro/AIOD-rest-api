@@ -11,12 +11,27 @@ easier.
 from datetime import datetime, timedelta, date
 from typing import Set, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, Extra
 
 from platform_names import PlatformName
 
 
-class AIoDResource(BaseModel):
+def camel_case(snake_str: str) -> str:
+    """Convert snake_case to camelCase"""
+    first, *others = snake_str.split("_")
+    return "".join([first.lower(), *map(str.title, others)])
+
+
+class PydanticBase(BaseModel):
+    """Base class for all our Pydantic classes"""
+
+    class Config:
+        extra = Extra.forbid
+        allow_population_by_field_name = True
+        alias_generator = camel_case
+
+
+class AIoDResource(PydanticBase):
     """
     The base class of all our Resources
     """
@@ -36,12 +51,12 @@ class AIoDAIResource(AIoDResource):
     pass
 
 
-class AIoDChecksum(BaseModel):
+class AIoDChecksum(PydanticBase):
     algorithm: str = Field(max_length=150)
     value: str = Field(max_length=500)
 
 
-class AIoDDistribution(BaseModel):
+class AIoDDistribution(PydanticBase):
     content_url: str = Field(max_length=150)
     content_size_kb: int | None
     description: str | None = Field(max_length=5000)
@@ -50,7 +65,7 @@ class AIoDDistribution(BaseModel):
     checksum: list[AIoDChecksum] = Field(default_factory=list)
 
 
-class AIoDMeasurementValue(BaseModel):
+class AIoDMeasurementValue(PydanticBase):
     variable: str | None
     technique: str | None
 

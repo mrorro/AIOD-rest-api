@@ -46,4 +46,4 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert len(response_json) == 3
     assert {ds["name"] for ds in response_json} == {"string", "string2", "string3"}
     assert {ds["description"] for ds in response_json} == {"string", "string2", "string3"}
-    assert {ds["connection_to_ai"] for ds in response_json} == {"string", "string2", "string3"}
+    assert {ds["connectionToAi"] for ds in response_json} == {"string", "string2", "string3"}

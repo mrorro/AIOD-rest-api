@@ -36,24 +36,24 @@ def test_happy_path(client: TestClient, engine: Engine):
         # Populate database
         session.add_all(datasets)
         session.commit()
-
     response = client.post(
         "/datasets/v0",
         json={
             "name": "dset2",
             "platform": "openml",
             "description": "description",
-            "same_as": "openml.org/datasets/1",
-            "platform_identifier": "2",
+            "sameAs": "openml.org/datasets/1",
+            "platformIdentifier": "2",
         },
     )
+
     assert response.status_code == 200
     response_json = response.json()
     assert response_json["name"] == "dset2"
     assert response_json["description"] == "description"
-    assert response_json["same_as"] == "openml.org/datasets/1"
+    assert response_json["sameAs"] == "openml.org/datasets/1"
     assert response_json["platform"] == "openml"
-    assert response_json["platform_identifier"] == "2"
+    assert response_json["platformIdentifier"] == "2"
     assert response_json["identifier"] == 4
     assert len(response_json) == 14
 
@@ -68,9 +68,9 @@ def test_unicode(client: TestClient, engine: Engine, name):
         json={
             "name": name,
             "platform": "openml",
-            "platform_identifier": "2",
+            "platformIdentifier": "2",
             "description": f"Description of {name}",
-            "same_as": "url",
+            "sameAs": "url",
         },
     )
     assert response.status_code == 200
@@ -97,9 +97,9 @@ def test_duplicated_dataset(client: TestClient, engine: Engine):
         json={
             "name": "dset1",
             "description": "description",
-            "same_as": "url",
+            "sameAs": "url",
             "platform": "openml",
-            "platform_identifier": "1",
+            "platformIdentifier": "1",
         },
     )
     assert response.status_code == 409
@@ -109,13 +109,13 @@ def test_duplicated_dataset(client: TestClient, engine: Engine):
     )
 
 
-@pytest.mark.parametrize("field", ["name", "same_as", "description"])
+@pytest.mark.parametrize("field", ["name", "sameAs", "description"])
 def test_missing_value(client: TestClient, engine: Engine, field: str):
     data = {
         "name": "Name",
         "platform": "openml",
-        "platform_identifier": "1",
-        "same_as": "url",
+        "platformIdentifier": "1",
+        "sameAs": "url",
         "description": "description",
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
@@ -126,13 +126,13 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
     ]
 
 
-@pytest.mark.parametrize("field", ["name", "platform", "same_as", "description"])
+@pytest.mark.parametrize("field", ["name", "platform", "sameAs", "description"])
 def test_null_value(client: TestClient, engine: Engine, field: str):
     data = {
         "name": "Name",
         "platform": "openml",
-        "platform_identifier": "1",
-        "same_as": "url",
+        "platformIdentifier": "1",
+        "sameAs": "url",
         "description": "description",
     }  # type: typing.Dict[str, typing.Any]
     data[field] = None
