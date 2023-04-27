@@ -14,11 +14,11 @@ class CaseStudyRouter(ResourceRouter[OrmCaseStudy, AIoDCaseStudy]):
 
     @property
     def resource_name(self) -> str:
-        return "case_study"
+        return "case-study"
 
     @property
     def resource_name_plural(self) -> str:
-        return "case_studies"
+        return "case-studies"
 
     @property
     def aiod_class(self) -> Type[AIoDCaseStudy]:
