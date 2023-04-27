@@ -44,7 +44,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             "doi": "doi2",
             "url": "url2",
             "platform": "zenodo",
-            "platform_identifier": "2",
+            "platformIdentifier": "2",
         },
     )
     assert response.status_code == 200
@@ -52,7 +52,7 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["title"] == "pub2"
     assert response_json["doi"] == "doi2"
     assert response_json["platform"] == "zenodo"
-    assert response_json["platform_identifier"] == "2"
+    assert response_json["platformIdentifier"] == "2"
     assert response_json["identifier"] == 4
     assert len(response_json["datasets"]) == 0
     assert len(response_json) == 7
@@ -65,7 +65,7 @@ def test_happy_path(client: TestClient, engine: Engine):
 def test_unicode(client: TestClient, engine: Engine, title):
     response = client.post(
         "/publications/v0",
-        json={"title": title, "doi": "doi2", "platform": "zenodo", "platform_identifier": "2"},
+        json={"title": title, "doi": "doi2", "platform": "zenodo", "platformIdentifier": "2"},
     )
     assert response.status_code == 200
     response_json = response.json()
@@ -82,7 +82,7 @@ def test_duplicated_publication(client: TestClient, engine: Engine):
         session.commit()
     response = client.post(
         "/publications/v0",
-        json={"title": "pub1", "doi": "doi1", "platform": "zenodo", "platform_identifier": "1"},
+        json={"title": "pub1", "doi": "doi1", "platform": "zenodo", "platformIdentifier": "1"},
     )
     assert response.status_code == 409
     assert (
@@ -98,7 +98,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "title": "pub2",
         "doi": "doi2",
         "platform": "zenodo",
-        "platform_identifier": "2",
+        "platformIdentifier": "2",
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
     response = client.post("/publications/v0", json=data)
@@ -114,7 +114,7 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "title": "pub2",
         "doi": "doi2",
         "platform": "zenodo",
-        "platform_identifier": "2",
+        "platformIdentifier": "2",
     }  # type: typing.Dict[str, typing.Any]
     data[field] = None
     response = client.post("/publications/v0", json=data)

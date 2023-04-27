@@ -35,7 +35,7 @@ def test_happy_path(
             "url": url,
             "doi": doi,
             "platform": platform,
-            "platform_identifier": platform_identifier,
+            "platformIdentifier": platform_identifier,
         },
     )
     assert response.status_code == 200
@@ -44,7 +44,7 @@ def test_happy_path(
     assert response_json["url"] == url
     assert response_json["doi"] == doi
     assert response_json["platform"] == platform
-    assert response_json["platform_identifier"] == platform_identifier
+    assert response_json["platformIdentifier"] == platform_identifier
     assert response_json["identifier"] == identifier
     assert len(response_json["datasets"]) == 0
     assert len(response_json) == 7
@@ -55,7 +55,7 @@ def test_non_existent(client: TestClient, engine: Engine):
 
     response = client.put(
         "/publications/v0/4",
-        json={"title": "pub2", "doi": "doi2", "platform": "zenodo", "platform_identifier": "2"},
+        json={"title": "pub2", "doi": "doi2", "platform": "zenodo", "platformIdentifier": "2"},
     )
     assert response.status_code == 404
     response_json = response.json()
@@ -82,7 +82,7 @@ def test_too_long_name(client: TestClient, engine: Engine):
     title = "a" * 300
     response = client.put(
         "/publications/v0/3",
-        json={"title": title, "doi": "doi2", "platform": "platform", "platform_identifier": "id"},
+        json={"title": title, "doi": "doi2", "platform": "platform", "platformIdentifier": "id"},
     )
     assert response.status_code == 422
     response_json = response.json()

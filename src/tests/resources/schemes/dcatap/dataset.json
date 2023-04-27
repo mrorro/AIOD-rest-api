@@ -46,7 +46,7 @@
             ],
             "foaf:page": [],
             "dcat:landingPage": [
-                "same_as"
+                "sameAs"
             ],
             "dct:issued": {
                 "@type": "xsd:dateTime",
