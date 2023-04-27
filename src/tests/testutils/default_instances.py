@@ -10,8 +10,15 @@ import datetime
 import pytest
 
 from database.model.dataset import OrmDataset, OrmDataDownload
+from database.model.presentation import OrmPresentation
 from database.model.publication import OrmPublication
-from schemas import AIoDDataset, AIoDDistribution, AIoDMeasurementValue, AIoDChecksum
+from schemas import (
+    AIoDDataset,
+    AIoDDistribution,
+    AIoDMeasurementValue,
+    AIoDChecksum,
+    AIoDPresentation,
+)
 
 
 @pytest.fixture(scope="session")
@@ -104,4 +111,37 @@ def orm_publication() -> OrmPublication:
         platform="example",
         platform_identifier="2",
         datasets=[],
+    )
+
+
+@pytest.fixture(scope="session")
+def aiod_presentation() -> AIoDPresentation:
+    return AIoDPresentation(
+        identifier=9,
+        name="name1",
+        platform="platform",
+        platform_identifier="1",
+        author="author1",
+        datePublished=datetime.datetime(2001, 1, 1, 8),
+        description="description",
+        image="url_of_the_image",
+        is_accessible_for_free=False,
+        publisher="publisher",
+        url="url_of_the_resource",
+    )
+
+
+@pytest.fixture(scope="session")
+def orm_presentation() -> OrmPresentation:
+    return OrmPresentation(
+        name="name2",
+        platform="platform2",
+        platform_identifier="2",
+        author="author2",
+        datePublished=datetime.datetime(2001, 1, 1, 8),
+        description="description2",
+        image="url_of_the_image2",
+        is_accessible_for_free=False,
+        publisher="publisher2",
+        url="url_of_the_resource2",
     )
