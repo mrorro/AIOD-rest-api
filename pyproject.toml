@@ -11,6 +11,7 @@ authors = [
     { name = "Giannis Mouchakis"},
 ]
 dependencies = [
+    "urllib3==1.26.15",
     "sqlalchemy==2.0.0b4",
     "bibtexparser",
     "datasets",
