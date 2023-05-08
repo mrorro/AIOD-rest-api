@@ -26,6 +26,6 @@ class OrmPresentation(OrmAIResource):
     is_accessible_for_free: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     __mapper_args__ = {
-        "polymorphic_identity": "publication",
+        "polymorphic_identity": "presentation",
         "inherit_condition": identifier == OrmAIResource.identifier,
     }
