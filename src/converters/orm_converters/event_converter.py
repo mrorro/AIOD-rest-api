@@ -2,16 +2,16 @@
 Converting between different event representations
 """
 from sqlalchemy.orm import Session
-from converters.conversion_helpers import retrieve_related_objects_by_ids
 
-from converters.abstract_converter import ResourceConverter
+from converters import OrmConverter
+from converters.orm_converters.conversion_helpers import retrieve_related_objects_by_ids
 from database.model.ai_resource import OrmAIResource
 from database.model.general import OrmBusinessCategory
 from database.model.event import OrmEvent, OrmApplicationArea, OrmResearchArea
 from schemas import AIoDEvent
 
 
-class EventResourceConverter(ResourceConverter[AIoDEvent, OrmEvent]):
+class EventResourceConverter(OrmConverter[AIoDEvent, OrmEvent]):
     def aiod_to_orm(
         self, session: Session, aiod: AIoDEvent, return_existing_if_present: bool = False
     ) -> OrmEvent:
@@ -46,7 +46,7 @@ class EventResourceConverter(ResourceConverter[AIoDEvent, OrmEvent]):
             relevant_resources=relevant_resources,
             used_resources=used_resources,
             business_categories=[
-                OrmBusinessCategory.as_unique(session=session, category=category)
+                OrmBusinessCategory.as_unique(session=session, name=category)
                 for category in aiod.business_categories
             ],
             research_areas=[
@@ -83,7 +83,7 @@ class EventResourceConverter(ResourceConverter[AIoDEvent, OrmEvent]):
             super_events=[event.identifier for event in orm.super_events],
             relevant_resources=[resource.identifier for resource in orm.relevant_resources],
             used_resources=[resource.identifier for resource in orm.used_resources],
-            business_categories={c.category for c in orm.business_categories},
+            business_categories={c.name for c in orm.business_categories},
             research_areas={a.name for a in orm.research_areas},
             application_areas={a.name for a in orm.application_areas},
         )

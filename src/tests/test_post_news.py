@@ -81,7 +81,7 @@ def test_happy_path(client: TestClient, engine: Engine):
         session.commit()
 
     response = client.post(
-        "/news",
+        "/news/v0",
         json={
             "title": "n2",
             "body": "b4",
@@ -100,9 +100,9 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["body"] == "b4"
     assert response_json["headline"] == "h5"
     assert response_json["source"] == "s1"
-    assert response_json["date_modified"] == "2023-03-21T00:00:00"
-    assert response_json["alternative_headline"] == "ah1"
-    assert response_json["word_count"] == 10
+    assert response_json["dateModified"] == "2023-03-21T00:00:00"
+    assert response_json["alternativeHeadline"] == "ah1"
+    assert response_json["wordCount"] == 10
     assert response_json["identifier"] == 4
     assert len(response_json) == 15
 
@@ -118,7 +118,7 @@ def test_unicode(client: TestClient, engine: Engine, title):
     keycloak_openid.decode_token = Mock(return_value=user)
 
     response = client.post(
-        "/news",
+        "/news/v0",
         json={
             "title": title,
             "body": "b4",
@@ -143,8 +143,8 @@ def test_unicode(client: TestClient, engine: Engine, title):
         "body",
         "section",
         "headline",
-        "date_modified",
-        "word_count",
+        "dateModified",
+        "wordCount",
     ],
 )
 def test_missing_value(client: TestClient, engine: Engine, field: str):
@@ -158,8 +158,8 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "body": "b4",
         "section": "s3",
         "headline": "h5",
-        "date_modified": "2023-03-21T00:00:00",
-        "word_count": 10,
+        "dateModified": "2023-03-21T00:00:00",
+        "wordCount": 10,
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
     response = client.post("/news", json=data, headers={"Authorization": "fake-token"})
@@ -176,8 +176,8 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "body",
         "section",
         "headline",
-        "date_modified",
-        "word_count",
+        "dateModified",
+        "wordCount",
     ],
 )
 def test_null_value(client: TestClient, engine: Engine, field: str):
@@ -191,8 +191,8 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "body": "b4",
         "section": "s3",
         "headline": "h5",
-        "date_modified": "2023-03-21T00:00:00",
-        "word_count": 10,
+        "dateModified": "2023-03-21T00:00:00",
+        "wordCount": 10,
     }  # type: typing.Dict[str, typing.Any]
     data[field] = None
     response = client.post("/news", json=data, headers={"Authorization": "fake-token"})

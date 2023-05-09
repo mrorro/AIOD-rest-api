@@ -3,7 +3,7 @@ Converting between different educational resource representations
 """
 from sqlalchemy.orm import Session
 
-from converters.abstract_converter import ResourceConverter
+from converters.orm_converters.orm_converter import OrmConverter
 from database.model.educational_resource import (
     OrmEducationalResource,
     OrmLanguage,
@@ -13,9 +13,7 @@ from database.model.general import OrmKeyword, OrmBusinessCategory, OrmTechnical
 from schemas import AIoDEducationalResource
 
 
-class EducationalResourceConverter(
-    ResourceConverter[AIoDEducationalResource, OrmEducationalResource]
-):
+class EducationalResourceConverter(OrmConverter[AIoDEducationalResource, OrmEducationalResource]):
     def aiod_to_orm(
         self, session: Session, aiod: AIoDEducationalResource, return_existing_if_present=False
     ) -> OrmEducationalResource:
@@ -57,11 +55,11 @@ class EducationalResourceConverter(
                 OrmKeyword.as_unique(session=session, name=keyword) for keyword in aiod.keywords
             ],
             business_categories=[
-                OrmBusinessCategory.as_unique(session=session, category=category)
+                OrmBusinessCategory.as_unique(session=session, name=category)
                 for category in aiod.business_categories
             ],
             technical_categories=[
-                OrmTechnicalCategory.as_unique(session=session, category=category)
+                OrmTechnicalCategory.as_unique(session=session, name=category)
                 for category in aiod.technical_categories
             ],
             target_audience=[
@@ -104,8 +102,8 @@ class EducationalResourceConverter(
             duration_in_years=orm.duration_in_years,
             pace=orm.pace,
             time_required=orm.time_required,
-            business_categories={c.category for c in orm.business_categories},
-            technical_categories={c.category for c in orm.technical_categories},
+            business_categories={c.name for c in orm.business_categories},
+            technical_categories={c.name for c in orm.technical_categories},
             keywords={k.name for k in orm.keywords},
             target_audience={t.name for t in orm.target_audience},
             languages={language.name for language in orm.languages},

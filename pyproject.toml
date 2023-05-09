@@ -1,7 +1,7 @@
 [project]
 name = "ai4eu_server_demo"
 description = "A containerized demo application for AI on demand (previously AI4EU) "
-version = "0.2.20230331"
+version = "0.3.20230501"
 authors = [
 
     { name = "Antonis Ganios"},
@@ -11,6 +11,7 @@ authors = [
     { name = "Giannis Mouchakis"},
 ]
 dependencies = [
+    "urllib3==1.26.15",
     "sqlalchemy==2.0.0b4",
     "bibtexparser",
     "datasets",

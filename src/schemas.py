@@ -8,15 +8,30 @@ which should be a separate object inside a separate table in the database (so th
 search for all datasets having the same keyword). In the external schema, a set of strings is
 easier.
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import Set, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, Extra
 
 from platform_names import PlatformName
 
 
-class AIoDResource(BaseModel):
+def camel_case(snake_str: str) -> str:
+    """Convert snake_case to camelCase"""
+    first, *others = snake_str.split("_")
+    return "".join([first.lower(), *map(str.title, others)])
+
+
+class PydanticBase(BaseModel):
+    """Base class for all our Pydantic classes"""
+
+    class Config:
+        extra = Extra.forbid
+        allow_population_by_field_name = True
+        alias_generator = camel_case
+
+
+class AIoDResource(PydanticBase):
     """
     The base class of all our Resources
     """
@@ -36,25 +51,57 @@ class AIoDAIResource(AIoDResource):
     pass
 
 
-class AIoDDistribution(BaseModel):
+class AIoDChecksum(PydanticBase):
+    algorithm: str = Field(max_length=150)
+    value: str = Field(max_length=500)
+
+
+class AIoDDistribution(PydanticBase):
     content_url: str = Field(max_length=150)
     content_size_kb: int | None
     description: str | None = Field(max_length=5000)
     name: str | None = Field(max_length=150)
     encoding_format: str | None = Field(max_length=150)
+    checksum: list[AIoDChecksum] = Field(default_factory=list)
 
 
-class AIoDMeasurementValue(BaseModel):
+class AIoDMeasurementValue(PydanticBase):
     variable: str | None
     technique: str | None
+
+
+class AIoDCaseStudy(AIoDResource):
+    description: str = Field(max_length=5000)
+    name: str = Field(max_length=150)
+
+    # Recommended fields
+    creator: str | None = Field(max_length=150)
+    date_modified: datetime | date | None
+    date_published: datetime | date | None
+    is_accessible_for_free: bool = Field(default=True)
+    publisher: str | None = Field(max_length=150)
+    same_as: str | None = Field(max_length=150)
+
+    # Relations
+    alternate_names: List[str] = Field(default_factory=list)
+    business_categories: List[str] = Field(default_factory=list)
+    keywords: List[str] = Field(default_factory=list)
+    technical_categories: List[str] = Field(default_factory=list)
 
 
 class AIoDPublication(AIoDAIResource):
     """The complete metadata of a publication. For now, only a couple of fields are shown,
     we have to decide which fields to use."""
 
-    doi: str | None = Field(max_length=150)
     title: str = Field(max_length=250)
+    doi: str | None = Field(max_length=150)
+    creators: str | None = Field(max_length=450)
+    access_right: str | None = Field(max_length=150)
+    license: str | None = Field(max_length=150)
+    resource_type: str | None = Field(max_length=150)
+    date_created: datetime | None
+    date_published: datetime | None
+
     url: str | None = Field(max_length=250)
     datasets: Set[int] = Field(
         description="Identifiers of datasets that are connected to this publication",
@@ -97,16 +144,18 @@ class AIoDDataset(AIoDAIResource):
     same_as: str = Field(max_length=150)
 
     # Recommended fields
+    contact: str | None = Field(max_length=150)
     creator: str | None = Field(max_length=150)
-    date_modified: datetime | None
-    date_published: datetime | None
+    date_modified: datetime | date | None
+    date_published: datetime | date | None
     funder: str | None
-    is_accessible_for_free: bool | None
+    is_accessible_for_free: bool = Field(default=True)
     issn: str | None = Field(max_length=8, min_length=8)
+    publisher: str | None = Field(max_length=150)
     size: int | None
     spatial_coverage: str | None = Field(max_length=500)
-    temporal_coverage_from: datetime | None
-    temporal_coverage_to: datetime | None
+    temporal_coverage_from: datetime | date | None
+    temporal_coverage_to: datetime | date | None
     version: str | None = Field(max_length=150)
 
     # Relations
@@ -118,13 +167,13 @@ class AIoDDataset(AIoDAIResource):
     is_part: Set[int] = Field(
         description="Identifiers of datasets this dataset is part of.", default_factory=set
     )
-    alternate_names: Set[str] = Field(default_factory=set)
+    alternate_names: List[str] = Field(default_factory=list)
     citations: Set[int] = Field(
         description="Identifiers of publications linked to this dataset",
         default_factory=set,
     )
     distributions: List[AIoDDistribution] = []
-    keywords: Set[str] = Field(default_factory=set)
+    keywords: list[str] = Field(default_factory=list)
     measured_values: List[AIoDMeasurementValue] = Field(default_factory=list)
 
 
@@ -261,3 +310,69 @@ class AIoDEvent(AIoDResource):
     )
 
     media: List[str] = Field(description="Media used in  this event", default_factory=list)
+
+
+class AIoDAgent(AIoDResource):
+    """The complete metadata for agents"""
+
+    name: str = Field(max_length=100)
+    description: str | None = Field(max_length=500)
+    image_url: str | None = Field(max_length=500)
+    email_addresses: List[str] = Field(
+        description="Email addresses related with this agent", default_factory=list
+    )
+
+
+class AIoDOrganisation(AIoDAgent):
+    """The complete metadata for organisation"""
+
+    connection_to_ai: str | None
+    type: str = Field(max_length=500)
+
+    logo_url: str | None
+    same_as: str | None
+    founding_date: datetime | None
+    dissolution_date: datetime | None
+    legal_name: str | None
+    alternate_name: str | None
+    address: str | None
+    telephone: str | None
+
+    parent_organisation: int | None
+    subsidiary_organisation: int | None
+
+    members: List[AIoDAgent] = Field(
+        description="AIoDAgents that are members of this organisation",
+        default_factory=set,
+    )
+
+    departments: List[AIoDAgent] = Field(
+        description="AIoDAgents that are departments of this organisation",
+        default_factory=set,
+    )
+
+    business_categories: List[str] = Field(
+        description="Business categories related with this organisation", default_factory=list
+    )
+    technical_categories: List[str] = Field(
+        description="Technical categories related with this organisation", default_factory=list
+    )
+
+
+class AIoDPresentation(AIoDAIResource):
+    """The complete metadata for presentation entity"""
+
+    name: str = Field(max_length=500)
+
+    # Recommended fields
+    author: Optional[str]
+    description: Optional[str]
+    url: Optional[str]
+    datePublished: Optional[datetime | date]
+    publisher: Optional[str]
+    image: Optional[str]
+    is_accessible_for_free: Optional[bool]
+
+    # relations
+    # keywords
+    # publisher

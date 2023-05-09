@@ -1,10 +1,11 @@
 from datetime import datetime
 
+from sqlalchemy import ForeignKey
 from sqlalchemy import UniqueConstraint, String, DateTime, Boolean, and_
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
 from database.model.ai_resource import OrmAIResource
+from database.model.base import Base
 from database.model.dataset_relationships import (
     dataset_alternateName_relationship,
     dataset_distribution_relationship,
@@ -13,12 +14,12 @@ from database.model.dataset_relationships import (
     dataset_license_relationship,
     dataset_publication_relationship,
     dataset_measuredValue_relationship,
+    checksum_algorithm_relationship,
+    datadownload_checksum_relationship,
 )
-from database.model.general import OrmKeyword, OrmLicense
-from database.model.base import Base
+from database.model.general import OrmKeyword, OrmLicense, OrmAlternateName
 from database.model.publication import OrmPublication
 from database.model.unique_model import UniqueMixin
-from sqlalchemy import ForeignKey
 
 
 class OrmDataset(OrmAIResource):
@@ -45,13 +46,15 @@ class OrmDataset(OrmAIResource):
     same_as: Mapped[str] = mapped_column(String(150), unique=True, nullable=False)
 
     # Recommended fields
+    contact: Mapped[str] = mapped_column(String(150), default=None, nullable=True)
     creator: Mapped[str] = mapped_column(String(150), default=None, nullable=True)
-    # TODO(issue 9): creator repeated organization/person
+    publisher: Mapped[str] = mapped_column(String(150), default=None, nullable=True)
+    # TODO(issue 9): contact + creator + publisher repeated organization/person
     date_modified: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=None)
     date_published: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=None)
     funder: Mapped[str] = mapped_column(String(150), default=None, nullable=True)
     # TODO(issue 9): funder repeated organization/person
-    is_accessible_for_free: Mapped[bool] = mapped_column(Boolean, default=None, nullable=True)
+    is_accessible_for_free: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     issn: Mapped[str] = mapped_column(String(8), default=None, nullable=True)
     size: Mapped[int] = mapped_column(default=None, nullable=True)
     spatial_coverage: Mapped[str] = mapped_column(String(500), default=None, nullable=True)
@@ -122,6 +125,11 @@ class OrmDataDownload(Base):
     dataset: Mapped["OrmDataset"] = relationship(
         back_populates="distributions", secondary=dataset_distribution_relationship, init=False
     )
+    checksum: Mapped[list["OrmChecksum"]] = relationship(
+        back_populates="distribution",
+        secondary=datadownload_checksum_relationship,
+        default_factory=list,
+    )
 
 
 class OrmMeasuredValue(UniqueMixin, Base):
@@ -154,13 +162,8 @@ class OrmMeasuredValue(UniqueMixin, Base):
     )
 
 
-class OrmAlternateName(UniqueMixin, Base):
-    """
-    An alias for a dataset
-
-    Only related to datasets. If another resource needs an alias as well, we should
-    probably define a new table.
-    """
+class OrmChecksumAlgorithm(UniqueMixin, Base):
+    """A checksum algorithm (such as MD5)"""
 
     @classmethod
     def _unique_hash(cls, name):
@@ -170,11 +173,23 @@ class OrmAlternateName(UniqueMixin, Base):
     def _unique_filter(cls, query, name):
         return query.filter(cls.name == name)
 
-    __tablename__ = "alternate_names"
+    __tablename__ = "checksum_algorithms"
     identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(String(150), unique=True)
-    datasets: Mapped[list["OrmDataset"]] = relationship(
+
+
+class OrmChecksum(Base):
+    """
+    A checksum.
+    """
+
+    __tablename__ = "checksums"
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
+    value: Mapped[str] = mapped_column(String(500))
+    algorithm: Mapped["OrmChecksumAlgorithm"] = relationship(
         default_factory=list,
-        back_populates="alternate_names",
-        secondary=dataset_alternateName_relationship,
+        secondary=checksum_algorithm_relationship,
+    )
+    distribution: Mapped["OrmDataDownload"] = relationship(
+        default=None, secondary=datadownload_checksum_relationship
     )

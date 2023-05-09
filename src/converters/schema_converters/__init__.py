@@ -1,0 +1,5 @@
+from .dataset.dataset_schemadotorg_converter import DatasetConverterSchemaDotOrg
+from .dataset.dataset_dcatap_converter import DatasetConverterDcatAP
+
+dataset_converter_schema_dot_org_instance = DatasetConverterSchemaDotOrg()
+dataset_converter_dcatap_instance = DatasetConverterDcatAP()

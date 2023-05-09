@@ -52,13 +52,13 @@ def test_happy_path(
 
     _setup(engine)
     response = client.put(
-        f"/publications/{identifier}",
+        f"/publications/v0/{identifier}",
         json={
             "title": title,
             "url": url,
             "doi": doi,
             "platform": platform,
-            "platform_identifier": platform_identifier,
+            "platformIdentifier": platform_identifier,
         },
         headers={"Authorization": "fake-token"},
     )
@@ -68,7 +68,7 @@ def test_happy_path(
     assert response_json["url"] == url
     assert response_json["doi"] == doi
     assert response_json["platform"] == platform
-    assert response_json["platform_identifier"] == platform_identifier
+    assert response_json["platformIdentifier"] == platform_identifier
     assert response_json["identifier"] == identifier
     assert len(response_json["datasets"]) == 0
     assert len(response_json) == 7

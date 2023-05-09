@@ -9,6 +9,18 @@ dataset_alternateName_relationship = Table(
     Column("alternate_name_id", ForeignKey("alternate_names.identifier")),
     Column("dataset_id", ForeignKey("datasets.identifier")),
 )
+datadownload_checksum_relationship = Table(
+    "data_downloads_checksum",
+    Base.metadata,
+    Column("checksum_id", ForeignKey("checksums.identifier")),
+    Column("data_download_id", ForeignKey("data_downloads.identifier")),
+)
+checksum_algorithm_relationship = Table(
+    "checksum_algorithm",
+    Base.metadata,
+    Column("algorithm_id", ForeignKey("checksum_algorithms.identifier")),
+    Column("checksum_id", ForeignKey("checksums.identifier")),
+)
 dataset_distribution_relationship = Table(
     "dataset_distribution",
     Base.metadata,

@@ -3,15 +3,13 @@ Converting between different dataset representations
 """
 from sqlalchemy.orm import Session
 
-from converters.abstract_converter import ResourceConverter
-
-
+from converters import OrmConverter
 from database.model.project import OrmProject
 
 from schemas import AIoDProject
 
 
-class ProjectConverter(ResourceConverter[AIoDProject, OrmProject]):
+class ProjectConverter(OrmConverter[AIoDProject, OrmProject]):
     def aiod_to_orm(
         self, session: Session, aiod: AIoDProject, return_existing_if_present: bool = False
     ) -> OrmProject:

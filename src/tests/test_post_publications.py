@@ -61,13 +61,13 @@ def test_happy_path(client: TestClient, engine: Engine):
         session.commit()
 
     response = client.post(
-        "/publications",
+        "/publications/v0",
         json={
             "title": "pub2",
             "doi": "doi2",
             "url": "url2",
             "platform": "zenodo",
-            "platform_identifier": "2",
+            "platformIdentifier": "2",
         },
         headers={"Authorization": "fake-token"},
     )
@@ -76,7 +76,7 @@ def test_happy_path(client: TestClient, engine: Engine):
     assert response_json["title"] == "pub2"
     assert response_json["doi"] == "doi2"
     assert response_json["platform"] == "zenodo"
-    assert response_json["platform_identifier"] == "2"
+    assert response_json["platformIdentifier"] == "2"
     assert response_json["identifier"] == 4
     assert len(response_json["datasets"]) == 0
     assert len(response_json) == 7
@@ -139,7 +139,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "title": "pub2",
         "doi": "doi2",
         "platform": "zenodo",
-        "platform_identifier": "2",
+        "platformIdentifier": "2",
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
     response = client.post("/publications", json=data, headers={"Authorization": "fake-token"})
@@ -160,7 +160,7 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "title": "pub2",
         "doi": "doi2",
         "platform": "zenodo",
-        "platform_identifier": "2",
+        "platformIdentifier": "2",
     }  # type: typing.Dict[str, typing.Any]
     data[field] = None
     response = client.post("/publications", json=data, headers={"Authorization": "fake-token"})

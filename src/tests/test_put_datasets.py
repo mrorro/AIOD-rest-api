@@ -46,12 +46,12 @@ def test_happy_path(
 
     _setup(engine)
     response = client.put(
-        f"/datasets/{identifier}",
+        f"/datasets/v0/{identifier}",
         json={
             "name": name,
             "platform": platform,
-            "platform_identifier": platform_identifier,
-            "same_as": same_as,
+            "platformIdentifier": platform_identifier,
+            "sameAs": same_as,
             "description": description,
         },
         headers={"Authorization": "fake-token"},
@@ -60,11 +60,11 @@ def test_happy_path(
     response_json = response.json()
     assert response_json["name"] == name
     assert response_json["platform"] == platform
-    assert response_json["platform_identifier"] == platform_identifier
+    assert response_json["platformIdentifier"] == platform_identifier
     assert response_json["identifier"] == identifier
-    assert response_json["same_as"] == same_as
+    assert response_json["sameAs"] == same_as
     assert response_json["description"] == description
-    assert len(response_json) == 13
+    assert len(response_json) == 14
 
 
 def test_non_existent(client: TestClient, engine: Engine):
@@ -83,13 +83,13 @@ def test_non_existent(client: TestClient, engine: Engine):
     keycloak_openid.decode_token = Mock(return_value=user)
 
     response = client.put(
-        "/datasets/4",
+        "/datasets/v0/4",
         json={
             "name": "name",
             "platform": "platform",
             "description": "description",
-            "same_as": "url",
-            "platform_identifier": "id",
+            "sameAs": "url",
+            "platformIdentifier": "id",
         },
         headers={"Authorization": "fake-token"},
     )
@@ -124,7 +124,7 @@ def test_partial_update(client: TestClient, engine: Engine):
     response_json = response.json()
     assert response_json["detail"] == [
         {"loc": ["body", "description"], "msg": "field required", "type": "value_error.missing"},
-        {"loc": ["body", "same_as"], "msg": "field required", "type": "value_error.missing"},
+        {"loc": ["body", "sameAs"], "msg": "field required", "type": "value_error.missing"},
     ]
 
 
@@ -146,13 +146,13 @@ def test_too_long_name(client: TestClient, engine: Engine):
 
     name = "a" * 200
     response = client.put(
-        "/datasets/4",
+        "/datasets/v0/4",
         json={
             "name": name,
             "platform": "platform",
             "description": "description",
-            "same_as": "url",
-            "platform_identifier": "id",
+            "sameAs": "url",
+            "platformIdentifier": "id",
         },
         headers={"Authorization": "fake-token"},
     )

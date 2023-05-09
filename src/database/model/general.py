@@ -17,32 +17,47 @@ from sqlalchemy.orm import (
 )
 
 from database.model.base import Base
+from database.model.case_study_relationships import (
+    case_study_keyword_relationship,
+    case_study_business_category_relationship,
+    case_study_technical_category_relationship,
+    case_study_alternateName_relationship,
+)
 from database.model.dataset_relationships import (
     dataset_keyword_relationship,
     dataset_license_relationship,
-)
-from database.model.news_relationships import (
-    news_keyword_relationship,
-    news_business_category_relationship,
+    dataset_alternateName_relationship,
 )
 from database.model.educational_resource_relationships import (
     educational_resource_business_category_relationship,
     educational_resource_keyword_relationship,
     educational_resource_technical_category_relationship,
 )
-
-
-from database.model.project_relationships import project_keyword_relationship
 from database.model.event_relationships import event_business_category_relationship
-
+from database.model.news_relationships import (
+    news_keyword_relationship,
+    news_business_category_relationship,
+)
+from database.model.organisation_relationships import (
+    organisation_business_category_relationship,
+    organisation_technical_category_relationship,
+)
+from database.model.project_relationships import project_keyword_relationship
+from database.model.publication_relationships import (
+    publication_license_relationship,
+    publication_resource_type_relationship,
+)
 from database.model.unique_model import UniqueMixin
 
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
+    from database.model.case_study import OrmCaseStudy
     from database.model.dataset import OrmDataset
     from database.model.news import OrmNews
     from database.model.educational_resource import OrmEducationalResource
     from database.model.event import OrmEvent
+    from database.model.organisation import OrmOrganisation
     from database.model.project import OrmProject
+    from database.model.publication import OrmPublication
 
 
 class OrmLicense(UniqueMixin, Base):
@@ -66,6 +81,65 @@ class OrmLicense(UniqueMixin, Base):
     datasets: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list, back_populates="license", secondary=dataset_license_relationship
     )
+    publications: Mapped[list["OrmPublication"]] = relationship(
+        default_factory=list, back_populates="license", secondary=publication_license_relationship
+    )
+
+
+class OrmResourcetype(UniqueMixin, Base):
+    """
+    A resorce type
+
+    For now only related to publications, it can be extended with relationships to other resources.
+    """
+
+    @classmethod
+    def _unique_hash(cls, name):
+        return name
+
+    @classmethod
+    def _unique_filter(cls, query, name):
+        return query.filter(cls.name == name)
+
+    __tablename__ = "resource_types"
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
+    name: Mapped[str] = mapped_column(String(150), unique=True)
+    publications: Mapped[list["OrmPublication"]] = relationship(
+        default_factory=list,
+        back_populates="resource_type",
+        secondary=publication_resource_type_relationship,
+    )
+
+
+class OrmAlternateName(UniqueMixin, Base):
+    """
+    An alias for a dataset
+
+    Only related to datasets. If another resource needs an alias as well, we should
+    probably define a new table.
+    """
+
+    @classmethod
+    def _unique_hash(cls, name):
+        return name
+
+    @classmethod
+    def _unique_filter(cls, query, name):
+        return query.filter(cls.name == name)
+
+    __tablename__ = "alternate_names"
+    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
+    name: Mapped[str] = mapped_column(String(150), unique=True)
+    datasets: Mapped[list["OrmDataset"]] = relationship(
+        default_factory=list,
+        back_populates="alternate_names",
+        secondary=dataset_alternateName_relationship,
+    )
+    case_studies: Mapped[list["OrmCaseStudy"]] = relationship(
+        default_factory=list,
+        back_populates="alternate_names",
+        secondary=case_study_alternateName_relationship,
+    )
 
 
 class OrmKeyword(UniqueMixin, Base):
@@ -87,6 +161,12 @@ class OrmKeyword(UniqueMixin, Base):
     __tablename__ = "keywords"
     identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(String(150), unique=True)
+
+    case_studies: Mapped[list["OrmCaseStudy"]] = relationship(
+        default_factory=list,
+        back_populates="keywords",
+        secondary=case_study_keyword_relationship,
+    )
     datasets: Mapped[list["OrmDataset"]] = relationship(
         default_factory=list, back_populates="keywords", secondary=dataset_keyword_relationship
     )
@@ -107,17 +187,23 @@ class OrmBusinessCategory(UniqueMixin, Base):
     """Any business category"""
 
     @classmethod
-    def _unique_hash(cls, category):
-        return category
+    def _unique_hash(cls, name):
+        return name
 
     @classmethod
-    def _unique_filter(cls, query, category):
-        return query.filter(cls.category == category)
+    def _unique_filter(cls, query, name):
+        return query.filter(cls.name == name)
 
     __tablename__ = "business_categories"
 
     identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
-    category: Mapped[str] = mapped_column(String(250), unique=True)
+    name: Mapped[str] = mapped_column(String(250), unique=True)
+
+    case_studies: Mapped[list["OrmCaseStudy"]] = relationship(
+        default_factory=list,
+        back_populates="business_categories",
+        secondary=case_study_business_category_relationship,
+    )
     news: Mapped[list["OrmNews"]] = relationship(
         default_factory=list,
         back_populates="business_categories",
@@ -133,26 +219,41 @@ class OrmBusinessCategory(UniqueMixin, Base):
         back_populates="business_categories",
         secondary=event_business_category_relationship,
     )
+    organisations: Mapped[list["OrmOrganisation"]] = relationship(
+        default_factory=list,
+        back_populates="business_categories",
+        secondary=organisation_business_category_relationship,
+    )
 
 
 class OrmTechnicalCategory(UniqueMixin, Base):
     """Any technical category"""
 
     @classmethod
-    def _unique_hash(cls, category):
-        return category
+    def _unique_hash(cls, name):
+        return name
 
     @classmethod
-    def _unique_filter(cls, query, category):
-        return query.filter(cls.category == category)
+    def _unique_filter(cls, query, name):
+        return query.filter(cls.name == name)
 
     __tablename__ = "technical_categories"
 
-    category: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
 
+    case_studies: Mapped[list["OrmCaseStudy"]] = relationship(
+        default_factory=list,
+        back_populates="technical_categories",
+        secondary=case_study_technical_category_relationship,
+    )
     educational_resources: Mapped[list["OrmEducationalResource"]] = relationship(
         default_factory=list,
         back_populates="technical_categories",
         secondary=educational_resource_technical_category_relationship,
+    )
+    organisations: Mapped[list["OrmOrganisation"]] = relationship(
+        default_factory=list,
+        back_populates="technical_categories",
+        secondary=organisation_technical_category_relationship,
     )

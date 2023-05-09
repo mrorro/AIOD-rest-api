@@ -111,7 +111,7 @@ def test_happy_path(client: TestClient, engine: Engine):
         session.commit()
 
     response = client.post(
-        "/educational_resources",
+        "/educational-resources/v0",
         json={
             "title": "string",
             "body": "string",
@@ -149,7 +149,7 @@ def test_happy_path(client: TestClient, engine: Engine):
     response_json = response.json()
     assert response_json["title"] == "string"
     assert response_json["body"] == "string"
-    assert response_json["accessibility_control"] == "string"
+    assert response_json["accessibilityControl"] == "string"
 
 
 @pytest.mark.parametrize(
@@ -170,7 +170,7 @@ def test_unicode(client: TestClient, engine: Engine, title):
     keycloak_openid.decode_token = Mock(return_value=user)
 
     response = client.post(
-        "/educational_resources",
+        "/educational-resources/v0",
         json={
             "title": title,
             "body": "string",
@@ -215,8 +215,8 @@ def test_unicode(client: TestClient, engine: Engine, title):
     [
         "title",
         "body",
-        "educational_level",
-        "educational_type",
+        "educationalLevel",
+        "educationalType",
     ],
 )
 def test_missing_value(client: TestClient, engine: Engine, field: str):
@@ -247,10 +247,10 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "short_summary": "string",
         "duration_in_years": 0,
         "duration_minutes_and_hours": "Less than 1 hour",
-        "hours_per_week": "1-3 hours (lower-paced)",
-        "educational_level": "Basic",
-        "educational_type": "Distance Learning",
-        "country": "Sweeden",
+        "hoursPerWeek": "1-3 hours (lower-paced)",
+        "educationalLevel": "Basic",
+        "educationalType": "Distance Learning",
+        "country": "Sweden",
         "pace": "Full-time",
         "languages": ["International"],
         "target_audience": ["Working professionals"],
@@ -272,8 +272,8 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
     [
         "title",
         "body",
-        "educational_level",
-        "educational_type",
+        "educationalLevel",
+        "educationalType",
     ],
 )
 def test_null_value(client: TestClient, engine: Engine, field: str):
@@ -305,8 +305,8 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "duration_in_years": 0,
         "duration_minutes_and_hours": "Less than 1 hour",
         "hours_per_week": "1-3 hours (lower-paced)",
-        "educational_level": "Basic",
-        "educational_type": "Distance Learning",
+        "educationalLevel": "Basic",
+        "educationalType": "Distance Learning",
         "country": "Sweeden",
         "pace": "Full-time",
         "languages": ["International"],

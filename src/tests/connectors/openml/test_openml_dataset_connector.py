@@ -40,7 +40,7 @@ def test_fetch_happy_path():
     assert distribution.content_url == "https://api.openml.org/data/v1/download/1666876/anneal.arff"
 
     assert len(dataset.keywords) == 9
-    assert dataset.keywords == {
+    assert set(dataset.keywords) == {
         "study_1",
         "study_14",
         "study_34",

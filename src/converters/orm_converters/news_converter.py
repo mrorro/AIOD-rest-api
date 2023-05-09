@@ -3,13 +3,13 @@ Converting between different news representations
 """
 from sqlalchemy.orm import Session
 
-from converters.abstract_converter import ResourceConverter
+from converters.orm_converters.orm_converter import OrmConverter
 from database.model.general import OrmKeyword, OrmBusinessCategory
 from database.model.news import OrmMedia, OrmNews, OrmNewsCategory
 from schemas import AIoDNews
 
 
-class NewsConverter(ResourceConverter[AIoDNews, OrmNews]):
+class NewsConverter(OrmConverter[AIoDNews, OrmNews]):
     def aiod_to_orm(
         self, session: Session, aiod: AIoDNews, return_existing_if_present: bool = False
     ) -> OrmNews:
@@ -35,13 +35,13 @@ class NewsConverter(ResourceConverter[AIoDNews, OrmNews]):
             if aiod.keywords
             else [],
             business_categories=[
-                OrmBusinessCategory.as_unique(session=session, category=category)
+                OrmBusinessCategory.as_unique(session=session, name=category)
                 for category in aiod.business_categories
             ]
             if aiod.business_categories
             else [],
             news_categories=[
-                OrmNewsCategory.as_unique(session=session, category=category)
+                OrmNewsCategory.as_unique(session=session, name=category)
                 for category in aiod.news_categories
             ]
             if aiod.news_categories
@@ -70,7 +70,7 @@ class NewsConverter(ResourceConverter[AIoDNews, OrmNews]):
             section=orm.section,
             word_count=orm.word_count,
             keywords={k.name for k in orm.keywords},
-            business_categories={c.category for c in orm.business_categories},
+            business_categories={c.name for c in orm.business_categories},
             news_categories={c.category for c in orm.news_categories},
             media={m.name for m in orm.media},
         )
