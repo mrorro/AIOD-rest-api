@@ -7,8 +7,31 @@ from starlette.testclient import TestClient
 
 from database.model.dataset import OrmDataset
 
+from unittest.mock import Mock
+from authentication import keycloak_openid
+
+
+def get_default_user():
+
+    default_user = {
+        "name": "test-user",
+        "realm_access": {
+            "roles": [
+                "default-roles-dev",
+                "offline_access",
+                "uma_authorization",
+            ]
+        },
+    }
+    return default_user
+
 
 def test_happy_path(client: TestClient, engine: Engine):
+
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
+    keycloak_openid.decode_token = Mock(return_value=user)
+
     datasets = [
         OrmDataset(
             name="dset1",
@@ -46,6 +69,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             "same_as": "openml.org/datasets/1",
             "platform_identifier": "2",
         },
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 200
     response_json = response.json()
@@ -63,6 +87,10 @@ def test_happy_path(client: TestClient, engine: Engine):
     ["\"'é:?", "!@#$%^&*()`~", "Ω≈ç√∫˜µ≤≥÷", "田中さんにあげて下さい", " أي بعد, ", "𝑻𝒉𝒆 𝐪𝐮𝐢𝐜𝐤", "گچپژ"],
 )
 def test_unicode(client: TestClient, engine: Engine, name):
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
+    keycloak_openid.decode_token = Mock(return_value=user)
+
     response = client.post(
         "/datasets",
         json={
@@ -72,6 +100,7 @@ def test_unicode(client: TestClient, engine: Engine, name):
             "description": f"Description of {name}",
             "same_as": "url",
         },
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 200
     response_json = response.json()
@@ -79,6 +108,10 @@ def test_unicode(client: TestClient, engine: Engine, name):
 
 
 def test_duplicated_dataset(client: TestClient, engine: Engine):
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
+    keycloak_openid.decode_token = Mock(return_value=user)
+
     datasets = [
         OrmDataset(
             name="dset1",
@@ -101,6 +134,7 @@ def test_duplicated_dataset(client: TestClient, engine: Engine):
             "platform": "openml",
             "platform_identifier": "1",
         },
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 409
     assert (
@@ -111,6 +145,10 @@ def test_duplicated_dataset(client: TestClient, engine: Engine):
 
 @pytest.mark.parametrize("field", ["name", "same_as", "description"])
 def test_missing_value(client: TestClient, engine: Engine, field: str):
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
+    keycloak_openid.decode_token = Mock(return_value=user)
+
     data = {
         "name": "Name",
         "platform": "openml",
@@ -119,7 +157,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "description": "description",
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
-    response = client.post("/datasets", json=data)
+    response = client.post("/datasets", json=data, headers={"Authorization": "fake-token"})
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {"loc": ["body", field], "msg": "field required", "type": "value_error.missing"}
@@ -128,6 +166,10 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
 
 @pytest.mark.parametrize("field", ["name", "platform", "same_as", "description"])
 def test_null_value(client: TestClient, engine: Engine, field: str):
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
+    keycloak_openid.decode_token = Mock(return_value=user)
+
     data = {
         "name": "Name",
         "platform": "openml",
@@ -136,7 +178,7 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "description": "description",
     }  # type: typing.Dict[str, typing.Any]
     data[field] = None
-    response = client.post("/datasets", json=data)
+    response = client.post("/datasets", json=data, headers={"Authorization": "fake-token"})
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {
@@ -145,3 +187,69 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
             "type": "type_error.none.not_allowed",
         }
     ]
+
+
+def test_unauthorized_user(client: TestClient, engine: Engine):
+
+    user = get_default_user()
+    keycloak_openid.decode_token = Mock(return_value=user)
+
+    datasets = [
+        OrmDataset(
+            name="dset1",
+            platform="openml",
+            description="",
+            same_as="non-existing-url/1",
+            platform_identifier="1",
+        )
+    ]
+    with Session(engine) as session:
+        # Populate database
+        session.add_all(datasets)
+        session.commit()
+
+    response = client.post(
+        "/datasets",
+        json={
+            "name": "dset2",
+            "platform": "openml",
+            "description": "description",
+            "same_as": "openml.org/datasets/1",
+            "platform_identifier": "2",
+        },
+        headers={"Authorization": "fake-token"},
+    )
+    assert response.status_code == 403
+    response_json = response.json()
+    assert response_json["detail"] == "You donot have permission to edit Aiod resources"
+
+
+def test_unauthenticated_user(client: TestClient, engine: Engine):
+
+    datasets = [
+        OrmDataset(
+            name="dset1",
+            platform="openml",
+            description="",
+            same_as="non-existing-url/1",
+            platform_identifier="1",
+        )
+    ]
+    with Session(engine) as session:
+        # Populate database
+        session.add_all(datasets)
+        session.commit()
+
+    response = client.post(
+        "/datasets",
+        json={
+            "name": "dset2",
+            "platform": "openml",
+            "description": "description",
+            "same_as": "openml.org/datasets/1",
+            "platform_identifier": "2",
+        },
+    )
+    assert response.status_code == 401
+    response_json = response.json()
+    assert response_json["detail"] == "Not logged in"

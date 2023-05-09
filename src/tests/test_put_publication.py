@@ -7,6 +7,24 @@ from starlette.testclient import TestClient
 
 from database.model.publication import OrmPublication
 
+from unittest.mock import Mock
+from authentication import keycloak_openid
+
+
+def get_default_user():
+
+    default_user = {
+        "name": "test-user",
+        "realm_access": {
+            "roles": [
+                "default-roles-dev",
+                "offline_access",
+                "uma_authorization",
+            ]
+        },
+    }
+    return default_user
+
 
 @pytest.mark.parametrize(
     "identifier,title,url,doi,platform,platform_identifier",
@@ -27,6 +45,11 @@ def test_happy_path(
     platform: str,
     platform_identifier: str,
 ):
+
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
+    keycloak_openid.decode_token = Mock(return_value=user)
+
     _setup(engine)
     response = client.put(
         f"/publications/{identifier}",
@@ -37,6 +60,7 @@ def test_happy_path(
             "platform": platform,
             "platform_identifier": platform_identifier,
         },
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 200
     response_json = response.json()
@@ -53,9 +77,14 @@ def test_happy_path(
 def test_non_existent(client: TestClient, engine: Engine):
     _setup(engine)
 
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
+    keycloak_openid.decode_token = Mock(return_value=user)
+
     response = client.put(
         "/publications/4",
         json={"title": "pub2", "doi": "doi2", "platform": "zenodo", "platform_identifier": "2"},
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 404
     response_json = response.json()
@@ -65,7 +94,13 @@ def test_non_existent(client: TestClient, engine: Engine):
 def test_partial_update(client: TestClient, engine: Engine):
     _setup(engine)
 
-    response = client.put("/publications/4", json={"doi": "doi"})
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
+    keycloak_openid.decode_token = Mock(return_value=user)
+
+    response = client.put(
+        "/publications/4", json={"doi": "doi"}, headers={"Authorization": "fake-token"}
+    )
     # Partial update: title omitted. This is not supported,
     # and should be a PATCH request if we supported it.
 
@@ -79,10 +114,15 @@ def test_partial_update(client: TestClient, engine: Engine):
 def test_too_long_name(client: TestClient, engine: Engine):
     _setup(engine)
 
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
+    keycloak_openid.decode_token = Mock(return_value=user)
+
     title = "a" * 300
     response = client.put(
         "/publications/3",
         json={"title": title, "doi": "doi2", "platform": "platform", "platform_identifier": "id"},
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 422
     response_json = response.json()
@@ -94,6 +134,46 @@ def test_too_long_name(client: TestClient, engine: Engine):
             "type": "value_error.any_str.max_length",
         }
     ]
+
+
+def test_unauthorized_user(client: TestClient, engine: Engine):
+    _setup(engine)
+
+    user = get_default_user()
+    keycloak_openid.decode_token = Mock(return_value=user)
+
+    response = client.put(
+        "/publications/4",
+        json={
+            "title": "title",
+            "url": "url",
+            "doi": "doi",
+            "platform": "platform",
+            "platform_identifier": "platform_identifier",
+        },
+        headers={"Authorization": "fake-token"},
+    )
+    assert response.status_code == 403
+    response_json = response.json()
+    assert response_json["detail"] == "You donot have permission to edit Aiod resources"
+
+
+def test_unauthenticated_user(client: TestClient, engine: Engine):
+    _setup(engine)
+
+    response = client.put(
+        "/publications/4",
+        json={
+            "title": "title",
+            "url": "url",
+            "doi": "doi",
+            "platform": "platform",
+            "platform_identifier": "platform_identifier",
+        },
+    )
+    assert response.status_code == 401
+    response_json = response.json()
+    assert response_json["detail"] == "Not logged in"
 
 
 def _setup(engine):

@@ -12,6 +12,7 @@ from converters.abstract_converter import ResourceConverter
 from database.model.resource import OrmResource
 from platform_names import PlatformName
 from schemas import AIoDResource
+from authentication import get_current_user
 
 
 class Pagination(BaseModel):
@@ -64,6 +65,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
 
     def create(self, engine: Engine, url_prefix: str) -> APIRouter:
         router = APIRouter()
+        # router = APIRouter(dependencies=[Depends(get_current_user)])
 
         router.add_api_route(
             path=url_prefix + f"/{self.resource_name_plural}/",
@@ -109,6 +111,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             response_model=self.aiod_class,  # type: ignore
             response_model_exclude_none=True,
             name=self.resource_name,
+            # dependencies=router.dependencies,
         )
         router.add_api_route(
             path=f"{url_prefix}/{self.resource_name_plural}/{{identifier}}",
@@ -116,6 +119,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             endpoint=self.delete_resource_func(engine),
             name=self.resource_name,
         )
+
         return router
 
     def list_resources_func(self, engine: Engine):
@@ -188,8 +192,14 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
     def register_resource_func(self, engine: Engine):
         clz = self.aiod_class
 
-        def register_resource(resource: clz):  # type: ignore
+        def register_resource(
+            resource: clz, user: dict = Depends(get_current_user)  # type: ignore
+        ):  # type: ignore
             f"""Register a {self.resource_name} with AIoD."""
+            if "edit_aiod_resources" not in user["realm_access"]["roles"]:
+                raise HTTPException(
+                    status_code=403, detail="You donot have permission to edit Aiod resources"
+                )
             try:
                 with Session(engine) as session:
                     resource = self.converter.aiod_to_orm(
@@ -222,8 +232,15 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
     def put_resource_func(self, engine: Engine):
         clz = self.aiod_class
 
-        def put_resource(identifier: str, resource: clz):  # type: ignore
+        def put_resource(
+            identifier: str, resource: clz, user: dict = Depends(get_current_user)  # type: ignore
+        ):  # type: ignore
             f"""Update an existing {self.resource_name}."""
+            if "edit_aiod_resources" not in user["realm_access"]["roles"]:
+                raise HTTPException(
+                    status_code=403, detail="You donot have permission to edit Aiod resources"
+                )
+
             try:
                 with Session(engine) as session:
                     self._retrieve_resource(session, identifier)  # Raise error if it does not exist

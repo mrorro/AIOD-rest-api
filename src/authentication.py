@@ -1,12 +1,16 @@
 import logging
 import os
 
-from fastapi import HTTPException, Security
+from fastapi import HTTPException, Security, status
 from fastapi.security import OpenIdConnect
+
 from keycloak import KeycloakOpenID, KeycloakError
 
+
 oidc = OpenIdConnect(
-    openIdConnectUrl="https://test.openml.org/aiod-auth/realms/dev/.well-known/openid-configuration"
+    openIdConnectUrl="https://test.openml.org/aiod-auth/realms/dev/.well-known/openid"
+    "-configuration",
+    auto_error=False,
 )
 
 keycloak_openid = KeycloakOpenID(
@@ -19,9 +23,20 @@ keycloak_openid = KeycloakOpenID(
 
 
 async def get_current_user(token=Security(oidc)) -> dict:
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not logged in",
+        )
     try:
         token = token.replace("Bearer ", "")
-        return keycloak_openid.userinfo(token)
+        KEYCLOAK_PUBLIC_KEY = (
+            "-----BEGIN PUBLIC KEY-----\n"
+            + keycloak_openid.public_key()
+            + "\n-----END PUBLIC KEY-----"
+        )
+        token_info = keycloak_openid.decode_token(token, key=KEYCLOAK_PUBLIC_KEY)
+        return token_info
     except KeycloakError as e:
         logging.error(f"Error while checking the access token: '{e}'")
         error_msg = e.error_message
@@ -30,8 +45,4 @@ async def get_current_user(token=Security(oidc)) -> dict:
         detail = "Invalid authentication token"
         if error_msg != "":
             detail += f": '{error_msg}'"
-        raise HTTPException(
-            status_code=401,
-            detail=detail,
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise HTTPException(status_code=401, detail=detail, headers={"WWW-Authenticate": "Bearer"})

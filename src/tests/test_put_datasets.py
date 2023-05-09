@@ -7,6 +7,9 @@ from starlette.testclient import TestClient
 
 from database.model.dataset import OrmDataset
 
+from unittest.mock import Mock
+from authentication import keycloak_openid
+
 
 @pytest.mark.parametrize(
     "identifier,name,platform,platform_identifier,same_as,description",
@@ -27,6 +30,20 @@ def test_happy_path(
     same_as: str,
     description: str,
 ):
+
+    user = {
+        "name": "test-user",
+        "realm_access": {
+            "roles": [
+                "default-roles-dev",
+                "offline_access",
+                "uma_authorization",
+                "edit_aiod_resources",
+            ]
+        },
+    }
+    keycloak_openid.decode_token = Mock(return_value=user)
+
     _setup(engine)
     response = client.put(
         f"/datasets/{identifier}",
@@ -37,6 +54,7 @@ def test_happy_path(
             "same_as": same_as,
             "description": description,
         },
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 200
     response_json = response.json()
@@ -51,6 +69,18 @@ def test_happy_path(
 
 def test_non_existent(client: TestClient, engine: Engine):
     _setup(engine)
+    user = {
+        "name": "test-user",
+        "realm_access": {
+            "roles": [
+                "default-roles-dev",
+                "offline_access",
+                "uma_authorization",
+                "edit_aiod_resources",
+            ]
+        },
+    }
+    keycloak_openid.decode_token = Mock(return_value=user)
 
     response = client.put(
         "/datasets/4",
@@ -61,6 +91,7 @@ def test_non_existent(client: TestClient, engine: Engine):
             "same_as": "url",
             "platform_identifier": "id",
         },
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 404
     response_json = response.json()
@@ -70,7 +101,22 @@ def test_non_existent(client: TestClient, engine: Engine):
 def test_partial_update(client: TestClient, engine: Engine):
     _setup(engine)
 
-    response = client.put("/datasets/4", json={"name": "name"})
+    user = {
+        "name": "test-user",
+        "realm_access": {
+            "roles": [
+                "default-roles-dev",
+                "offline_access",
+                "uma_authorization",
+                "edit_aiod_resources",
+            ]
+        },
+    }
+    keycloak_openid.decode_token = Mock(return_value=user)
+
+    response = client.put(
+        "/datasets/4", json={"name": "name"}, headers={"Authorization": "fake-token"}
+    )
     # Partial update: platform and platform_identifier omitted. This is not supported,
     # and should be a PATCH request if we supported it.
 
@@ -85,6 +131,19 @@ def test_partial_update(client: TestClient, engine: Engine):
 def test_too_long_name(client: TestClient, engine: Engine):
     _setup(engine)
 
+    user = {
+        "name": "test-user",
+        "realm_access": {
+            "roles": [
+                "default-roles-dev",
+                "offline_access",
+                "uma_authorization",
+                "edit_aiod_resources",
+            ]
+        },
+    }
+    keycloak_openid.decode_token = Mock(return_value=user)
+
     name = "a" * 200
     response = client.put(
         "/datasets/4",
@@ -95,6 +154,7 @@ def test_too_long_name(client: TestClient, engine: Engine):
             "same_as": "url",
             "platform_identifier": "id",
         },
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 422
     response_json = response.json()
@@ -106,6 +166,55 @@ def test_too_long_name(client: TestClient, engine: Engine):
             "type": "value_error.any_str.max_length",
         }
     ]
+
+
+def test_unauthorized_user(client: TestClient, engine: Engine):
+    _setup(engine)
+
+    user = {
+        "name": "test-user",
+        "realm_access": {
+            "roles": [
+                "default-roles-dev",
+                "offline_access",
+                "uma_authorization",
+            ]
+        },
+    }
+    keycloak_openid.decode_token = Mock(return_value=user)
+
+    response = client.put(
+        "/datasets/4",
+        json={
+            "name": "name",
+            "platform": "platform",
+            "description": "description",
+            "same_as": "url",
+            "platform_identifier": "id",
+        },
+        headers={"Authorization": "fake-token"},
+    )
+    assert response.status_code == 403
+    response_json = response.json()
+    assert response_json["detail"] == "You donot have permission to edit Aiod resources"
+
+
+def test_unauthenticated_user(client: TestClient, engine: Engine):
+    _setup(engine)
+
+    response = client.put(
+        "/datasets/4",
+        json={
+            "name": "name",
+            "platform": "platform",
+            "description": "description",
+            "same_as": "url",
+            "platform_identifier": "id",
+        },
+    )
+    assert response.status_code == 401
+    response_json = response.json()
+    assert response_json["detail"] == "Not logged in"
 
 
 def _setup(engine):

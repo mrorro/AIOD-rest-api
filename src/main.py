@@ -141,7 +141,7 @@ def create_app() -> FastAPI:
             "realm": "dev",
             "appName": "AIoD API",
             "usePkceWithAuthorizationCodeGrant": True,
-            "scopes": "openid profile",
+            "scopes": "openid profile microprofile-jwt",
         }
     )
     args = _parse_args()
