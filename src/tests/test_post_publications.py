@@ -93,7 +93,7 @@ def test_unicode(client: TestClient, engine: Engine, title):
     keycloak_openid.decode_token = Mock(return_value=user)
 
     response = client.post(
-        "/publications",
+        "/publications/v0",
         json={"title": title, "doi": "doi2", "platform": "zenodo", "platform_identifier": "2"},
         headers={"Authorization": "fake-token"},
     )
@@ -116,7 +116,7 @@ def test_duplicated_publication(client: TestClient, engine: Engine):
         session.add_all(publications)
         session.commit()
     response = client.post(
-        "/publications",
+        "/publications/v0",
         json={"title": "pub1", "doi": "doi1", "platform": "zenodo", "platform_identifier": "1"},
         headers={"Authorization": "fake-token"},
     )
@@ -142,7 +142,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "platformIdentifier": "2",
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
-    response = client.post("/publications", json=data, headers={"Authorization": "fake-token"})
+    response = client.post("/publications/v0", json=data, headers={"Authorization": "fake-token"})
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {"loc": ["body", field], "msg": "field required", "type": "value_error.missing"}
@@ -163,7 +163,7 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "platformIdentifier": "2",
     }  # type: typing.Dict[str, typing.Any]
     data[field] = None
-    response = client.post("/publications", json=data, headers={"Authorization": "fake-token"})
+    response = client.post("/publications/v0", json=data, headers={"Authorization": "fake-token"})
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {
@@ -180,7 +180,7 @@ def test_unauthorized_user(client: TestClient, engine: Engine):
     keycloak_openid.decode_token = Mock(return_value=user)
 
     response = client.post(
-        "/publications",
+        "/publications/v0",
         json={"title": "title", "doi": "doi2", "platform": "zenodo", "platform_identifier": "2"},
         headers={"Authorization": "fake-token"},
     )
@@ -192,7 +192,7 @@ def test_unauthorized_user(client: TestClient, engine: Engine):
 def test_unauthenticated_user(client: TestClient, engine: Engine):
 
     response = client.post(
-        "/publications",
+        "/publications/v0",
         json={"title": "title", "doi": "doi2", "platform": "zenodo", "platform_identifier": "2"},
     )
     assert response.status_code == 401

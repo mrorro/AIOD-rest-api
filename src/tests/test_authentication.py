@@ -3,6 +3,7 @@ from starlette.testclient import TestClient
 
 from unittest.mock import Mock
 from authentication import keycloak_openid
+from tests.test_put_datasets import _setup
 
 
 def get_default_user():
@@ -33,8 +34,10 @@ def test_unauthorized(client: TestClient, engine: Engine):
     user = get_default_user()
     keycloak_openid.decode_token = Mock(return_value=user)
 
+    _setup(engine)
+
     response = client.put(
-        "/datasets/4",
+        "/datasets/v0/1",
         json={
             "name": "name",
             "platform": "platform",

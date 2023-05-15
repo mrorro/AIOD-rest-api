@@ -9,8 +9,30 @@ from starlette.testclient import TestClient
 from database.model.organisation import OrmOrganisation
 from platform_names import PlatformName
 
+from unittest.mock import Mock
+from authentication import keycloak_openid
+
+
+def get_default_user():
+
+    default_user = {
+        "name": "test-user",
+        "realm_access": {
+            "roles": [
+                "default-roles-dev",
+                "offline_access",
+                "uma_authorization",
+            ]
+        },
+    }
+    return default_user
+
 
 def test_happy_path(client: TestClient, engine: Engine):
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
+    keycloak_openid.decode_token = Mock(return_value=user)
+
     organisations = [
         OrmOrganisation(
             platform=PlatformName.aiod,
@@ -57,6 +79,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             "type": "string",
             "image_url": "string",
         },
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 200
     response_json = response.json()
@@ -72,6 +95,11 @@ def test_happy_path(client: TestClient, engine: Engine):
     ["\"'é:?", "!@#$%^&*()`~", "Ω≈ç√∫˜µ≤≥÷", "田中さんにあげて下さい", " أي بعد, ", "𝑻𝒉𝒆 𝐪𝐮𝐢𝐜𝐤", "گچپژ"],
 )
 def test_unicode(client: TestClient, engine: Engine, name):
+
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
+    keycloak_openid.decode_token = Mock(return_value=user)
+
     response = client.post(
         "/organisations/v0",
         json={
@@ -83,6 +111,7 @@ def test_unicode(client: TestClient, engine: Engine, name):
             "type": "string",
             "image_url": "string",
         },
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 200
     response_json = response.json()
@@ -96,6 +125,11 @@ def test_unicode(client: TestClient, engine: Engine, name):
     ],
 )
 def test_missing_value(client: TestClient, engine: Engine, field: str):
+
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
+    keycloak_openid.decode_token = Mock(return_value=user)
+
     data = {
         "platform": PlatformName.aiod,
         "platformIdentifier": None,
@@ -106,7 +140,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "imageUrl": "string",
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
-    response = client.post("/organisations/v0", json=data)
+    response = client.post("/organisations/v0", json=data, headers={"Authorization": "fake-token"})
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {"loc": ["body", field], "msg": "field required", "type": "value_error.missing"}
@@ -120,6 +154,11 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
     ],
 )
 def test_null_value(client: TestClient, engine: Engine, field: str):
+
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
+    keycloak_openid.decode_token = Mock(return_value=user)
+
     data = {
         "platform": PlatformName.aiod,
         "platformIdentifier": None,
@@ -130,7 +169,7 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "image_url": "string",
     }  # type: typing.Dict[str, typing.Any]
     data[field] = None
-    response = client.post("/organisations/v0", json=data)
+    response = client.post("/organisations/v0", json=data, headers={"Authorization": "fake-token"})
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {
@@ -139,3 +178,47 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
             "type": "type_error.none.not_allowed",
         }
     ]
+
+
+def test_unauthorized_user(client: TestClient, engine: Engine):
+
+    user = get_default_user()
+    keycloak_openid.decode_token = Mock(return_value=user)
+
+    response = client.post(
+        "/organisations/v0",
+        json={
+            "platform": PlatformName.aiod,
+            "platformIdentifier": None,
+            "name": "string",
+            "description": "string",
+            "connection_to_ai": "string",
+            "type": "string",
+            "image_url": "string",
+        },
+        headers={"Authorization": "fake-token"},
+    )
+
+    assert response.status_code == 403
+    response_json = response.json()
+    assert response_json["detail"] == "You donot have permission to edit Aiod resources"
+
+
+def test_unauthenticated_user(client: TestClient, engine: Engine):
+
+    response = client.post(
+        "/organisations/v0",
+        json={
+            "platform": PlatformName.aiod,
+            "platformIdentifier": None,
+            "name": "string",
+            "description": "string",
+            "connection_to_ai": "string",
+            "type": "string",
+            "image_url": "string",
+        },
+    )
+
+    assert response.status_code == 401
+    response_json = response.json()
+    assert response_json["detail"] == "Not logged in"

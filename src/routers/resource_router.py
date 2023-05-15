@@ -18,6 +18,7 @@ from converters.schema_converters.schema_converter import SchemaConverter
 from database.model.resource import OrmResource
 from platform_names import PlatformName
 from schemas import AIoDResource
+from authentication import get_current_user
 
 
 class Pagination(BaseModel):
@@ -302,8 +303,14 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         """
         clz = self.aiod_class
 
-        def register_resource(resource: clz):  # type: ignore
+        def register_resource(
+            resource: clz, user: dict = Depends(get_current_user)  # type: ignore
+        ):
             f"""Register a {self.resource_name} with AIoD."""
+            if "edit_aiod_resources" not in user["realm_access"]["roles"]:
+                raise HTTPException(
+                    status_code=403, detail="You donot have permission to edit Aiod resources"
+                )
             try:
                 with Session(engine) as session:
                     resource = self.converter.aiod_to_orm(
@@ -343,8 +350,15 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
 
         clz = self.aiod_class
 
-        def put_resource(identifier: str, resource: clz):  # type: ignore
+        def put_resource(
+            identifier: str, resource: clz, user: dict = Depends(get_current_user)  # type: ignore
+        ):
             f"""Update an existing {self.resource_name}."""
+            if "edit_aiod_resources" not in user["realm_access"]["roles"]:
+                raise HTTPException(
+                    status_code=403, detail="You donot have permission to edit Aiod resources"
+                )
+
             try:
                 with Session(engine) as session:
                     self._retrieve_resource(session, identifier)  # Raise error if it does not exist

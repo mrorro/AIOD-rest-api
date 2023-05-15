@@ -82,7 +82,7 @@ def test_non_existent(client: TestClient, engine: Engine):
     keycloak_openid.decode_token = Mock(return_value=user)
 
     response = client.put(
-        "/publications/4",
+        "/publications/v0/4",
         json={"title": "pub2", "doi": "doi2", "platform": "zenodo", "platform_identifier": "2"},
         headers={"Authorization": "fake-token"},
     )
@@ -99,7 +99,7 @@ def test_partial_update(client: TestClient, engine: Engine):
     keycloak_openid.decode_token = Mock(return_value=user)
 
     response = client.put(
-        "/publications/4", json={"doi": "doi"}, headers={"Authorization": "fake-token"}
+        "/publications/v0/4", json={"doi": "doi"}, headers={"Authorization": "fake-token"}
     )
     # Partial update: title omitted. This is not supported,
     # and should be a PATCH request if we supported it.
@@ -120,7 +120,7 @@ def test_too_long_name(client: TestClient, engine: Engine):
 
     title = "a" * 300
     response = client.put(
-        "/publications/3",
+        "/publications/v0/3",
         json={"title": title, "doi": "doi2", "platform": "platform", "platform_identifier": "id"},
         headers={"Authorization": "fake-token"},
     )
@@ -143,7 +143,7 @@ def test_unauthorized_user(client: TestClient, engine: Engine):
     keycloak_openid.decode_token = Mock(return_value=user)
 
     response = client.put(
-        "/publications/4",
+        "/publications/v0/1",
         json={
             "title": "title",
             "url": "url",
@@ -162,7 +162,7 @@ def test_unauthenticated_user(client: TestClient, engine: Engine):
     _setup(engine)
 
     response = client.put(
-        "/publications/4",
+        "/publications/v0/1",
         json={
             "title": "title",
             "url": "url",

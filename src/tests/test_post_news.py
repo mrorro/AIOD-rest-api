@@ -162,7 +162,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "wordCount": 10,
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
-    response = client.post("/news", json=data, headers={"Authorization": "fake-token"})
+    response = client.post("/news/v0", json=data, headers={"Authorization": "fake-token"})
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {"loc": ["body", field], "msg": "field required", "type": "value_error.missing"}
@@ -195,7 +195,7 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "wordCount": 10,
     }  # type: typing.Dict[str, typing.Any]
     data[field] = None
-    response = client.post("/news", json=data, headers={"Authorization": "fake-token"})
+    response = client.post("/news/v0", json=data, headers={"Authorization": "fake-token"})
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {
@@ -212,7 +212,7 @@ def test_unauthorized_user(client: TestClient, engine: Engine):
     keycloak_openid.decode_token = Mock(return_value=user)
 
     response = client.post(
-        "/news",
+        "/news/v0",
         json={
             "title": "title",
             "body": "b4",
@@ -233,7 +233,7 @@ def test_unauthorized_user(client: TestClient, engine: Engine):
 def test_unauthenticated_user(client: TestClient, engine: Engine):
 
     response = client.post(
-        "/news",
+        "/news/v0",
         json={
             "title": "title",
             "body": "b4",

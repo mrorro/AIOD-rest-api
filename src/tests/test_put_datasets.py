@@ -11,6 +11,21 @@ from unittest.mock import Mock
 from authentication import keycloak_openid
 
 
+def get_default_user():
+
+    default_user = {
+        "name": "test-user",
+        "realm_access": {
+            "roles": [
+                "default-roles-dev",
+                "offline_access",
+                "uma_authorization",
+            ]
+        },
+    }
+    return default_user
+
+
 @pytest.mark.parametrize(
     "identifier,name,platform,platform_identifier,same_as,description",
     [
@@ -31,17 +46,8 @@ def test_happy_path(
     description: str,
 ):
 
-    user = {
-        "name": "test-user",
-        "realm_access": {
-            "roles": [
-                "default-roles-dev",
-                "offline_access",
-                "uma_authorization",
-                "edit_aiod_resources",
-            ]
-        },
-    }
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
     keycloak_openid.decode_token = Mock(return_value=user)
 
     _setup(engine)
@@ -69,17 +75,8 @@ def test_happy_path(
 
 def test_non_existent(client: TestClient, engine: Engine):
     _setup(engine)
-    user = {
-        "name": "test-user",
-        "realm_access": {
-            "roles": [
-                "default-roles-dev",
-                "offline_access",
-                "uma_authorization",
-                "edit_aiod_resources",
-            ]
-        },
-    }
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
     keycloak_openid.decode_token = Mock(return_value=user)
 
     response = client.put(
@@ -101,21 +98,12 @@ def test_non_existent(client: TestClient, engine: Engine):
 def test_partial_update(client: TestClient, engine: Engine):
     _setup(engine)
 
-    user = {
-        "name": "test-user",
-        "realm_access": {
-            "roles": [
-                "default-roles-dev",
-                "offline_access",
-                "uma_authorization",
-                "edit_aiod_resources",
-            ]
-        },
-    }
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
     keycloak_openid.decode_token = Mock(return_value=user)
 
     response = client.put(
-        "/datasets/4", json={"name": "name"}, headers={"Authorization": "fake-token"}
+        "/datasets/v0/4", json={"name": "name"}, headers={"Authorization": "fake-token"}
     )
     # Partial update: platform and platform_identifier omitted. This is not supported,
     # and should be a PATCH request if we supported it.
@@ -131,17 +119,8 @@ def test_partial_update(client: TestClient, engine: Engine):
 def test_too_long_name(client: TestClient, engine: Engine):
     _setup(engine)
 
-    user = {
-        "name": "test-user",
-        "realm_access": {
-            "roles": [
-                "default-roles-dev",
-                "offline_access",
-                "uma_authorization",
-                "edit_aiod_resources",
-            ]
-        },
-    }
+    user = get_default_user()
+    user["realm_access"]["roles"].append("edit_aiod_resources")
     keycloak_openid.decode_token = Mock(return_value=user)
 
     name = "a" * 200
@@ -171,20 +150,11 @@ def test_too_long_name(client: TestClient, engine: Engine):
 def test_unauthorized_user(client: TestClient, engine: Engine):
     _setup(engine)
 
-    user = {
-        "name": "test-user",
-        "realm_access": {
-            "roles": [
-                "default-roles-dev",
-                "offline_access",
-                "uma_authorization",
-            ]
-        },
-    }
+    user = get_default_user()
     keycloak_openid.decode_token = Mock(return_value=user)
 
     response = client.put(
-        "/datasets/4",
+        "/datasets/v0/1",
         json={
             "name": "name",
             "platform": "platform",
@@ -203,7 +173,7 @@ def test_unauthenticated_user(client: TestClient, engine: Engine):
     _setup(engine)
 
     response = client.put(
-        "/datasets/4",
+        "/datasets/v0/4",
         json={
             "name": "name",
             "platform": "platform",

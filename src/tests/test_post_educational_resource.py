@@ -258,7 +258,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
     }
     del data[field]
     response = client.post(
-        "/educational_resources", json=data, headers={"Authorization": "fake-token"}
+        "/educational-resources/v0", json=data, headers={"Authorization": "fake-token"}
     )
 
     assert response.status_code == 422
@@ -315,7 +315,7 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
     }
     data[field] = None
     response = client.post(
-        "/educational_resources", json=data, headers={"Authorization": "fake-token"}
+        "/educational-resources/v0", json=data, headers={"Authorization": "fake-token"}
     )
 
     assert response.status_code == 422
@@ -377,7 +377,7 @@ def test_unauthorized_user(client: TestClient, engine: Engine):
         session.commit()
 
     response = client.post(
-        "/educational_resources",
+        "/educational-resources/v0",
         json={
             "title": "string",
             "body": "string",
@@ -462,7 +462,7 @@ def test_unauthenticated_user(client: TestClient, engine: Engine):
         session.commit()
 
     response = client.post(
-        "/educational_resources",
+        "/educational-resources/v0",
         json={
             "title": "string",
             "body": "string",

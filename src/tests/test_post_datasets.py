@@ -157,7 +157,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "description": "description",
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
-    response = client.post("/datasets", json=data, headers={"Authorization": "fake-token"})
+    response = client.post("/datasets/v0", json=data, headers={"Authorization": "fake-token"})
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {"loc": ["body", field], "msg": "field required", "type": "value_error.missing"}
@@ -178,7 +178,7 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "description": "description",
     }  # type: typing.Dict[str, typing.Any]
     data[field] = None
-    response = client.post("/datasets", json=data, headers={"Authorization": "fake-token"})
+    response = client.post("/datasets/v0", json=data, headers={"Authorization": "fake-token"})
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {
@@ -194,22 +194,8 @@ def test_unauthorized_user(client: TestClient, engine: Engine):
     user = get_default_user()
     keycloak_openid.decode_token = Mock(return_value=user)
 
-    datasets = [
-        OrmDataset(
-            name="dset1",
-            platform="openml",
-            description="",
-            same_as="non-existing-url/1",
-            platform_identifier="1",
-        )
-    ]
-    with Session(engine) as session:
-        # Populate database
-        session.add_all(datasets)
-        session.commit()
-
     response = client.post(
-        "/datasets",
+        "/datasets/v0",
         json={
             "name": "dset2",
             "platform": "openml",
@@ -226,22 +212,8 @@ def test_unauthorized_user(client: TestClient, engine: Engine):
 
 def test_unauthenticated_user(client: TestClient, engine: Engine):
 
-    datasets = [
-        OrmDataset(
-            name="dset1",
-            platform="openml",
-            description="",
-            same_as="non-existing-url/1",
-            platform_identifier="1",
-        )
-    ]
-    with Session(engine) as session:
-        # Populate database
-        session.add_all(datasets)
-        session.commit()
-
     response = client.post(
-        "/datasets",
+        "/datasets/v0",
         json={
             "name": "dset2",
             "platform": "openml",
