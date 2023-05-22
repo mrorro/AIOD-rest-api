@@ -8,24 +8,7 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from tests.testutils.test_resource import OrmTestResource, AIoDTestResource, RouterTestResource
-
-from unittest.mock import Mock
 from authentication import keycloak_openid
-
-
-def get_default_user():
-
-    default_user = {
-        "name": "test-user",
-        "realm_access": {
-            "roles": [
-                "default-roles-dev",
-                "offline_access",
-                "uma_authorization",
-            ]
-        },
-    }
-    return default_user
 
 
 class DeprecatedRouter(RouterTestResource):
@@ -52,11 +35,9 @@ class DeprecatedRouter(RouterTestResource):
         ("delete", "/test_resources/v1/1"),
     ],
 )
-def test_deprecated_router(verb: str, url: str):
+def test_deprecated_router(verb: str, url: str, mocked_previlege_token):
 
-    user = get_default_user()
-    user["realm_access"]["roles"].append("edit_aiod_resources")
-    keycloak_openid.decode_token = Mock(return_value=user)
+    keycloak_openid.decode_token = mocked_previlege_token
 
     temporary_file = tempfile.NamedTemporaryFile()
     engine = create_engine(f"sqlite:///{temporary_file.name}")

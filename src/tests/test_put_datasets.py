@@ -6,24 +6,7 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from database.model.dataset import OrmDataset
-
-from unittest.mock import Mock
 from authentication import keycloak_openid
-
-
-def get_default_user():
-
-    default_user = {
-        "name": "test-user",
-        "realm_access": {
-            "roles": [
-                "default-roles-dev",
-                "offline_access",
-                "uma_authorization",
-            ]
-        },
-    }
-    return default_user
 
 
 @pytest.mark.parametrize(
@@ -44,11 +27,10 @@ def test_happy_path(
     platform_identifier: str,
     same_as: str,
     description: str,
+    mocked_previlege_token,
 ):
 
-    user = get_default_user()
-    user["realm_access"]["roles"].append("edit_aiod_resources")
-    keycloak_openid.decode_token = Mock(return_value=user)
+    keycloak_openid.decode_token = mocked_previlege_token
 
     _setup(engine)
     response = client.put(
@@ -73,11 +55,10 @@ def test_happy_path(
     assert len(response_json) == 14
 
 
-def test_non_existent(client: TestClient, engine: Engine):
+def test_non_existent(client: TestClient, engine: Engine, mocked_previlege_token):
     _setup(engine)
-    user = get_default_user()
-    user["realm_access"]["roles"].append("edit_aiod_resources")
-    keycloak_openid.decode_token = Mock(return_value=user)
+
+    keycloak_openid.decode_token = mocked_previlege_token
 
     response = client.put(
         "/datasets/v0/4",
@@ -95,12 +76,10 @@ def test_non_existent(client: TestClient, engine: Engine):
     assert response_json["detail"] == "Dataset '4' not found in the database."
 
 
-def test_partial_update(client: TestClient, engine: Engine):
+def test_partial_update(client: TestClient, engine: Engine, mocked_previlege_token):
     _setup(engine)
 
-    user = get_default_user()
-    user["realm_access"]["roles"].append("edit_aiod_resources")
-    keycloak_openid.decode_token = Mock(return_value=user)
+    keycloak_openid.decode_token = mocked_previlege_token
 
     response = client.put(
         "/datasets/v0/4", json={"name": "name"}, headers={"Authorization": "fake-token"}
@@ -116,12 +95,10 @@ def test_partial_update(client: TestClient, engine: Engine):
     ]
 
 
-def test_too_long_name(client: TestClient, engine: Engine):
+def test_too_long_name(client: TestClient, engine: Engine, mocked_previlege_token):
     _setup(engine)
 
-    user = get_default_user()
-    user["realm_access"]["roles"].append("edit_aiod_resources")
-    keycloak_openid.decode_token = Mock(return_value=user)
+    keycloak_openid.decode_token = mocked_previlege_token
 
     name = "a" * 200
     response = client.put(
@@ -147,11 +124,10 @@ def test_too_long_name(client: TestClient, engine: Engine):
     ]
 
 
-def test_unauthorized_user(client: TestClient, engine: Engine):
+def test_unauthorized_user(client: TestClient, engine: Engine, mocked_token):
     _setup(engine)
 
-    user = get_default_user()
-    keycloak_openid.decode_token = Mock(return_value=user)
+    keycloak_openid.decode_token = mocked_token
 
     response = client.put(
         "/datasets/v0/1",
@@ -166,7 +142,7 @@ def test_unauthorized_user(client: TestClient, engine: Engine):
     )
     assert response.status_code == 403
     response_json = response.json()
-    assert response_json["detail"] == "You donot have permission to edit Aiod resources"
+    assert response_json["detail"] == "You do not have permission to edit Aiod resources."
 
 
 def test_unauthenticated_user(client: TestClient, engine: Engine):

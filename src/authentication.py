@@ -21,20 +21,20 @@ keycloak_openid = KeycloakOpenID(
     verify=True,
 )
 
+KEYCLOAK_PUBLIC_KEY = (
+    "-----BEGIN PUBLIC KEY-----\n" + keycloak_openid.public_key() + "\n-----END PUBLIC KEY-----"
+)
+
 
 async def get_current_user(token=Security(oidc)) -> dict:
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not logged in",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     try:
         token = token.replace("Bearer ", "")
-        KEYCLOAK_PUBLIC_KEY = (
-            "-----BEGIN PUBLIC KEY-----\n"
-            + keycloak_openid.public_key()
-            + "\n-----END PUBLIC KEY-----"
-        )
         token_info = keycloak_openid.decode_token(token, key=KEYCLOAK_PUBLIC_KEY)
         return token_info
     except KeycloakError as e:
@@ -45,4 +45,8 @@ async def get_current_user(token=Security(oidc)) -> dict:
         detail = "Invalid authentication token"
         if error_msg != "":
             detail += f": '{error_msg}'"
-        raise HTTPException(status_code=401, detail=detail, headers={"WWW-Authenticate": "Bearer"})
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=detail,
+            headers={"WWW-Authenticate": "Bearer"},
+        )

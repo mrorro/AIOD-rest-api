@@ -10,30 +10,12 @@ from datetime import datetime
 from database.model.news import OrmNews
 from platform_names import PlatformName
 
-from unittest.mock import Mock
 from authentication import keycloak_openid
 
 
-def get_default_user():
+def test_happy_path(client: TestClient, engine: Engine, mocked_previlege_token):
 
-    default_user = {
-        "name": "test-user",
-        "realm_access": {
-            "roles": [
-                "default-roles-dev",
-                "offline_access",
-                "uma_authorization",
-            ]
-        },
-    }
-    return default_user
-
-
-def test_happy_path(client: TestClient, engine: Engine):
-
-    user = get_default_user()
-    user["realm_access"]["roles"].append("edit_aiod_resources")
-    keycloak_openid.decode_token = Mock(return_value=user)
+    keycloak_openid.decode_token = mocked_previlege_token
 
     date_format = "%Y-%m-%d"
     news = [
@@ -111,11 +93,9 @@ def test_happy_path(client: TestClient, engine: Engine):
     "title",
     ["\"'é:?", "!@#$%^&*()`~", "Ω≈ç√∫˜µ≤≥÷", "田中さんにあげて下さい", " أي بعد, ", "𝑻𝒉𝒆 𝐪𝐮𝐢𝐜𝐤", "گچپژ"],
 )
-def test_unicode(client: TestClient, engine: Engine, title):
+def test_unicode(client: TestClient, engine: Engine, title, mocked_previlege_token):
 
-    user = get_default_user()
-    user["realm_access"]["roles"].append("edit_aiod_resources")
-    keycloak_openid.decode_token = Mock(return_value=user)
+    keycloak_openid.decode_token = mocked_previlege_token
 
     response = client.post(
         "/news/v0",
@@ -147,11 +127,9 @@ def test_unicode(client: TestClient, engine: Engine, title):
         "wordCount",
     ],
 )
-def test_missing_value(client: TestClient, engine: Engine, field: str):
+def test_missing_value(client: TestClient, engine: Engine, field: str, mocked_previlege_token):
 
-    user = get_default_user()
-    user["realm_access"]["roles"].append("edit_aiod_resources")
-    keycloak_openid.decode_token = Mock(return_value=user)
+    keycloak_openid.decode_token = mocked_previlege_token
 
     data = {
         "title": "Title",
@@ -180,11 +158,9 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "wordCount",
     ],
 )
-def test_null_value(client: TestClient, engine: Engine, field: str):
+def test_null_value(client: TestClient, engine: Engine, field: str, mocked_previlege_token):
 
-    user = get_default_user()
-    user["realm_access"]["roles"].append("edit_aiod_resources")
-    keycloak_openid.decode_token = Mock(return_value=user)
+    keycloak_openid.decode_token = mocked_previlege_token
 
     data = {
         "title": "Title",
@@ -206,10 +182,9 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
     ]
 
 
-def test_unauthorized_user(client: TestClient, engine: Engine):
+def test_unauthorized_user(client: TestClient, engine: Engine, mocked_token):
 
-    user = get_default_user()
-    keycloak_openid.decode_token = Mock(return_value=user)
+    keycloak_openid.decode_token = mocked_token
 
     response = client.post(
         "/news/v0",
@@ -227,7 +202,7 @@ def test_unauthorized_user(client: TestClient, engine: Engine):
     )
     assert response.status_code == 403
     response_json = response.json()
-    assert response_json["detail"] == "You donot have permission to edit Aiod resources"
+    assert response_json["detail"] == "You do not have permission to edit Aiod resources."
 
 
 def test_unauthenticated_user(client: TestClient, engine: Engine):
