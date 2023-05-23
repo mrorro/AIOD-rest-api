@@ -10,7 +10,7 @@ from platform_names import PlatformName
 from schemas import AIoDDataset, AIoDPublication
 
 
-class ZenodoPublicationConnector(ResourceConnector[AIoDPublication]):
+class ZenodoConnector(ResourceConnector[AIoDPublication]):
     @property
     def platform_name(self) -> PlatformName:
         return PlatformName.zenodo
