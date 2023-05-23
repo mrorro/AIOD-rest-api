@@ -57,12 +57,37 @@ class ZenodoPublicationConnector(ResourceConnector[AIoDPublication]):
             description=record["descriptions"]["description"][0]['#text']
         else:
             description =record["descriptions"]["description"]['#text']
- 
+
+        #Get publication date 
+        date_published = None
+        date_format = "%Y-%m-%d"
+        if(isinstance(record["dates"]["date"], list)):
+            date_string=record["dates"]["date"][0]['#text']
+            date_published = datetime.strptime(date_string, date_format)
+        else:
+            date_string=record["dates"]["date"]['#text']
+            date_published = datetime.strptime(date_string, date_format)
+        
+        #Get dataset publisher
+        publisher= record["publisher"]
+
+        #Get dataset keywords
+        keywords=[]
+
+        if "subjects" in record:
+            if(isinstance(record["subjects"]["subject"], list)):
+                keywords=record["subjects"]["subject"]
+            else:
+                keywords=[record["subjects"]["subject"]]
+     
         dataset= AIoDDataset(
             ame=title[:150],
             same_as="",
             creator= creator,
             description=description[:500],
+            date_published=date_published,
+            publisher=publisher,
+            keywords=keywords,
         ) 
         return dataset
 
