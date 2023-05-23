@@ -7,7 +7,7 @@ from fastapi import HTTPException
 
 from connectors import ResourceConnector
 from platform_names import PlatformName
-from schemas import AIoDPublication
+from schemas import AIoDDataset, AIoDPublication
 
 
 class ZenodoPublicationConnector(ResourceConnector[AIoDPublication]):
@@ -40,8 +40,31 @@ class ZenodoPublicationConnector(ResourceConnector[AIoDPublication]):
         xml_dict = xmltodict.parse(xml_string)
         return xml_dict["record"]["metadata"]['oai_datacite']['payload']['resource']
 
-    def _dataset_from_record(self,record):
-        print("Dataset")
+    def _dataset_from_record(self,record)->AIoDDataset:
+        #Get creator name
+        creator =""
+        if(isinstance(record["creators"]["creator"], list)):
+            creator = record["creators"]["creator"][0]['creatorName']
+        else:
+            creator = record["creators"]["creator"]['creatorName']
+    
+        #Get dataset title
+        title =record["titles"]["title"]
+    
+        #Get dataset description
+        description =""
+        if(isinstance(record["descriptions"]["description"], list)):
+            description=record["descriptions"]["description"][0]['#text']
+        else:
+            description =record["descriptions"]["description"]['#text']
+ 
+        dataset= AIoDDataset(
+            ame=title[:150],
+            same_as="",
+            creator= creator,
+            description=description[:500],
+        ) 
+        return dataset
 
 
     def _software_from_record(self,record):
@@ -69,6 +92,6 @@ class ZenodoPublicationConnector(ResourceConnector[AIoDPublication]):
         
     def fetch_all(self, limit: int | None = None) -> Iterator[AIoDPublication]:
         sickle = Sickle('https://zenodo.org/oai2d')
-        date = datetime.datetime(2023, 5, 23, 12, 0, 0)
+        date = datetime.datetime(2000, 5, 23, 12, 0, 0)#this should be a paramater
         self._process_records_from_datetime(sickle,date)
 
