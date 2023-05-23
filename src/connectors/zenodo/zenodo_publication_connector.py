@@ -1,5 +1,7 @@
+import datetime
 from typing import Iterator
-
+from sickle import Sickle
+import xmltodict
 import requests
 from fastapi import HTTPException
 
@@ -33,20 +35,40 @@ class ZenodoPublicationConnector(ResourceConnector[AIoDPublication]):
         )
         return result
 
+    def _get_record_dictionary(self,record):
+        xml_string = record.raw
+        xml_dict = xmltodict.parse(xml_string)
+        return xml_dict["record"]["metadata"]['oai_datacite']['payload']['resource']
+
+    def _dataset_from_record(self,record):
+        print("Dataset")
+
+
+    def _software_from_record(self,record):
+        print("Software")
+
+    def _journal_article_from_record(self,record):
+        print("JournalArticle")
+
+
+    def _process_records_from_datetime(self,sk:Sickle,dt:datetime.datetime):
+        records = sk.ListRecords(**{
+            'metadataPrefix': 'oai_datacite',
+            'from': dt.isoformat() ,
+        })
+        for record in records:   
+            record_dict= self.get_record_dictionary(record)
+
+            if(dict["resourceType"]["@resourceTypeGeneral"]=="Dataset"):
+                self._dataset_from_record(record)
+            elif(dict['resourceType']["@resourceTypeGeneral"]=="Software"):
+                self._software_from_record(record)
+            elif(dict['resourceType']["@resourceTypeGeneral"]=="JournalArticle"):
+                self._journal_article_from_record(record)
+        
+        
     def fetch_all(self, limit: int | None = None) -> Iterator[AIoDPublication]:
-        url_data = "https://zenodo.org/api/records/"
-        response = requests.get(url_data, params={"type": "publication"})
-        response_json = response.json()
-        if not response.ok:
-            msg = response_json["error"]["message"]
-            raise HTTPException(
-                status_code=response.status_code,
-                detail=f"Error while fetching data from Zenodo: '{msg}'",
-            )
-        for publication_json in response_json["hits"]["hits"]:
-            yield AIoDPublication(
-                doi=publication_json["doi"],
-                title=publication_json["metadata"]["title"],
-                platform=self.platform_name,
-                platform_identifier=str(publication_json["id"]),
-            )
+        sickle = Sickle('https://zenodo.org/oai2d')
+        date = datetime.datetime(2023, 5, 23, 12, 0, 0)
+        self._process_records_from_datetime(sickle,date)
+
