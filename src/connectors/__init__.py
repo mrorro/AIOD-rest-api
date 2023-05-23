@@ -7,7 +7,7 @@ from .example.example_dataset_connector import ExampleDatasetConnector
 from .example.example_publication_connector import ExamplePublicationConnector
 from .huggingface.huggingface_dataset_connector import HuggingFaceDatasetConnector
 from .openml.openml_dataset_connector import OpenMlDatasetConnector
-from .zenodo.zenodo_publication_connector import ZenodoPublicationConnector
+from .zenodo.zenodo_connector import ZenodoPublicationConnector
 
 dataset_connectors = {
     c.platform_name: c
