@@ -79,7 +79,9 @@ class ZenodoConnector(ResourceConnector[AIoDPublication]):
         
         
         #Get dataset publisher
-        publisher= record["publisher"]
+        publisher=""
+        if(isinstance(record["publisher"]),str):
+            publisher= record["publisher"]
 
         #Get dataset keywords
         keywords=[]
