@@ -50,24 +50,33 @@ class ZenodoConnector(ResourceConnector[AIoDPublication]):
             creator = record["creators"]["creator"]['creatorName']
     
         #Get dataset title
-        title =record["titles"]["title"]
+        title=""
+        if(isinstance(record["titles"]["title"],str)):
+            title =record["titles"]["title"]
     
         #Get dataset description
         description =""
         if(isinstance(record["descriptions"]["description"], list)):
-            description=record["descriptions"]["description"][0]['#text']
-        else:
+            for element in record["descriptions"]["description"]:
+                if element.get('@descriptionType') == 'Abstract':
+                    description = element.get('#text')
+                    break
+        elif(record["descriptions"]["description"]['@descriptionType']== 'Abstract'):
             description =record["descriptions"]["description"]['#text']
-
+ 
         #Get publication date 
         date_published = None
         date_format = "%Y-%m-%d"
         if(isinstance(record["dates"]["date"], list)):
-            date_string=record["dates"]["date"][0]['#text']
-            date_published = datetime.strptime(date_string, date_format)
-        else:
+            for element in record["dates"]["date"]:
+                if element.get('@dateType') == 'Issued':
+                    date_string=element['#text']
+                    date_published = datetime.strptime(date_string, date_format)
+                    break
+        elif(record["dates"]["date"]['@dateType']== 'Issued'):
             date_string=record["dates"]["date"]['#text']
             date_published = datetime.strptime(date_string, date_format)
+        
         
         #Get dataset publisher
         publisher= record["publisher"]
