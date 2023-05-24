@@ -25,7 +25,9 @@ dependencies = [
     "pydantic",
     "pydantic_schemaorg",
     "python-dateutil",
-    "httpx"
+    "httpx",
+    "sickle",
+    "xmltodict"
 ]
 readme = "README.md"
 

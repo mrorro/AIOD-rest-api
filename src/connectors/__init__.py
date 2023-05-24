@@ -11,9 +11,14 @@ from .zenodo.zenodo_dataset_connector import ZenodoDatasetConnector
 
 dataset_connectors = {
     c.platform_name: c
-    for c in (ExampleDatasetConnector(), OpenMlDatasetConnector(), HuggingFaceDatasetConnector(),ZenodoDatasetConnector())
+    for c in (
+        ExampleDatasetConnector(),
+        OpenMlDatasetConnector(),
+        HuggingFaceDatasetConnector(),
+        ZenodoDatasetConnector(),
+    )
 }  # type: typing.Dict[platform_names.PlatformName, ResourceConnector[schemas.AIoDDataset]]
 
 publication_connectors = {
-    p.platform_name: p for p in (ExamplePublicationConnector())
+    p.platform_name: p for p in ([ExamplePublicationConnector()])
 }  # type: typing.Dict[platform_names.PlatformName, ResourceConnector[schemas.AIoDPublication]]
