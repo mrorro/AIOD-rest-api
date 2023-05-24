@@ -52,3 +52,6 @@ def test_process_dataset_record():
     date = datetime(2023, 5, 24, 5, 0, 0)
     datasets = list(connector._retrieve_dataset_from_datetime(sickle, date))
     assert len(datasets) == 1
+    dataset = datasets[0]
+    assert dataset.name == "THE FIELD'S MALL MASS SHOOTING: EMERGENCY MEDICAL SERVICES RESPONSE"
+    assert dataset.date_published == datetime(2023, 5, 6)
