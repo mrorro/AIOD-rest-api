@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Iterator, List
+from typing import Iterator
 from sickle import Sickle
 import xmltodict
 
@@ -68,7 +68,7 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
                 keywords = [item for item in record["subjects"]["subject"] if isinstance(item, str)]
 
         dataset = AIoDDataset(
-            ame=title[:150],
+            name=title[:150],
             same_as="",
             creator=creator[
                 :150
@@ -87,14 +87,11 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
                 "from": dt.isoformat(),
             }
         )
-        list_datasets: List[AIoDDataset] = []
         for record in records:
             record_dict = self._get_record_dictionary(record)
 
             if record_dict["resourceType"]["@resourceTypeGeneral"] == "Dataset":
-                list_datasets.append(self._dataset_from_record(record_dict))
-
-        return list
+                yield self._dataset_from_record(record_dict)
 
     def fetch_all(self, limit: int | None = None) -> Iterator[AIoDDataset]:
         sickle = Sickle("https://zenodo.org/oai2d")
