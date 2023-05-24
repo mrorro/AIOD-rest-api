@@ -16,6 +16,7 @@ class ZenodoConnector(ResourceConnector[AIoDPublication]):
         return PlatformName.zenodo
 
     def fetch(self, platform_identifier: str) -> AIoDPublication:
+        raise Exception("Not implemented")
         identifier = platform_identifier
         url_data = f"https://zenodo.org/api/records/{identifier}"
         response = requests.get(url_data)

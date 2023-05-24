@@ -7,13 +7,13 @@ from .example.example_dataset_connector import ExampleDatasetConnector
 from .example.example_publication_connector import ExamplePublicationConnector
 from .huggingface.huggingface_dataset_connector import HuggingFaceDatasetConnector
 from .openml.openml_dataset_connector import OpenMlDatasetConnector
-from .zenodo.zenodo_connector import ZenodoConnector
+from .zenodo.zenodo_dataset_connector import ZenodoDatasetConnector
 
 dataset_connectors = {
     c.platform_name: c
-    for c in (ExampleDatasetConnector(), OpenMlDatasetConnector(), HuggingFaceDatasetConnector())
+    for c in (ExampleDatasetConnector(), OpenMlDatasetConnector(), HuggingFaceDatasetConnector(),ZenodoDatasetConnector())
 }  # type: typing.Dict[platform_names.PlatformName, ResourceConnector[schemas.AIoDDataset]]
 
 publication_connectors = {
-    p.platform_name: p for p in (ExamplePublicationConnector(), ZenodoConnector())
+    p.platform_name: p for p in (ExamplePublicationConnector())
 }  # type: typing.Dict[platform_names.PlatformName, ResourceConnector[schemas.AIoDPublication]]
