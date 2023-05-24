@@ -42,7 +42,7 @@ class ZenodoConnector(ResourceConnector[AIoDPublication]):
         return xml_dict["record"]["metadata"]['oai_datacite']['payload']['resource']
 
     def _dataset_from_record(self,record)->AIoDDataset:
-        #Get creator name
+       
         creator =""
         if(isinstance(record["creators"]["creator"], list)):
             creators_list = [item["creatorName"] for item in record["creators"]["creator"]]
@@ -50,12 +50,12 @@ class ZenodoConnector(ResourceConnector[AIoDPublication]):
         elif(isinstance(record["creators"]["creator"]['creatorName'],str)):
             creator = record["creators"]["creator"]['creatorName']
     
-        #Get dataset title
+   
         title=""
         if(isinstance(record["titles"]["title"],str)):
             title =record["titles"]["title"]
     
-        #Get dataset description
+       
         description =""
         if(isinstance(record["descriptions"]["description"], list)):
             for element in record["descriptions"]["description"]:
@@ -65,7 +65,7 @@ class ZenodoConnector(ResourceConnector[AIoDPublication]):
         elif(record["descriptions"]["description"]['@descriptionType']== 'Abstract'):
             description =record["descriptions"]["description"]['#text']
  
-        #Get publication date 
+     
         date_published = None
         date_format = "%Y-%m-%d"
         if(isinstance(record["dates"]["date"], list)):
@@ -79,7 +79,7 @@ class ZenodoConnector(ResourceConnector[AIoDPublication]):
             date_published = datetime.strptime(date_string, date_format)
         
         
-        #Get dataset publisher
+
         publisher=""
         if(isinstance(record["publisher"]),str):
             publisher= record["publisher"]
