@@ -44,8 +44,9 @@ class ZenodoConnector(ResourceConnector[AIoDPublication]):
         #Get creator name
         creator =""
         if(isinstance(record["creators"]["creator"], list)):
-            creator = record["creators"]["creator"][0]['creatorName']
-        else:
+            creators_list = [item["creatorName"] for item in record["creators"]["creator"]]
+            creator =  ", ".join(creators_list) #TODO change field to an array
+        elif(isinstance(record["creators"]["creator"]['creatorName'],str)):
             creator = record["creators"]["creator"]['creatorName']
     
         #Get dataset title
@@ -75,15 +76,17 @@ class ZenodoConnector(ResourceConnector[AIoDPublication]):
         keywords=[]
 
         if "subjects" in record:
-            if(isinstance(record["subjects"]["subject"], list)):
-                keywords=record["subjects"]["subject"]
-            else:
+            print(record["subjects"]["subject"])
+            if (isinstance(record["subjects"]["subject"], str)):
                 keywords=[record["subjects"]["subject"]]
+            elif(isinstance(record["subjects"]["subject"], list)):
+                keywords = [item for item in record["subjects"]["subject"] if isinstance(item, str)]
+
      
         dataset= AIoDDataset(
             ame=title[:150],
             same_as="",
-            creator= creator,
+            creator= creator[:150],#TODO not enough characters for creator list, change to array or allow more length
             description=description[:500],
             date_published=date_published,
             publisher=publisher,
@@ -92,31 +95,23 @@ class ZenodoConnector(ResourceConnector[AIoDPublication]):
         return dataset
 
 
-    def _software_from_record(self,record):
-        print("Software")
-
-    def _journal_article_from_record(self,record):
-        print("JournalArticle")
-
 
     def _process_records_from_datetime(self,sk:Sickle,dt:datetime.datetime):
         records = sk.ListRecords(**{
             'metadataPrefix': 'oai_datacite',
             'from': dt.isoformat() ,
         })
+        list_datasets = []
         for record in records:   
             record_dict= self.get_record_dictionary(record)
 
-            if(dict["resourceType"]["@resourceTypeGeneral"]=="Dataset"):
-                self._dataset_from_record(record)
-            elif(dict['resourceType']["@resourceTypeGeneral"]=="Software"):
-                self._software_from_record(record)
-            elif(dict['resourceType']["@resourceTypeGeneral"]=="JournalArticle"):
-                self._journal_article_from_record(record)
-        
+            if(record_dict["resourceType"]["@resourceTypeGeneral"]=="Dataset"):
+                list_datasets.append(self._dataset_from_record(record_dict))
+
+        return list
         
     def fetch_all(self, limit: int | None = None) -> Iterator[AIoDPublication]:
         sickle = Sickle('https://zenodo.org/oai2d')
         date = datetime.datetime(2000, 5, 23, 12, 0, 0)#this should be a paramater
-        self._process_records_from_datetime(sickle,date)
+        return self._process_records_from_datetime(sickle,date)
 
