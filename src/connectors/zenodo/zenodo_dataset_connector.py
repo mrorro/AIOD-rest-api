@@ -107,7 +107,7 @@ class ZenodoConnector(ResourceConnector[AIoDPublication]):
 
 
 
-    def _process_records_from_datetime(self,sk:Sickle,dt:datetime.datetime):
+    def _retrieve_dataset_from_datetime(self,sk:Sickle,dt:datetime.datetime):
         records = sk.ListRecords(**{
             'metadataPrefix': 'oai_datacite',
             'from': dt.isoformat() ,
@@ -124,5 +124,5 @@ class ZenodoConnector(ResourceConnector[AIoDPublication]):
     def fetch_all(self, limit: int | None = None) -> Iterator[AIoDPublication]:
         sickle = Sickle('https://zenodo.org/oai2d')
         date = datetime.datetime(2000, 5, 23, 12, 0, 0)#this should be a paramater
-        return self._process_records_from_datetime(sickle,date)
+        return self._retrieve_dataset_from_datetime(sickle,date)
 
