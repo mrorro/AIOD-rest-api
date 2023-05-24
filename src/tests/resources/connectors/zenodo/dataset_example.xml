@@ -1,0 +1,74 @@
+<?xml version="1.0" ?>
+<record xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<header>
+		<identifier>oai:zenodo.org:7961614</identifier>
+		<datestamp>2023-05-23T08:05:46Z</datestamp>
+	</header>
+	<metadata>
+		<oai_datacite xmlns="http://schema.datacite.org/oai/oai-1.0/" xsi:schemaLocation="http://schema.datacite.org/oai/oai-1.0/ oai_datacite.xsd">
+			<isReferenceQuality>true</isReferenceQuality>
+			<schemaVersion>3.1</schemaVersion>
+			<datacentreSymbol>CERN.ZENODO</datacentreSymbol>
+			<payload>
+				<resource xmlns="http://datacite.org/schema/kernel-3" xsi:schemaLocation="http://datacite.org/schema/kernel-3 http://schema.datacite.org/meta/kernel-3/metadata.xsd">
+					<identifier identifierType="DOI">10.5281/zenodo.7961614</identifier>
+					<creators>
+						<creator>
+							<creatorName>Hansen, Peter Martin</creatorName>
+							<affiliation>Odense University Hospital</affiliation>
+						</creator>
+						<creator>
+							<creatorName>Alstrøm, henrik</creatorName>
+							<affiliation>Copenhagen University Hopsital</affiliation>
+						</creator>
+						<creator>
+							<creatorName>Damm-Hejmdal, Anders</creatorName>
+							<affiliation>Copenhagen Emergency Medical Services</affiliation>
+						</creator>
+						<creator>
+							<creatorName>Mikkelsen, Søren</creatorName>
+							<affiliation>Odense University Hospital</affiliation>
+						</creator>
+						<creator>
+							<creatorName>Rehn, Marius</creatorName>
+							<affiliation>Oslo University Hospital</affiliation>
+						</creator>
+						<creator>
+							<creatorName>Berlac, Peter Anthony</creatorName>
+							<affiliation>Copenhagen University Hospital</affiliation>
+						</creator>
+					</creators>
+					<titles>
+						<title>THE FIELD'S MALL MASS SHOOTING: EMERGENCY MEDICAL SERVICES RESPONSE</title>
+					</titles>
+					<publisher>Zenodo</publisher>
+					<publicationYear>2023</publicationYear>
+					<subjects>
+						<subject>Major incident</subject>
+						<subject>Disaster</subject>
+						<subject>Mass shooting</subject>
+						<subject>Mass casualty</subject>
+						<subject>Management and leadership</subject>
+					</subjects>
+					<dates>
+						<date dateType="Issued">2023-05-06</date>
+					</dates>
+					<resourceType resourceTypeGeneral="Dataset"/>
+					<relatedIdentifiers>
+						<relatedIdentifier relatedIdentifierType="DOI" relationType="IsPartOf">10.5281/zenodo.7902672</relatedIdentifier>
+					</relatedIdentifiers>
+					<rightsList>
+						<rights rightsURI="https://creativecommons.org/licenses/by/4.0/legalcode">Creative Commons Attribution 4.0 International</rights>
+						<rights rightsURI="info:eu-repo/semantics/openAccess">Open Access</rights>
+					</rightsList>
+					<descriptions>
+						<description descriptionType="Abstract">&lt;p&gt;Case report describing the mass shooting at the Field&amp;#39;s shopping mall in Copenhagen, July 3rd, 2022.&lt;/p&gt;
+
+&lt;p&gt;Dataset to support the findings of the case report, hopefully to be published after peer-review in Scandinavian Journal of Trauma, Resuscitation and Emergency Medicine.&lt;/p&gt;</description>
+					</descriptions>
+				</resource>
+			</payload>
+		</oai_datacite>
+	</metadata>
+</record>
+
