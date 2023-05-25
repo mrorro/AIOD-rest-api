@@ -19,7 +19,24 @@ def test_fetch_all_happy_path():
     assert len(datasets) == 1
     dataset = datasets[0]
     assert dataset.name == "THE FIELD'S MALL MASS SHOOTING: EMERGENCY MEDICAL SERVICES RESPONSE"
+    assert dataset.description == "This is a description paragraph"
+    assert (
+        dataset.creator
+        == "Hansen, Peter Martin; Alstrøm, henrik; Damm-Hejmdal, Anders; Mikkelsen, Søren"
+    )
     assert dataset.date_published == datetime(2023, 5, 6)
+    assert dataset.license == "https://creativecommons.org/licenses/by/4.0/legalcode"
+    assert dataset.platform == "zenodo"
+    assert dataset.platform_identifier == "zenodo.org:7961614"
+    assert dataset.publisher == "Zenodo"
+    assert len(dataset.keywords) == 5
+    assert set(dataset.keywords) == {
+        "Mass casualty",
+        "Major incident",
+        "Management and leadership",
+        "Disaster",
+        "Mass shooting",
+    }
 
 
 def mock_zenodo_responses(mocked_requests: responses.RequestsMock):

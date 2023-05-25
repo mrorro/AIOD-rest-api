@@ -21,6 +21,8 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
         xml_string = record.raw
         xml_dict = xmltodict.parse(xml_string)
         id = xml_dict["record"]["header"]["identifier"]
+        if id.startswith("oai:"):
+            id = id.replace("oai:", "")
         resource = xml_dict["record"]["metadata"]["oai_datacite"]["payload"]["resource"]
         return id, resource
 
@@ -34,7 +36,7 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
         creator = ""
         if isinstance(record["creators"]["creator"], list):
             creators_list = [item["creatorName"] for item in record["creators"]["creator"]]
-            creator = ", ".join(creators_list)  # TODO change field to an array
+            creator = "; ".join(creators_list)  # TODO change field to an array
         elif isinstance(record["creators"]["creator"]["creatorName"], str):
             creator = record["creators"]["creator"]["creatorName"]
         else:
