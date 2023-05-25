@@ -16,20 +16,21 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
 
     def fetch(self, platform_identifier: str) -> AIoDDataset:
         raise Exception("Not implemented")
-    
-    def get_record_dictionary(record):
+
+    def _get_record_dictionary(self, record):
         xml_string = record.raw
         xml_dict = xmltodict.parse(xml_string)
-        id =xml_dict["record"]["header"]["identifier"]
-        resource=xml_dict["record"]["metadata"]['oai_datacite']['payload']['resource']
-        return  id,resource
+        id = xml_dict["record"]["header"]["identifier"]
+        resource = xml_dict["record"]["metadata"]["oai_datacite"]["payload"]["resource"]
+        return id, resource
 
-    def _bad_record_format(dataset_id,field):
-            logging.error(
-                f"Error while fetching record info for dataset {dataset_id}: bad format {field}"
-            )
-    def _dataset_from_record(self, record_raw) -> AIoDDataset:
-        id,record =self._get_record_dictionary(record_raw)
+    def _bad_record_format(self, dataset_id, field):
+        logging.error(
+            f"Error while fetching record info for dataset {dataset_id}: bad format {field}"
+        )
+
+    def _dataset_from_record(self, record_raw) -> AIoDDataset | None:
+        id, record = self._get_record_dictionary(record_raw)
         creator = ""
         if isinstance(record["creators"]["creator"], list):
             creators_list = [item["creatorName"] for item in record["creators"]["creator"]]
@@ -37,13 +38,15 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
         elif isinstance(record["creators"]["creator"]["creatorName"], str):
             creator = record["creators"]["creator"]["creatorName"]
         else:
-            self._bad_record_format(id,"creator")
+            self._bad_record_format(id, "creator")
+            return None
 
         title = ""
         if isinstance(record["titles"]["title"], str):
             title = record["titles"]["title"]
         else:
-            self._bad_record_format(id,"title")
+            self._bad_record_format(id, "title")
+            return None
 
         description = ""
         if isinstance(record["descriptions"]["description"], list):
@@ -54,7 +57,8 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
         elif record["descriptions"]["description"]["@descriptionType"] == "Abstract":
             description = record["descriptions"]["description"]["#text"]
         else:
-            self._bad_record_format(id,"description")
+            self._bad_record_format(id, "description")
+            return None
         date_published = None
         date_format = "%Y-%m-%d"
         if isinstance(record["dates"]["date"], list):
@@ -67,19 +71,23 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
             date_string = record["dates"]["date"]["#text"]
             date_published = datetime.strptime(date_string, date_format)
         else:
-            self._bad_record_format(id,"date_published")
+            self._bad_record_format(id, "date_published")
+            return None
+
         publisher = ""
         if isinstance(record["publisher"], str):
             publisher = record["publisher"]
         else:
-            self._bad_record_format(id,"publisher")
-        license =""
-        if(isinstance(record["rightsList"]["rights"], list)):
-            license =  record["rightsList"]["rights"][0]['@rightsURI']
-        elif(isinstance(record["rightsList"]["rights"]['@rightsURI'],str)):
-            license =  record["rightsList"]["rights"]['@rightsURI'] 
+            self._bad_record_format(id, "publisher")
+            return None
+        license = ""
+        if isinstance(record["rightsList"]["rights"], list):
+            license = record["rightsList"]["rights"][0]["@rightsURI"]
+        elif isinstance(record["rightsList"]["rights"]["@rightsURI"], str):
+            license = record["rightsList"]["rights"]["@rightsURI"]
         else:
-            self._bad_record_format(id,"license")
+            self._bad_record_format(id, "license")
+            return None
         # Get dataset keywords
         keywords = []
         if "subjects" in record:
@@ -88,7 +96,8 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
             elif isinstance(record["subjects"]["subject"], list):
                 keywords = [item for item in record["subjects"]["subject"] if isinstance(item, str)]
             else:
-                self._bad_record_format(id,"keywords")        
+                self._bad_record_format(id, "keywords")
+                return None
 
         dataset = AIoDDataset(
             platform="zenodo",
@@ -106,8 +115,7 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
         )
         return dataset
 
-
-    def _get_resource_type(self,record):
+    def _get_resource_type(self, record):
         xml_string = record.raw
         start = xml_string.find('<resourceType resourceTypeGeneral="')
         if start != -1:
@@ -117,7 +125,6 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
                 return xml_string[start:end]
         return None
 
-
     def _retrieve_dataset_from_datetime(self, sk: Sickle, dt: datetime):
         records = sk.ListRecords(
             **{
@@ -126,10 +133,9 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
             }
         )
         for record in records:
-            
-            if self.get_resource_type(record) == "Dataset":
+            if self._get_resource_type(record) == "Dataset":
                 dataset = self._dataset_from_record(record)
-                if dataset is  AIoDDataset:
+                if dataset is not None:
                     yield dataset
 
     def fetch_all(self, limit: int | None = None) -> Iterator[AIoDDataset]:
