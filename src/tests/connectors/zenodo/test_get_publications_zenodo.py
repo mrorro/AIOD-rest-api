@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import cast
+import responses
 import connectors
 from connectors.zenodo.zenodo_dataset_connector import ZenodoDatasetConnector
 from platform_names import PlatformName
@@ -12,26 +12,22 @@ def read_file(path):
     return content
 
 
-class MockRecord:
-    def __init__(self, raw):
-        self.raw = raw
-
-
-class MockSickle:
-    def ListRecords(self, **kwargs):
-        mock_records = [
-            MockRecord(read_file(path_test_resources() / "connectors/zenodo/article_example.xml")),
-            MockRecord(read_file(path_test_resources() / "connectors/zenodo/dataset_example.xml")),
-        ]
-        return mock_records
-
-
-def test_process_dataset_record():
-    connector = cast(ZenodoDatasetConnector, connectors.dataset_connectors[PlatformName.zenodo])
-    sickle = MockSickle()
-    date = datetime(2023, 5, 24, 5, 0, 0)
-    datasets = list(connector._retrieve_dataset_from_datetime(sickle, date))
+def test_fetch_all_happy_path():
+    connector =  connectors.dataset_connectors[PlatformName.zenodo]
+    with responses.RequestsMock() as mocked_requests:
+        mock_zenodo_responses(mocked_requests)
+        datasets = list(connector.fetch_all())
     assert len(datasets) == 1
     dataset = datasets[0]
     assert dataset.name == "THE FIELD'S MALL MASS SHOOTING: EMERGENCY MEDICAL SERVICES RESPONSE"
     assert dataset.date_published == datetime(2023, 5, 6)
+
+
+
+def mock_zenodo_responses(mocked_requests: responses.RequestsMock):
+        mocked_requests.add(
+        responses.GET,
+        "/zenodo",
+        json="{}",
+        status=200,
+    )
