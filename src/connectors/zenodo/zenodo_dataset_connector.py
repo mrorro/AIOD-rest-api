@@ -21,7 +21,8 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
         xml_dict = xmltodict.parse(xml_string)
         return xml_dict["record"]["metadata"]["oai_datacite"]["payload"]["resource"]
 
-    def _dataset_from_record(self, record) -> AIoDDataset:
+    def _dataset_from_record(self, record_raw) -> AIoDDataset:
+        record=self._get_record_dictionary(record_raw)
         creator = ""
         if isinstance(record["creators"]["creator"], list):
             creators_list = [item["creatorName"] for item in record["creators"]["creator"]]
@@ -80,6 +81,18 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
         )
         return dataset
 
+
+    def _get_resource_type(self,record):
+        xml_string = record.raw
+        start = xml_string.find('<resourceType resourceTypeGeneral="')
+        if start != -1:
+            start += len('<resourceType resourceTypeGeneral="')
+            end = xml_string.find('"', start)
+            if end != -1:
+                return xml_string[start:end]
+        return None
+
+
     def _retrieve_dataset_from_datetime(self, sk: Sickle, dt: datetime):
         records = sk.ListRecords(
             **{
@@ -88,10 +101,9 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
             }
         )
         for record in records:
-            record_dict = self._get_record_dictionary(record)
-
-            if record_dict["resourceType"]["@resourceTypeGeneral"] == "Dataset":
-                yield self._dataset_from_record(record_dict)
+            
+            if self.get_resource_type(record) == "Dataset":
+                yield self._dataset_from_record(record)
 
     def fetch_all(self, limit: int | None = None) -> Iterator[AIoDDataset]:
         sickle = Sickle("https://zenodo.org/oai2d")
