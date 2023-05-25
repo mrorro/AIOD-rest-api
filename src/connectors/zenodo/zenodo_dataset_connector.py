@@ -15,14 +15,17 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
 
     def fetch(self, platform_identifier: str) -> AIoDDataset:
         raise Exception("Not implemented")
-
-    def _get_record_dictionary(self, record):
+    
+    def get_record_dictionary(record):
         xml_string = record.raw
         xml_dict = xmltodict.parse(xml_string)
-        return xml_dict["record"]["metadata"]["oai_datacite"]["payload"]["resource"]
+        id =xml_dict["record"]["header"]["identifier"]
+        resource=xml_dict["record"]["metadata"]['oai_datacite']['payload']['resource']
+        return  id,resource
 
     def _dataset_from_record(self, record_raw) -> AIoDDataset:
-        record=self._get_record_dictionary(record_raw)
+        id,record =self._get_record_dictionary(record_raw)
+
         creator = ""
         if isinstance(record["creators"]["creator"], list):
             creators_list = [item["creatorName"] for item in record["creators"]["creator"]]
@@ -69,6 +72,8 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
                 keywords = [item for item in record["subjects"]["subject"] if isinstance(item, str)]
 
         dataset = AIoDDataset(
+            platform="zenodo",
+            platform_identifier=id,
             name=title[:150],
             same_as="",
             creator=creator[
@@ -103,7 +108,9 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
         for record in records:
             
             if self.get_resource_type(record) == "Dataset":
-                yield self._dataset_from_record(record)
+                dataset = self._dataset_from_record(record)
+                if dataset is  AIoDDataset:
+                    yield dataset
 
     def fetch_all(self, limit: int | None = None) -> Iterator[AIoDDataset]:
         sickle = Sickle("https://zenodo.org/oai2d")
