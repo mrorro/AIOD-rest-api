@@ -17,19 +17,13 @@ class MockRecord:
         self.raw = raw
 
 
-
 class MockSickle:
-        def ListRecords(self, ):
-            mock_records = [
-                MockRecord(
-                    read_file(path_test_resources() / "connectors/zenodo/article_example.xml")
-            ),
-            MockRecord(
-                read_file(path_test_resources() / "connectors/zenodo/dataset_example.xml")
-            ),  
-            ]
-            return mock_records
-
+    def ListRecords(self, **kwargs):
+        mock_records = [
+            MockRecord(read_file(path_test_resources() / "connectors/zenodo/article_example.xml")),
+            MockRecord(read_file(path_test_resources() / "connectors/zenodo/dataset_example.xml")),
+        ]
+        return mock_records
 
 
 def test_process_dataset_record():
