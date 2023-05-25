@@ -1,7 +1,6 @@
 from datetime import datetime
 import responses
 import connectors
-from connectors.zenodo.zenodo_dataset_connector import ZenodoDatasetConnector
 from platform_names import PlatformName
 from tests.testutils.paths import path_test_resources
 
@@ -13,7 +12,7 @@ def read_file(path):
 
 
 def test_fetch_all_happy_path():
-    connector =  connectors.dataset_connectors[PlatformName.zenodo]
+    connector = connectors.dataset_connectors[PlatformName.zenodo]
     with responses.RequestsMock() as mocked_requests:
         mock_zenodo_responses(mocked_requests)
         datasets = list(connector.fetch_all())
@@ -23,11 +22,15 @@ def test_fetch_all_happy_path():
     assert dataset.date_published == datetime(2023, 5, 6)
 
 
-
 def mock_zenodo_responses(mocked_requests: responses.RequestsMock):
-        mocked_requests.add(
+    with open(
+        path_test_resources() / "connectors" / "zenodo" / "list_records.xml",
+        "r",
+    ) as f:
+        records_list = f.read()  # Lee el contenido del archivo
+    mocked_requests.add(
         responses.GET,
-        "/zenodo",
-        json="{}",
+        "https://zenodo.org/oai2d?metadataPrefix=oai_datacite&from=2000-01-01T12%3A00%3A00&verb=ListRecords",  # noqa E501
+        body=records_list,
         status=200,
     )

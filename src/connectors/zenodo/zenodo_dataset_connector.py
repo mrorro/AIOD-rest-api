@@ -140,5 +140,5 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
 
     def fetch_all(self, limit: int | None = None) -> Iterator[AIoDDataset]:
         sickle = Sickle("https://zenodo.org/oai2d")
-        date = datetime(2000, 5, 23, 12, 0, 0)  # this should be a paramater
+        date = datetime(2000, 1, 1, 12, 0, 0)  # this should be a paramater
         return self._retrieve_dataset_from_datetime(sickle, date)
