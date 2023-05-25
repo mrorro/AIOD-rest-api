@@ -35,9 +35,9 @@ class DeprecatedRouter(RouterTestResource):
         ("delete", "/test_resources/v1/1"),
     ],
 )
-def test_deprecated_router(verb: str, url: str, mocked_previlege_token):
+def test_deprecated_router(verb: str, url: str, mocked_privileged_token):
 
-    keycloak_openid.decode_token = mocked_previlege_token
+    keycloak_openid.decode_token = mocked_privileged_token
 
     temporary_file = tempfile.NamedTemporaryFile()
     engine = create_engine(f"sqlite:///{temporary_file.name}")

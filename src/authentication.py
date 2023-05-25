@@ -30,7 +30,7 @@ async def get_current_user(token=Security(oidc)) -> dict:
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not logged in",
+            detail="This endpoint requires authorization. You need to be logged in.",
             headers={"WWW-Authenticate": "Bearer"},
         )
     try:

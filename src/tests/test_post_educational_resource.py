@@ -16,9 +16,9 @@ from platform_names import PlatformName
 from authentication import keycloak_openid
 
 
-def test_happy_path(client: TestClient, engine: Engine, mocked_previlege_token):
+def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token):
 
-    keycloak_openid.decode_token = mocked_previlege_token
+    keycloak_openid.decode_token = mocked_privileged_token
 
     date_format = "%Y-%m-%d"
     educational_resources = [
@@ -139,7 +139,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_previlege_token):
     "title",
     ["\"'é:?", "!@#$%^&*()`~", "Ω≈ç√∫˜µ≤≥÷", "田中さんにあげて下さい", " أي بعد, ", "𝑻𝒉𝒆 𝐪𝐮𝐢𝐜𝐤", "گچپژ"],
 )
-def test_unicode(client: TestClient, engine: Engine, title, mocked_previlege_token):
+def test_unicode(client: TestClient, engine: Engine, title, mocked_privileged_token):
     language = OrmLanguage(name="International")
     audience = OrmTargetAudience(name="Working professionals")
 
@@ -148,7 +148,7 @@ def test_unicode(client: TestClient, engine: Engine, title, mocked_previlege_tok
         session.add(audience)
         session.commit()
 
-    keycloak_openid.decode_token = mocked_previlege_token
+    keycloak_openid.decode_token = mocked_privileged_token
 
     response = client.post(
         "/educational-resources/v0",
@@ -200,9 +200,9 @@ def test_unicode(client: TestClient, engine: Engine, title, mocked_previlege_tok
         "educationalType",
     ],
 )
-def test_missing_value(client: TestClient, engine: Engine, field: str, mocked_previlege_token):
+def test_missing_value(client: TestClient, engine: Engine, field: str, mocked_privileged_token):
 
-    keycloak_openid.decode_token = mocked_previlege_token
+    keycloak_openid.decode_token = mocked_privileged_token
 
     data = {
         "title": "string",
@@ -255,9 +255,9 @@ def test_missing_value(client: TestClient, engine: Engine, field: str, mocked_pr
         "educationalType",
     ],
 )
-def test_null_value(client: TestClient, engine: Engine, field: str, mocked_previlege_token):
+def test_null_value(client: TestClient, engine: Engine, field: str, mocked_privileged_token):
 
-    keycloak_openid.decode_token = mocked_previlege_token
+    keycloak_openid.decode_token = mocked_privileged_token
 
     data = {
         "title": "string",
@@ -473,4 +473,6 @@ def test_unauthenticated_user(client: TestClient, engine: Engine):
     )
     assert response.status_code == 401
     response_json = response.json()
-    assert response_json["detail"] == "Not logged in"
+    assert (
+        response_json["detail"] == "This endpoint requires authorization. You need to be logged in."
+    )

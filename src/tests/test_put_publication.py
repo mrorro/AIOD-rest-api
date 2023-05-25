@@ -27,10 +27,10 @@ def test_happy_path(
     doi: str,
     platform: str,
     platform_identifier: str,
-    mocked_previlege_token,
+    mocked_privileged_token,
 ):
 
-    keycloak_openid.decode_token = mocked_previlege_token
+    keycloak_openid.decode_token = mocked_privileged_token
 
     _setup(engine)
     response = client.put(
@@ -56,10 +56,10 @@ def test_happy_path(
     assert len(response_json) == 7
 
 
-def test_non_existent(client: TestClient, engine: Engine, mocked_previlege_token):
+def test_non_existent(client: TestClient, engine: Engine, mocked_privileged_token):
     _setup(engine)
 
-    keycloak_openid.decode_token = mocked_previlege_token
+    keycloak_openid.decode_token = mocked_privileged_token
 
     response = client.put(
         "/publications/v0/4",
@@ -71,10 +71,10 @@ def test_non_existent(client: TestClient, engine: Engine, mocked_previlege_token
     assert response_json["detail"] == "Publication '4' not found in the database."
 
 
-def test_partial_update(client: TestClient, engine: Engine, mocked_previlege_token):
+def test_partial_update(client: TestClient, engine: Engine, mocked_privileged_token):
     _setup(engine)
 
-    keycloak_openid.decode_token = mocked_previlege_token
+    keycloak_openid.decode_token = mocked_privileged_token
 
     response = client.put(
         "/publications/v0/4", json={"doi": "doi"}, headers={"Authorization": "fake-token"}
@@ -89,10 +89,10 @@ def test_partial_update(client: TestClient, engine: Engine, mocked_previlege_tok
     ]
 
 
-def test_too_long_name(client: TestClient, engine: Engine, mocked_previlege_token):
+def test_too_long_name(client: TestClient, engine: Engine, mocked_privileged_token):
     _setup(engine)
 
-    keycloak_openid.decode_token = mocked_previlege_token
+    keycloak_openid.decode_token = mocked_privileged_token
 
     title = "a" * 300
     response = client.put(
@@ -148,7 +148,9 @@ def test_unauthenticated_user(client: TestClient, engine: Engine):
     )
     assert response.status_code == 401
     response_json = response.json()
-    assert response_json["detail"] == "Not logged in"
+    assert (
+        response_json["detail"] == "This endpoint requires authorization. You need to be logged in."
+    )
 
 
 def _setup(engine):

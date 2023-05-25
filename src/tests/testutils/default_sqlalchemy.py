@@ -92,7 +92,7 @@ def mocked_token():
 
 
 @pytest.fixture()
-def mocked_previlege_token():
+def mocked_privileged_token():
     default_user = {
         "name": "test-user",
         "realm_access": {
