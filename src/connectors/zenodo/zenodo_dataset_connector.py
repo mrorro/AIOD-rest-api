@@ -25,7 +25,6 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
 
     def _dataset_from_record(self, record_raw) -> AIoDDataset:
         id,record =self._get_record_dictionary(record_raw)
-
         creator = ""
         if isinstance(record["creators"]["creator"], list):
             creators_list = [item["creatorName"] for item in record["creators"]["creator"]]
@@ -62,6 +61,12 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
         if isinstance(record["publisher"], str):
             publisher = record["publisher"]
 
+        license =""
+        if(isinstance(record["rightsList"]["rights"], list)):
+            license =  record["rightsList"]["rights"][0]['@rightsURI']
+        elif(isinstance(record["rightsList"]["rights"]['@rightsURI'],str)):
+            license =  record["rightsList"]["rights"]['@rightsURI'] 
+
         # Get dataset keywords
         keywords = []
 
@@ -82,6 +87,7 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
             description=description[:500],
             date_published=date_published,
             publisher=publisher,
+            license=license,
             keywords=keywords,
         )
         return dataset
