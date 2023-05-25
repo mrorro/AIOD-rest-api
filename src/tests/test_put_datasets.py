@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from database.model.dataset import OrmDataset
+from authentication import keycloak_openid
 
 
 @pytest.mark.parametrize(
@@ -26,7 +27,11 @@ def test_happy_path(
     platform_identifier: str,
     same_as: str,
     description: str,
+    mocked_privileged_token,
 ):
+
+    keycloak_openid.decode_token = mocked_privileged_token
+
     _setup(engine)
     response = client.put(
         f"/datasets/v0/{identifier}",
@@ -37,6 +42,7 @@ def test_happy_path(
             "sameAs": same_as,
             "description": description,
         },
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 200
     response_json = response.json()
@@ -49,8 +55,10 @@ def test_happy_path(
     assert len(response_json) == 14
 
 
-def test_non_existent(client: TestClient, engine: Engine):
+def test_non_existent(client: TestClient, engine: Engine, mocked_privileged_token):
     _setup(engine)
+
+    keycloak_openid.decode_token = mocked_privileged_token
 
     response = client.put(
         "/datasets/v0/4",
@@ -61,16 +69,21 @@ def test_non_existent(client: TestClient, engine: Engine):
             "sameAs": "url",
             "platformIdentifier": "id",
         },
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 404
     response_json = response.json()
     assert response_json["detail"] == "Dataset '4' not found in the database."
 
 
-def test_partial_update(client: TestClient, engine: Engine):
+def test_partial_update(client: TestClient, engine: Engine, mocked_privileged_token):
     _setup(engine)
 
-    response = client.put("/datasets/v0/4", json={"name": "name"})
+    keycloak_openid.decode_token = mocked_privileged_token
+
+    response = client.put(
+        "/datasets/v0/4", json={"name": "name"}, headers={"Authorization": "fake-token"}
+    )
     # Partial update: platform and platform_identifier omitted. This is not supported,
     # and should be a PATCH request if we supported it.
 
@@ -82,8 +95,10 @@ def test_partial_update(client: TestClient, engine: Engine):
     ]
 
 
-def test_too_long_name(client: TestClient, engine: Engine):
+def test_too_long_name(client: TestClient, engine: Engine, mocked_privileged_token):
     _setup(engine)
+
+    keycloak_openid.decode_token = mocked_privileged_token
 
     name = "a" * 200
     response = client.put(
@@ -95,6 +110,7 @@ def test_too_long_name(client: TestClient, engine: Engine):
             "sameAs": "url",
             "platformIdentifier": "id",
         },
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 422
     response_json = response.json()
@@ -106,6 +122,47 @@ def test_too_long_name(client: TestClient, engine: Engine):
             "type": "value_error.any_str.max_length",
         }
     ]
+
+
+def test_unauthorized_user(client: TestClient, engine: Engine, mocked_token):
+    _setup(engine)
+
+    keycloak_openid.decode_token = mocked_token
+
+    response = client.put(
+        "/datasets/v0/1",
+        json={
+            "name": "name",
+            "platform": "platform",
+            "description": "description",
+            "same_as": "url",
+            "platform_identifier": "id",
+        },
+        headers={"Authorization": "fake-token"},
+    )
+    assert response.status_code == 403
+    response_json = response.json()
+    assert response_json["detail"] == "You do not have permission to edit Aiod resources."
+
+
+def test_unauthenticated_user(client: TestClient, engine: Engine):
+    _setup(engine)
+
+    response = client.put(
+        "/datasets/v0/4",
+        json={
+            "name": "name",
+            "platform": "platform",
+            "description": "description",
+            "same_as": "url",
+            "platform_identifier": "id",
+        },
+    )
+    assert response.status_code == 401
+    response_json = response.json()
+    assert (
+        response_json["detail"] == "This endpoint requires authorization. You need to be logged in."
+    )
 
 
 def _setup(engine):

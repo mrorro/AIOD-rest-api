@@ -7,8 +7,13 @@ from starlette.testclient import TestClient
 
 from database.model.publication import OrmPublication
 
+from authentication import keycloak_openid
 
-def test_happy_path(client: TestClient, engine: Engine):
+
+def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token):
+
+    keycloak_openid.decode_token = mocked_privileged_token
+
     publications = [
         OrmPublication(
             title="pub1",
@@ -46,6 +51,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             "platform": "zenodo",
             "platformIdentifier": "2",
         },
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 200
     response_json = response.json()
@@ -62,17 +68,24 @@ def test_happy_path(client: TestClient, engine: Engine):
     "title",
     ["\"'é:?", "!@#$%^&*()`~", "Ω≈ç√∫˜µ≤≥÷", "田中さんにあげて下さい", " أي بعد, ", "𝑻𝒉𝒆 𝐪𝐮𝐢𝐜𝐤", "گچپژ"],
 )
-def test_unicode(client: TestClient, engine: Engine, title):
+def test_unicode(client: TestClient, engine: Engine, title, mocked_privileged_token):
+
+    keycloak_openid.decode_token = mocked_privileged_token
+
     response = client.post(
         "/publications/v0",
-        json={"title": title, "doi": "doi2", "platform": "zenodo", "platformIdentifier": "2"},
+        json={"title": title, "doi": "doi2", "platform": "zenodo", "platform_identifier": "2"},
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 200
     response_json = response.json()
     assert response_json["title"] == title
 
 
-def test_duplicated_publication(client: TestClient, engine: Engine):
+def test_duplicated_publication(client: TestClient, engine: Engine, mocked_privileged_token):
+
+    keycloak_openid.decode_token = mocked_privileged_token
+
     publications = [
         OrmPublication(title="pub1", doi="doi1", platform="zenodo", platform_identifier="1")
     ]
@@ -82,7 +95,8 @@ def test_duplicated_publication(client: TestClient, engine: Engine):
         session.commit()
     response = client.post(
         "/publications/v0",
-        json={"title": "pub1", "doi": "doi1", "platform": "zenodo", "platformIdentifier": "1"},
+        json={"title": "pub1", "doi": "doi1", "platform": "zenodo", "platform_identifier": "1"},
+        headers={"Authorization": "fake-token"},
     )
     assert response.status_code == 409
     assert (
@@ -93,7 +107,10 @@ def test_duplicated_publication(client: TestClient, engine: Engine):
 
 # Test if the api allows creating publications with not all fields
 @pytest.mark.parametrize("field", ["title"])
-def test_missing_value(client: TestClient, engine: Engine, field: str):
+def test_missing_value(client: TestClient, engine: Engine, field: str, mocked_privileged_token):
+
+    keycloak_openid.decode_token = mocked_privileged_token
+
     data = {
         "title": "pub2",
         "doi": "doi2",
@@ -101,7 +118,7 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
         "platformIdentifier": "2",
     }  # type: typing.Dict[str, typing.Any]
     del data[field]
-    response = client.post("/publications/v0", json=data)
+    response = client.post("/publications/v0", json=data, headers={"Authorization": "fake-token"})
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {"loc": ["body", field], "msg": "field required", "type": "value_error.missing"}
@@ -109,7 +126,10 @@ def test_missing_value(client: TestClient, engine: Engine, field: str):
 
 
 @pytest.mark.parametrize("field", ["title", "platform"])
-def test_null_value(client: TestClient, engine: Engine, field: str):
+def test_null_value(client: TestClient, engine: Engine, field: str, mocked_privileged_token):
+
+    keycloak_openid.decode_token = mocked_privileged_token
+
     data = {
         "title": "pub2",
         "doi": "doi2",
@@ -117,7 +137,7 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
         "platformIdentifier": "2",
     }  # type: typing.Dict[str, typing.Any]
     data[field] = None
-    response = client.post("/publications/v0", json=data)
+    response = client.post("/publications/v0", json=data, headers={"Authorization": "fake-token"})
     assert response.status_code == 422
     assert response.json()["detail"] == [
         {
@@ -126,3 +146,30 @@ def test_null_value(client: TestClient, engine: Engine, field: str):
             "type": "type_error.none.not_allowed",
         }
     ]
+
+
+def test_unauthorized_user(client: TestClient, engine: Engine, mocked_token):
+
+    keycloak_openid.decode_token = mocked_token
+
+    response = client.post(
+        "/publications/v0",
+        json={"title": "title", "doi": "doi2", "platform": "zenodo", "platform_identifier": "2"},
+        headers={"Authorization": "fake-token"},
+    )
+    assert response.status_code == 403
+    response_json = response.json()
+    assert response_json["detail"] == "You do not have permission to edit Aiod resources."
+
+
+def test_unauthenticated_user(client: TestClient, engine: Engine):
+
+    response = client.post(
+        "/publications/v0",
+        json={"title": "title", "doi": "doi2", "platform": "zenodo", "platform_identifier": "2"},
+    )
+    assert response.status_code == 401
+    response_json = response.json()
+    assert (
+        response_json["detail"] == "This endpoint requires authorization. You need to be logged in."
+    )

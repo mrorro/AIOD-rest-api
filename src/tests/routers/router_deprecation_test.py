@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from tests.testutils.test_resource import OrmTestResource, AIoDTestResource, RouterTestResource
+from authentication import keycloak_openid
 
 
 class DeprecatedRouter(RouterTestResource):
@@ -34,7 +35,10 @@ class DeprecatedRouter(RouterTestResource):
         ("delete", "/test_resources/v1/1"),
     ],
 )
-def test_deprecated_router(verb: str, url: str):
+def test_deprecated_router(verb: str, url: str, mocked_privileged_token):
+
+    keycloak_openid.decode_token = mocked_privileged_token
+
     temporary_file = tempfile.NamedTemporaryFile()
     engine = create_engine(f"sqlite:///{temporary_file.name}")
     OrmTestResource.metadata.create_all(engine)
@@ -54,7 +58,8 @@ def test_deprecated_router(verb: str, url: str):
         kwargs = {
             "json": AIoDTestResource(
                 title="Another title", platform="example", platform_identifier="2"
-            ).dict()
+            ).dict(),
+            "headers": {"Authorization": "fake-token"},
         }
     response = getattr(client, verb)(url, **kwargs)
     assert response.status_code == 200
