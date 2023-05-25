@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 from typing import Iterator
 from sickle import Sickle
 import xmltodict
@@ -23,6 +24,10 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
         resource=xml_dict["record"]["metadata"]['oai_datacite']['payload']['resource']
         return  id,resource
 
+    def _bad_record_format(dataset_id,field):
+            logging.error(
+                f"Error while fetching record info for dataset {dataset_id}: bad format {field}"
+            )
     def _dataset_from_record(self, record_raw) -> AIoDDataset:
         id,record =self._get_record_dictionary(record_raw)
         creator = ""
@@ -31,10 +36,14 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
             creator = ", ".join(creators_list)  # TODO change field to an array
         elif isinstance(record["creators"]["creator"]["creatorName"], str):
             creator = record["creators"]["creator"]["creatorName"]
+        else:
+            self._bad_record_format(id,"creator")
 
         title = ""
         if isinstance(record["titles"]["title"], str):
             title = record["titles"]["title"]
+        else:
+            self._bad_record_format(id,"title")
 
         description = ""
         if isinstance(record["descriptions"]["description"], list):
@@ -44,7 +53,8 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
                     break
         elif record["descriptions"]["description"]["@descriptionType"] == "Abstract":
             description = record["descriptions"]["description"]["#text"]
-
+        else:
+            self._bad_record_format(id,"description")
         date_published = None
         date_format = "%Y-%m-%d"
         if isinstance(record["dates"]["date"], list):
@@ -56,25 +66,29 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
         elif record["dates"]["date"]["@dateType"] == "Issued":
             date_string = record["dates"]["date"]["#text"]
             date_published = datetime.strptime(date_string, date_format)
-
+        else:
+            self._bad_record_format(id,"date_published")
         publisher = ""
         if isinstance(record["publisher"], str):
             publisher = record["publisher"]
-
+        else:
+            self._bad_record_format(id,"publisher")
         license =""
         if(isinstance(record["rightsList"]["rights"], list)):
             license =  record["rightsList"]["rights"][0]['@rightsURI']
         elif(isinstance(record["rightsList"]["rights"]['@rightsURI'],str)):
             license =  record["rightsList"]["rights"]['@rightsURI'] 
-
+        else:
+            self._bad_record_format(id,"license")
         # Get dataset keywords
         keywords = []
-
         if "subjects" in record:
             if isinstance(record["subjects"]["subject"], str):
                 keywords = [record["subjects"]["subject"]]
             elif isinstance(record["subjects"]["subject"], list):
                 keywords = [item for item in record["subjects"]["subject"] if isinstance(item, str)]
+            else:
+                self._bad_record_format(id,"keywords")        
 
         dataset = AIoDDataset(
             platform="zenodo",
