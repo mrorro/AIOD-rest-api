@@ -5,6 +5,7 @@ from typing import Any, TypeVar, Generic, Dict, List, Type
 from fastapi import HTTPException
 from pydantic.utils import GetterDict
 from sqlmodel import SQLModel, Session, select
+from starlette.status import HTTP_404_NOT_FOUND
 
 from database.model.named_relation import NamedRelation
 
@@ -60,7 +61,7 @@ class FindByIdentifierDeserializer(DeSerializer[SQLModel]):
         ids_not_found = set(ids) - {e.identifier for e in existing}
         if any(ids_not_found):
             raise HTTPException(
-                status_code=404,
+                status_code=HTTP_404_NOT_FOUND,
                 detail=f"Nested object with identifiers "
                 f"{', '.join([str(i) for i in ids_not_found])} not found",
             )

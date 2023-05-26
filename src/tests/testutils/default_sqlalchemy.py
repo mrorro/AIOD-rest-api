@@ -10,6 +10,7 @@ from starlette.testclient import TestClient
 from database.model import AIAsset
 from main import add_routes
 from tests.testutils.test_resource import RouterTestResource, TestResource
+from unittest.mock import Mock
 
 
 @pytest.fixture(scope="session")
@@ -88,3 +89,34 @@ def client_test_resource(engine_test_resource) -> TestClient:
     app = FastAPI()
     app.include_router(RouterTestResource().create(engine_test_resource, ""))
     return TestClient(app)
+
+
+@pytest.fixture()
+def mocked_token() -> Mock:
+    default_user = {
+        "name": "test-user",
+        "realm_access": {
+            "roles": [
+                "default-roles-dev",
+                "offline_access",
+                "uma_authorization",
+            ]
+        },
+    }
+    return Mock(return_value=default_user)
+
+
+@pytest.fixture()
+def mocked_privileged_token() -> Mock:
+    default_user = {
+        "name": "test-user",
+        "realm_access": {
+            "roles": [
+                "default-roles-dev",
+                "offline_access",
+                "uma_authorization",
+                "edit_aiod_resources",
+            ]
+        },
+    }
+    return Mock(return_value=default_user)

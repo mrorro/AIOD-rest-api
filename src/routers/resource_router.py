@@ -6,7 +6,7 @@ from typing import Literal, Union, Any
 from typing import TypeVar, Type
 from wsgiref.handlers import format_date_time
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy import and_, delete
@@ -24,6 +24,7 @@ from database.model.resource import (
 )
 from database.serialization import update_resource_relationships
 from platform_names import PlatformName
+from authentication import get_current_user
 
 
 class Pagination(BaseModel):
@@ -299,8 +300,16 @@ class ResourceRouter(abc.ABC):
         clz = self.resource_class
         clz_create = self.resource_class_create
 
-        def register_resource(resource_create_instance: clz_create):  # type: ignore
+        def register_resource(
+            resource_create_instance: clz_create,  # type: ignore
+            user: dict = Depends(get_current_user),
+        ):
             f"""Register a {self.resource_name} with AIoD."""
+            if "edit_aiod_resources" not in user["realm_access"]["roles"]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You do not have permission to edit Aiod resources.",
+                )
             try:
                 with Session(engine) as session:
                     asset = AIAsset(type=clz.__tablename__)
@@ -327,7 +336,7 @@ class ResourceRouter(abc.ABC):
                         )
                         existing_resource = session.scalars(query).first()
                         raise HTTPException(
-                            status_code=409,
+                            status_code=status.HTTP_409_CONFLICT,
                             detail=f"There already exists a {self.resource_name} with the same "
                             f"platform and name, with identifier={existing_resource.identifier}.",
                         )
@@ -345,8 +354,18 @@ class ResourceRouter(abc.ABC):
         """
         clz_create = self.resource_class_create
 
-        def put_resource(identifier: int, resource_create_instance: clz_create):  # type: ignore
+        def put_resource(
+            identifier: int,
+            resource_create_instance: clz_create,  # type: ignore
+            user: dict = Depends(get_current_user),
+        ):
             f"""Update an existing {self.resource_name}."""
+            if "edit_aiod_resources" not in user["realm_access"]["roles"]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You do not have permission to edit Aiod resources.",
+                )
+
             try:
                 with Session(engine) as session:
                     resource = self._retrieve_resource(session, identifier)
@@ -394,7 +413,8 @@ class ResourceRouter(abc.ABC):
         else:
             if platform not in {n.name for n in PlatformName}:
                 raise HTTPException(
-                    status_code=400, detail=f"platform '{platform}' not recognized."
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"platform '{platform}' not recognized.",
                 )
             query = select(self.resource_class).where(
                 and_(
@@ -411,7 +431,7 @@ class ResourceRouter(abc.ABC):
                     f"{self.resource_name.capitalize()} '{identifier}' of '{platform}' not found "
                     "in the database."
                 )
-            raise HTTPException(status_code=404, detail=msg)
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg)
         return resource
 
     @property
@@ -437,7 +457,7 @@ def _wrap_as_http_exception(exception: Exception) -> HTTPException:
     # error.
     traceback.print_exc()
     return HTTPException(
-        status_code=500,
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail=(
             "Unexpected exception while processing your request. Please contact the maintainers."
         ),
@@ -448,5 +468,5 @@ def _raise_error_on_invalid_schema(possible_schemas, schema):
     if schema not in possible_schemas:
         raise HTTPException(
             detail=f"Invalid schema {schema}. Expected {' or '.join(possible_schemas)}",
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
         )

@@ -1,10 +1,12 @@
 from typing import Optional, List, Type
+from unittest.mock import Mock
 
 import pytest
 from fastapi import FastAPI
 from sqlmodel import Session, Field, Relationship, SQLModel
 from starlette.testclient import TestClient
 
+from authentication import keycloak_openid
 from database.model import AIAsset
 from database.model.named_relation import NamedRelation
 from database.model.resource import ResourceRelationship, Resource
@@ -188,7 +190,8 @@ def test_get_all_happy_path(client_with_testobject: TestClient):
     assert "named_string" not in r4
 
 
-def test_post_happy_path(client_with_testobject: TestClient):
+def test_post_happy_path(client_with_testobject: TestClient, mocked_privileged_token: Mock):
+    keycloak_openid.decode_token = mocked_privileged_token
     response = client_with_testobject.post(
         "/test_resources/v0",
         json={
@@ -200,6 +203,7 @@ def test_post_happy_path(client_with_testobject: TestClient):
                 {"field1": "val2.1", "field2": "val2.2"},
             ],
         },
+        headers={"Authorization": "Fake token"},
     )
     assert response.status_code == 200
     objects = client_with_testobject.get("/test_resources/v0").json()
@@ -217,7 +221,8 @@ def test_post_happy_path(client_with_testobject: TestClient):
     assert related_objects[1]["field2"] == "val2.2"
 
 
-def test_put_happy_path(client_with_testobject: TestClient):
+def test_put_happy_path(client_with_testobject: TestClient, mocked_privileged_token: Mock):
+    keycloak_openid.decode_token = mocked_privileged_token
     response = client_with_testobject.put(
         "/test_resources/v0/4",
         json={
@@ -229,6 +234,7 @@ def test_put_happy_path(client_with_testobject: TestClient):
                 {"field1": "val2-1", "field2": "val2-2"},
             ],
         },
+        headers={"Authorization": "Fake token"},
     )
     assert response.status_code == 200
     changed_resource = client_with_testobject.get("/test_resources/v0/4").json()

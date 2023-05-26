@@ -3,16 +3,19 @@ Dataset is a complex resource, so they are tested separately.
 """
 
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
+from unittest.mock import Mock
 
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
+from authentication import keycloak_openid
 from database.model import AIAsset
 from database.model.dataset import Dataset
 
 
-def test_happy_path(client: TestClient, engine: Engine):
+def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token: Mock):
+    keycloak_openid.decode_token = mocked_privileged_token
     asset = AIAsset(type="dataset")
     dataset_description = Dataset(
         identifier="1",
@@ -64,7 +67,7 @@ def test_happy_path(client: TestClient, engine: Engine):
             {"variable": "molecule concentration", "technique": "mass spectrometry"}
         ],
     }
-    response = client.post("/datasets/v0", json=body)
+    response = client.post("/datasets/v0", json=body, headers={"Authorization": "Fake token"})
     assert response.status_code == 200
 
     response = client.get("/datasets/v0/2")
