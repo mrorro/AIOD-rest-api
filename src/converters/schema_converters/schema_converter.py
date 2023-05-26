@@ -1,13 +1,14 @@
 import abc
 from typing import Generic, TypeVar, Type
 
-from schemas import AIoDResource
+from sqlmodel import SQLModel
 
-AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDResource)
+
+RESOURCE = TypeVar("RESOURCE", bound=SQLModel)
 SCHEMA_CLASS = TypeVar("SCHEMA_CLASS")
 
 
-class SchemaConverter(abc.ABC, Generic[AIOD_CLASS, SCHEMA_CLASS]):
+class SchemaConverter(abc.ABC, Generic[RESOURCE, SCHEMA_CLASS]):
     """Converting between our AIoD representation of a resource and another representation. For
     example, for dataset, we can convert it to schema.org or DCAT-AP formats.
 
@@ -21,5 +22,5 @@ class SchemaConverter(abc.ABC, Generic[AIOD_CLASS, SCHEMA_CLASS]):
         pass
 
     @abc.abstractmethod
-    def convert(self, aiod: AIOD_CLASS) -> SCHEMA_CLASS:
+    def convert(self, aiod: RESOURCE) -> SCHEMA_CLASS:
         pass

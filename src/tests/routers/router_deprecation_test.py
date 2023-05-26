@@ -1,13 +1,11 @@
 import datetime
-import tempfile
 
 import pytest
 from fastapi import FastAPI
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.engine import Engine
 from starlette.testclient import TestClient
 
-from tests.testutils.test_resource import OrmTestResource, AIoDTestResource, RouterTestResource
+from tests.testutils.test_resource import TestResource, RouterTestResource
 
 
 class DeprecatedRouter(RouterTestResource):
@@ -34,25 +32,15 @@ class DeprecatedRouter(RouterTestResource):
         ("delete", "/test_resources/v1/1"),
     ],
 )
-def test_deprecated_router(verb: str, url: str):
-    temporary_file = tempfile.NamedTemporaryFile()
-    engine = create_engine(f"sqlite:///{temporary_file.name}")
-    OrmTestResource.metadata.create_all(engine)
-
-    test_instance = OrmTestResource(title="A title", platform="example", platform_identifier="1")
-
-    with Session(engine) as session:
-        session.add(test_instance)
-        session.commit()
-
+def test_deprecated_router(engine_test_resource_filled: Engine, verb: str, url: str):
     app = FastAPI()
-    app.include_router(DeprecatedRouter().create(engine, ""))
+    app.include_router(DeprecatedRouter().create(engine_test_resource_filled, ""))
     client = TestClient(app)
 
     kwargs = {}
     if verb in ("post", "put"):
         kwargs = {
-            "json": AIoDTestResource(
+            "json": TestResource(
                 title="Another title", platform="example", platform_identifier="2"
             ).dict()
         }

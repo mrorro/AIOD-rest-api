@@ -28,7 +28,7 @@
             "dct:publisher": null,
             "dct:temporal": [
                 {
-                    "@id": "period_2000-01-01_to_2000-01-02T06:00:00"
+                    "@id": "period_2000-01-01T00:00:00_to_2000-01-02T06:00:00"
                 }
             ],
             "dct:spatial": [
@@ -54,7 +54,7 @@
             },
             "dct:modified": {
                 "@type": "xsd:dateTime",
-                "@value": "2002-01-01"
+                "@value": "2002-01-01T00:00:00"
             },
             "owl:versionInfo": "version1"
         },
@@ -76,11 +76,11 @@
             "dcat:geometry": "spatial_coverage"
         },
         {
-            "@id": "period_2000-01-01_to_2000-01-02T06:00:00",
+            "@id": "period_2000-01-01T00:00:00_to_2000-01-02T06:00:00",
             "@type": "dct:PeriodOfTime",
             "dcat:startDate": {
                 "@type": "xsd:dateTime",
-                "@value": "2000-01-01"
+                "@value": "2000-01-01T00:00:00"
             },
             "dcat:endDate": {
                 "@type": "xsd:dateTime",

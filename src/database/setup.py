@@ -3,17 +3,15 @@ Utility functions for initializing the database and tables through SQLAlchemy.
 """
 from typing import List
 
-from sqlalchemy import Engine, text, create_engine, select
-from sqlalchemy.orm import Session
-
-import converters
-from connectors import ResourceConnector
 from connectors.resource_with_relations import ResourceWithRelations
-from schemas import AIoDAIResource
-from .model.ai_resource import OrmAIResource
-from .model.base import Base  # noqa:F401
-from .model.dataset import OrmDataset
-from .model.publication import OrmPublication
+from database.model import AIAsset
+from database.model.dataset import Dataset
+from sqlalchemy import text
+from sqlalchemy.engine import Engine
+from sqlmodel import create_engine, Session, select
+
+from connectors import ResourceConnector
+from database.model.resource import Resource
 
 
 def connect_to_database(
@@ -40,7 +38,7 @@ def connect_to_database(
     engine = create_engine(url, echo=True, pool_recycle=3600)
 
     with engine.connect() as connection:
-        Base.metadata.create_all(connection, checkfirst=True)
+        Resource.metadata.create_all(connection, checkfirst=True)
         connection.commit()
     return engine
 
@@ -67,8 +65,8 @@ def populate_database(
 
     with Session(engine) as session:
         data_exists = (
-            session.scalars(select(OrmPublication)).first()
-            or session.scalars(select(OrmDataset)).first()
+            # session.scalars(select(OrmPublication)).first() or
+            session.scalars(select(Dataset)).first()
         )
         if only_if_empty and data_exists:
             return
@@ -76,30 +74,29 @@ def populate_database(
         for connector in connectors:
             for item in connector.fetch_all(limit=limit):
                 if isinstance(item, ResourceWithRelations):
-                    orm_resource = _convert(session, item.resource)
-                    _add_related_objects(session, orm_resource, item.related_resources)
+                    # _add_related_objects(session, orm_resource, item.related_resources)
+                    resource = item.resource
                 else:
-                    orm_resource = _convert(session, item)
-                session.add(orm_resource)
+                    resource = item
+                asset = AIAsset(type=resource.__tablename__)
+                session.add(asset)
+                session.flush()
+                resource.identifier = asset.identifier
+                session.add(resource)
         session.commit()
 
 
-def _add_related_objects(
-    session: Session,
-    orm_resource: OrmAIResource,
-    related_resources: dict[str, AIoDAIResource | List[AIoDAIResource]],
-):
-    for field_name, related_resource_or_list in related_resources.items():
-        if isinstance(related_resource_or_list, AIoDAIResource):
-            resource: AIoDAIResource = related_resource_or_list
-            related_orm = _convert(session, resource)
-            orm_resource.__setattr__(field_name, related_orm)
-        else:
-            resources: list[AIoDAIResource] = related_resource_or_list
-            related_orms = [_convert(session, resource) for resource in resources]
-            orm_resource.__setattr__(field_name, related_orms)
-
-
-def _convert(session: Session, resource: AIoDAIResource) -> OrmAIResource:
-    converter = converters.converters[type(resource)]
-    return converter.aiod_to_orm(session, resource, return_existing_if_present=True)
+# def _add_related_objects(
+#     session: Session,
+#     orm_resource: OrmAIResource,
+#     related_resources: dict[str, AIoDAIResource | List[AIoDAIResource]],
+# ):
+#     for field_name, related_resource_or_list in related_resources.items():
+#         if isinstance(related_resource_or_list, AIoDAIResource):
+#             resource: AIoDAIResource = related_resource_or_list
+#             related_orm = _convert(session, resource)
+#             orm_resource.__setattr__(field_name, related_orm)
+#         else:
+#             resources: list[AIoDAIResource] = related_resource_or_list
+#             related_orms = [_convert(session, resource) for resource in resources]
+#             orm_resource.__setattr__(field_name, related_orms)

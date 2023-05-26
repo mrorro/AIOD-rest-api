@@ -12,9 +12,13 @@ from typing import Dict
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse
 from pydantic import Json
-from sqlalchemy import Engine
+from sqlalchemy.engine import Engine
+from starlette import status
+from starlette.responses import JSONResponse
 
 import connectors
 import routers
@@ -128,6 +132,13 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         """Retrieve information about all known platforms"""
         return list(PlatformName)
 
+    @app.exception_handler(RequestValidationError)
+    async def standard_validation_exception_handler(request, exc: RequestValidationError):
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content=jsonable_encoder({"detail": exc.errors(), "body": exc.body}),
+        )
+
     for router in routers.routers:
         app.include_router(router.create(engine, url_prefix))
 
@@ -150,13 +161,13 @@ def create_app() -> FastAPI:
         _connector_from_platform_name("dataset", connectors.dataset_connectors, platform_name)
         for platform_name in args.populate_datasets
     ]
-    publication_connectors = [
-        _connector_from_platform_name(
-            "publication", connectors.publication_connectors, platform_name
-        )
-        for platform_name in args.populate_publications
-    ]
-    connectors_ = dataset_connectors + publication_connectors
+    # publication_connectors = [
+    #     _connector_from_platform_name(
+    #         "publication", connectors.publication_connectors, platform_name
+    #     )
+    #     for platform_name in args.populate_publications
+    # ]
+    connectors_ = dataset_connectors  # + publication_connectors
     engine = _engine(args.rebuild_db)
     if len(connectors_) > 0:
         populate_database(

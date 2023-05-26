@@ -1,23 +1,29 @@
 import abc
 import datetime
+import logging
 import traceback
-from typing import Generic, TypeVar, Type
 from typing import Literal, Union, Any
+from typing import TypeVar, Type
 from wsgiref.handlers import format_date_time
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from sqlalchemy import Engine, select, and_, delete
+from sqlalchemy import and_, delete
+from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlmodel import SQLModel, Session, select
 from starlette.responses import JSONResponse
 
-from converters.orm_converters.orm_converter import OrmConverter
 from converters.schema_converters.schema_converter import SchemaConverter
-from database.model.resource import OrmResource
+from database.model import AIAsset
+from database.model.resource import (
+    Resource,
+    resource_create,
+    resource_read,
+)
+from database.serialization import update_resource_relationships
 from platform_names import PlatformName
-from schemas import AIoDResource
 
 
 class Pagination(BaseModel):
@@ -25,11 +31,12 @@ class Pagination(BaseModel):
     limit: int = 100
 
 
-ORM_CLASS = TypeVar("ORM_CLASS", bound=OrmResource)
-AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDResource)
+RESOURCE = TypeVar("RESOURCE", bound=Resource)
+RESOURCE_CREATE = TypeVar("RESOURCE_CREATE", bound=SQLModel)
+RESOURCE_READ = TypeVar("RESOURCE_READ", bound=SQLModel)
 
 
-class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
+class ResourceRouter(abc.ABC):
     """
     Abstract class for FastAPI resource router.
 
@@ -42,6 +49,10 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
     - PUT /[resource]s/{identifier}
     - DELETE /[resource]s/{identifier}
     """
+
+    def __init__(self):
+        self.resource_class_create = resource_create(self.resource_class)
+        self.resource_class_read = resource_read(self.resource_class)
 
     @property
     @abc.abstractmethod
@@ -74,11 +85,11 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
 
     @property
     @abc.abstractmethod
-    def converter(self) -> OrmConverter[AIOD_CLASS, ORM_CLASS]:
+    def resource_class(self):
         pass
 
     @property
-    def schema_converters(self) -> dict[str, SchemaConverter[AIOD_CLASS, Any]]:
+    def schema_converters(self) -> dict[str, SchemaConverter[RESOURCE, Any]]:
         """
         If a resource can be served in different formats, the resource converter should return
         a dictionary of schema converters.
@@ -90,16 +101,6 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         """
         return {}
 
-    @property
-    @abc.abstractmethod
-    def aiod_class(self) -> Type[AIOD_CLASS]:
-        pass
-
-    @property
-    @abc.abstractmethod
-    def orm_class(self) -> Type[ORM_CLASS]:
-        pass
-
     def create(self, engine: Engine, url_prefix: str) -> APIRouter:
         router = APIRouter()
         version = f"v{self.version}"
@@ -107,11 +108,10 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             "response_model_exclude_none": True,
             "deprecated": self.deprecated_from is not None,
         }
-
         available_schemas: list[Type] = [c.to_class for c in self.schema_converters.values()]
-        response_model = Union[self.aiod_class, *available_schemas]  # type:ignore
+        response_model = Union[self.resource_class_read, *available_schemas]  # type:ignore
         response_model_plural = Union[  # type:ignore
-            list[self.aiod_class], *[list[s] for s in available_schemas]  # type:ignore
+            list[self.resource_class_read], *[list[s] for s in available_schemas]  # type:ignore
         ]
 
         router.add_api_route(
@@ -125,7 +125,6 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             path=f"{url_prefix}/{self.resource_name_plural}/{version}",
             methods={"POST"},
             endpoint=self.register_resource_func(engine),
-            response_model=self.aiod_class,  # type: ignore
             name=self.resource_name,
             **default_kwargs,
         )
@@ -140,7 +139,6 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             path=f"{url_prefix}/{self.resource_name_plural}/{version}/{{identifier}}",
             methods={"PUT"},
             endpoint=self.put_resource_func(engine),
-            response_model=self.aiod_class,  # type: ignore
             name=self.resource_name,
             **default_kwargs,
         )
@@ -174,25 +172,24 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         """Fetch all resources of this platform in given schema, using pagination"""
         _raise_error_on_invalid_schema(self._possible_schemas, schema)
         convert_schema = (
-            self.schema_converters[schema].convert if schema != "aiod" else (lambda x: x)
+            self.schema_converters[schema].convert
+            if schema != "aiod"
+            else self.resource_class_read.from_orm
         )
         try:
             with Session(engine) as session:
                 where_clause = (
-                    (self.orm_class.platform == platform) if platform is not None else True
+                    (self.resource_class.platform == platform) if platform is not None else True
                 )
                 query = (
-                    select(self.orm_class)
+                    select(self.resource_class)
                     .where(where_clause)
                     .offset(pagination.offset)
                     .limit(pagination.limit)
                 )
 
                 return self._wrap_with_headers(
-                    [
-                        convert_schema(self.converter.orm_to_aiod(resource))
-                        for resource in session.scalars(query).all()
-                    ]
+                    [convert_schema(resource) for resource in session.scalars(query).all()]
                 )
         except Exception as e:
             raise _wrap_as_http_exception(e)
@@ -208,10 +205,9 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         try:
             with Session(engine) as session:
                 resource = self._retrieve_resource(session, identifier, platform=platform)
-                aiod = self.converter.orm_to_aiod(resource)
                 if schema != "aiod":
-                    return self.schema_converters[schema].convert(aiod)
-                return self._wrap_with_headers(aiod)
+                    return self.schema_converters[schema].convert(resource)
+                return self._wrap_with_headers(self.resource_class_read.from_orm(resource))
         except Exception as e:
             raise _wrap_as_http_exception(e)
 
@@ -230,7 +226,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             resources = self.get_resources(
                 engine=engine, pagination=pagination, schema=schema, platform=None
             )
-            return self._wrap_with_headers(resources)
+            return resources
 
         return get_resources
 
@@ -250,7 +246,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             resources = self.get_resources(
                 engine=engine, pagination=pagination, schema=schema, platform=platform
             )
-            return self._wrap_with_headers(resources)
+            return resources
 
         return get_resources
 
@@ -300,24 +296,33 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         This function returns a function (instead of being that function directly) because the
         docstring is dynamic and used in Swagger.
         """
-        clz = self.aiod_class
+        clz = self.resource_class
+        clz_create = self.resource_class_create
 
-        def register_resource(resource: clz):  # type: ignore
+        def register_resource(resource_create_instance: clz_create):  # type: ignore
             f"""Register a {self.resource_name} with AIoD."""
             try:
                 with Session(engine) as session:
-                    resource = self.converter.aiod_to_orm(
-                        session, resource, return_existing_if_present=False
+                    asset = AIAsset(type=clz.__tablename__)
+                    session.add(asset)
+                    session.flush()
+                    resource = self.resource_class.from_orm(
+                        resource_create_instance, update={"identifier": asset.identifier}
+                    )
+
+                    update_resource_relationships(
+                        session, self.resource_class, resource, resource_create_instance
                     )
                     session.add(resource)
                     try:
                         session.commit()
-                    except IntegrityError:
+                    except IntegrityError as e:
+                        logging.warning(e)
                         session.rollback()
-                        query = select(self.orm_class).where(
+                        query = select(self.resource_class).where(
                             and_(
-                                self.orm_class.platform == resource.platform,
-                                self.orm_class.platform_identifier == resource.platform_identifier,
+                                clz.platform == resource.platform,
+                                clz.platform_identifier == resource.platform_identifier,
                             )
                         )
                         existing_resource = session.scalars(query).first()
@@ -326,9 +331,7 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
                             detail=f"There already exists a {self.resource_name} with the same "
                             f"platform and name, with identifier={existing_resource.identifier}.",
                         )
-
-                    converted = self.converter.orm_to_aiod(resource)
-                    return self._wrap_with_headers(converted)
+                    return self._wrap_with_headers({"identifier": resource.identifier})
             except Exception as e:
                 raise _wrap_as_http_exception(e)
 
@@ -340,23 +343,24 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
         This function returns a function (instead of being that function directly) because the
         docstring is dynamic and used in Swagger.
         """
+        clz_create = self.resource_class_create
 
-        clz = self.aiod_class
-
-        def put_resource(identifier: str, resource: clz):  # type: ignore
+        def put_resource(identifier: int, resource_create_instance: clz_create):  # type: ignore
             f"""Update an existing {self.resource_name}."""
             try:
                 with Session(engine) as session:
-                    self._retrieve_resource(session, identifier)  # Raise error if it does not exist
-                    resource_orm = self.converter.aiod_to_orm(
-                        session, resource, return_existing_if_present=False
+                    resource = self._retrieve_resource(session, identifier)
+                    for attribute_name in resource.schema()["properties"]:
+                        if hasattr(resource_create_instance, attribute_name):
+                            new_value = getattr(resource_create_instance, attribute_name)
+                            setattr(resource, attribute_name, new_value)
+                    # resource = self.resource_class.from_orm(resource_create)
+                    update_resource_relationships(
+                        session, self.resource_class, resource, resource_create_instance
                     )
-                    resource_orm.identifier = identifier
-                    session.merge(resource_orm)
+                    session.merge(resource)
                     session.commit()
-                    new_resource = self._retrieve_resource(session, identifier)
-                    converted = self.converter.orm_to_aiod(new_resource)
-                    return self._wrap_with_headers(converted)
+                return self._wrap_with_headers(None)
             except Exception as e:
                 raise _wrap_as_http_exception(e)
 
@@ -373,8 +377,8 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
             try:
                 with Session(engine) as session:
                     self._retrieve_resource(session, identifier)  # Raise error if it does not exist
-                    statement = delete(self.orm_class).where(
-                        self.orm_class.identifier == identifier
+                    statement = delete(self.resource_class).where(
+                        self.resource_class.identifier == identifier
                     )
                     session.execute(statement)
                     session.commit()
@@ -386,16 +390,16 @@ class ResourceRouter(abc.ABC, Generic[ORM_CLASS, AIOD_CLASS]):
 
     def _retrieve_resource(self, session, identifier, platform=None):
         if platform is None:
-            query = select(self.orm_class).where(self.orm_class.identifier == identifier)
+            query = select(self.resource_class).where(self.resource_class.identifier == identifier)
         else:
             if platform not in {n.name for n in PlatformName}:
                 raise HTTPException(
                     status_code=400, detail=f"platform '{platform}' not recognized."
                 )
-            query = select(self.orm_class).where(
+            query = select(self.resource_class).where(
                 and_(
-                    self.orm_class.platform_identifier == identifier,
-                    self.orm_class.platform == platform,
+                    self.resource_class.platform_identifier == identifier,
+                    self.resource_class.platform == platform,
                 )
             )
         resource = session.scalars(query).first()
