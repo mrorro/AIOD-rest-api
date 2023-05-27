@@ -12,7 +12,8 @@ from database.model.dataset.measured_value import (
     MeasuredValueORM,
     MeasuredValue,
 )
-from database.model.general import License, Keyword
+from database.model.general.license import License
+from database.model.general.keyword import Keyword
 from database.model.resource import Resource, ResourceRelationship
 from database.serialization import (
     AttributeSerializer,

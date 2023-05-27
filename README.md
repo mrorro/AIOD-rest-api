@@ -222,6 +222,10 @@ The structure is based on the
 [metadata schema](https://docs.google.com/spreadsheets/d/1n2DdSmzyljvTFzQzTLMAmuo3IVNx8yposdPLItBta68/edit?usp=sharing).
 
 
+## Adding resources
+
+See [src/README.md](src/README.md).
+
 ## Releases
 
 ### Breaking changes

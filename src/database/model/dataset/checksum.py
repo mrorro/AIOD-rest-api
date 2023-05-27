@@ -1,22 +1,13 @@
-from typing import List
 from typing import TYPE_CHECKING
 
 from sqlmodel import Relationship, SQLModel, Field
 
-from database.model.named_relation import NamedRelation
+from database.model.dataset.checksum_algorithm import ChecksumAlgorithm
 from database.model.resource import ResourceRelationship
 from database.serialization import AttributeSerializer, FindByNameDeserializer, create_getter_dict
 
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
     from database.model.dataset.data_download import DataDownloadORM
-
-
-class ChecksumAlgorithm(NamedRelation, table=True):  # type: ignore [call-arg]
-    """A checksum algorithm (such as MD5)"""
-
-    __tablename__ = "checksum_algorithm"
-
-    checksums: List["ChecksumORM"] = Relationship(back_populates="algorithm")
 
 
 class ChecksumBase(SQLModel):

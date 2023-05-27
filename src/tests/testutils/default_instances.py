@@ -11,10 +11,12 @@ import pytest
 
 from database.model.dataset import Dataset
 from database.model.dataset.alternate_name import DatasetAlternateName
-from database.model.dataset.checksum import ChecksumORM, ChecksumAlgorithm
+from database.model.dataset.checksum import ChecksumORM
+from database.model.dataset.checksum_algorithm import ChecksumAlgorithm
 from database.model.dataset.data_download import DataDownloadORM
 from database.model.dataset.measured_value import MeasuredValueORM
-from database.model.general import Keyword, License
+from database.model.general.keyword import Keyword
+from database.model.general.license import License
 
 
 @pytest.fixture(scope="session")

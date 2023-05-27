@@ -257,35 +257,3 @@
 #         back_populates="technical_categories",
 #         secondary=organisation_technical_category_relationship,
 #     )
-from typing import List, TYPE_CHECKING
-
-from sqlmodel import Relationship
-
-
-from database.model.dataset.keyword import DatasetKeywordLink
-from database.model.named_relation import NamedRelation
-
-if TYPE_CHECKING:  # avoid circular imports; only import while type checking
-    from database.model.dataset import Dataset
-
-
-class License(NamedRelation, table=True):  # type: ignore [call-arg]
-    """
-    A license document, indicated by URL.
-    """
-
-    __tablename__ = "license"
-
-    datasets: List["Dataset"] = Relationship(back_populates="license")
-
-
-class Keyword(NamedRelation, table=True):  # type: ignore [call-arg]
-    """
-    Keywords or tags used to describe some item
-    """
-
-    __tablename__ = "keyword"
-
-    datasets: List["Dataset"] = Relationship(
-        back_populates="keywords", link_model=DatasetKeywordLink
-    )
