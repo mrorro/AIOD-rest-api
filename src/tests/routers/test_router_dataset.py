@@ -12,21 +12,32 @@ from starlette.testclient import TestClient
 from authentication import keycloak_openid
 from database.model import AIAsset
 from database.model.dataset import Dataset
+from database.model.publication import Publication
 
 
 def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token: Mock):
     keycloak_openid.decode_token = mocked_privileged_token
-    asset = AIAsset(type="dataset")
-    dataset_description = Dataset(
-        identifier="1",
-        name="Parent",
-        platform="example",
-        platform_identifier="1",
-        description="description text",
-        same_as="",
-    )
     with Session(engine) as session:
-        session.add_all([asset, dataset_description])
+        session.add_all(
+            [
+                AIAsset(type="dataset"),
+                AIAsset(type="publication"),
+                Dataset(
+                    identifier="1",
+                    name="Parent",
+                    platform="example",
+                    platform_identifier="1",
+                    description="description text",
+                    same_as="",
+                ),
+                Publication(
+                    identifier="2",
+                    title="A publication",
+                    platform="example",
+                    platform_identifier="1",
+                ),
+            ]
+        )
         session.commit()
 
     body = {
@@ -35,6 +46,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "description": "A description.",
         "name": "Example Dataset",
         "same_as": "https://www.example.com/dataset/example",
+        "citations": [2],
         "contact": "John Doe",
         "creator": "John Doe",
         "publisher": "John Doe",
@@ -70,11 +82,11 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     response = client.post("/datasets/v0", json=body, headers={"Authorization": "Fake token"})
     assert response.status_code == 200
 
-    response = client.get("/datasets/v0/2")
+    response = client.get("/datasets/v0/3")
     assert response.status_code == 200
 
     response_json = response.json()
-    assert response_json["identifier"] == 2
+    assert response_json["identifier"] == 3
     assert response_json["name"] == "Example Dataset"
     assert response_json["description"] == "A description."
     assert len(response_json["distributions"]) == 1
@@ -82,6 +94,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert "identifier" not in response_json["distributions"][0]
 
     assert set(response_json["alternate_names"]) == {"alias 1", "alias 2"}
+    assert response_json["citations"] == [2]
     assert len(response_json["distributions"][0]["checksum"]) == 1
     assert response_json["distributions"][0]["checksum"][0]["algorithm"] == "md5"
     assert (

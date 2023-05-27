@@ -85,7 +85,7 @@ from database.serialization import (
 )
 
 class Example(ExampleBase, table=True):  # type: ignore [call-arg]
-    __tablename__ = "dataset"
+    __tablename__ = "example"
     __table_args__ = (
         UniqueConstraint(
             "string_field",
@@ -125,7 +125,7 @@ from typing import TYPE_CHECKING
 from sqlmodel import SQLModel, Field
 
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
-    from database.model.dataset.example import Example
+    from database.model.example import Example
 
 class ExampleEnumLink(SQLModel, table=True):  # type: ignore [call-arg]
     __tablename__ = "example_example_enum_link"
@@ -139,7 +139,7 @@ In `src/database/model/example/example.py`:
 class Example(ExampleBase, table=True):  # type: ignore [call-arg]
     # [...]
     example_enums: List[ExampleEnum] = Relationship(
-        back_populates="datasets", link_model=ExampleEnumLink
+        back_populates="examples", link_model=ExampleEnumLink
     )
 
     class RelationshipConfig:
@@ -174,7 +174,7 @@ from typing import TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
-    from database.model.dataset.example import Example
+    from database.model.example import Example
 
 
 class NestedBase(SQLModel):
@@ -238,6 +238,7 @@ class ExampleRouter(ResourceRouter):
     def resource_class(self) -> type[Example]:
         return Example
 ```
+And add it to `src/routers/__init__.py`. 
 
 ## Test
 A lot of the routing is generic, but we want to test our new files. It is easy to make mistakes 

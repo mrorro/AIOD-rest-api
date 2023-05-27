@@ -12,8 +12,10 @@ from database.model.dataset.measured_value import (
     MeasuredValueORM,
     MeasuredValue,
 )
+from database.model.dataset.publication import DatasetPublicationLink
 from database.model.general.license import License
 from database.model.general.keyword import Keyword
+from database.model.publication import Publication
 from database.model.resource import Resource, ResourceRelationship
 from database.serialization import (
     AttributeSerializer,
@@ -86,12 +88,10 @@ class Dataset(DatasetBase, table=True):  # type: ignore [call-arg]
     alternate_names: List[DatasetAlternateName] = Relationship(
         back_populates="datasets", link_model=DatasetAlternateNameLink
     )
-    # TODO[jos]: Publication
-    # citations: Mapped[list["OrmPublication"]] = relationship(
-    #     default_factory=list,
-    #     back_populates="datasets",
-    #     secondary=dataset_publication_relationship,
-    # )
+    citations: List[Publication] = Relationship(
+        back_populates="datasets",
+        link_model=DatasetPublicationLink,
+    )
     distributions: List[DataDownloadORM] = Relationship(
         back_populates="dataset",
     )
@@ -121,6 +121,11 @@ class Dataset(DatasetBase, table=True):  # type: ignore [call-arg]
             example=["alias 1", "alias 2"],
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(DatasetAlternateName),
+        )
+        citations: List[int] = ResourceRelationship(
+            example=[1, 2],
+            deserializer=FindByIdentifierDeserializer(Publication),
+            serializer=AttributeSerializer("identifier"),
         )
         distributions: List[DataDownload] = ResourceRelationship(
             deserializer=CastDeserializer(DataDownloadORM)
@@ -153,3 +158,4 @@ class Dataset(DatasetBase, table=True):  # type: ignore [call-arg]
 deserializer = FindByIdentifierDeserializer(Dataset)
 Dataset.RelationshipConfig.is_part.deserializer = deserializer  # type: ignore[attr-defined]
 Dataset.RelationshipConfig.has_parts.deserializer = deserializer  # type: ignore[attr-defined]
+Publication.RelationshipConfig.datasets.deserializer = deserializer  # type: ignore[attr-defined]
