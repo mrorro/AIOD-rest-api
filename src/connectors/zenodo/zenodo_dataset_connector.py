@@ -144,9 +144,9 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
             if self._get_resource_type(record) == "Dataset":
                 dataset = self._dataset_from_record(record)
                 if dataset is not None:
+                    counter += 1
                     yield dataset
             record = next(records, None)
-            counter += 1
 
     def fetch_all(self, limit: int | None = None) -> Iterator[AIoDDataset]:
         sickle = Sickle("https://zenodo.org/oai2d")
