@@ -51,26 +51,23 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
             return None
 
         description = ""
-        if isinstance(record["descriptions"]["description"], list):
-            for element in record["descriptions"]["description"]:
-                if element.get("@descriptionType") == "Abstract":
-                    description = element.get("#text")
-                    break
-        elif record["descriptions"]["description"]["@descriptionType"] == "Abstract":
-            description = record["descriptions"]["description"]["#text"]
+        description_raw = record["descriptions"]["description"]
+        if isinstance(description_raw, list):
+            (description,) = [
+                e.get("#text") for e in description_raw if e.get("@descriptionType") == "Abstract"
+            ]
+        elif description_raw["@descriptionType"] == "Abstract":
+            description = description_raw["#text"]
         else:
             self._bad_record_format(id, "description")
             return None
         date_published = None
         date_format = "%Y-%m-%d"
-        if isinstance(record["dates"]["date"], list):
-            for element in record["dates"]["date"]:
-                if element.get("@dateType") == "Issued":
-                    date_string = element["#text"]
-                    date_published = datetime.strptime(date_string, date_format)
-                    break
-        elif record["dates"]["date"]["@dateType"] == "Issued":
-            date_string = record["dates"]["date"]["#text"]
+        date_raw = record["dates"]["date"]
+        if isinstance(date_raw, list):
+            (description,) = [e.get("#text") for e in date_raw if e.get("@dateType") == "Issued"]
+        elif date_raw["@dateType"] == "Issued":
+            date_string = date_raw["#text"]
             date_published = datetime.strptime(date_string, date_format)
         else:
             self._bad_record_format(id, "date_published")
