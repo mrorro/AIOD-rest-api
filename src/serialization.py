@@ -13,18 +13,27 @@ MODEL = TypeVar("MODEL", bound=SQLModel)
 
 
 class Serializer(abc.ABC, Generic[MODEL]):
+    """Serialization from Pydantic class to ORM class"""
+
     @abc.abstractmethod
     def serialize(self, model: MODEL) -> Any:
         pass
 
 
 class DeSerializer(abc.ABC, Generic[MODEL]):
+    """Deserialization from ORM class to Pydantic class"""
+
     @abc.abstractmethod
     def deserialize(self, session: Session, serialized: Any) -> MODEL | List[MODEL]:
         pass
 
 
 class AttributeSerializer(Serializer):
+    """Serialize by using only the value of this attribute.
+
+    For instance, if using `AttributeSerializer('identifier')`, only the identifier of this
+    object will be shown to the user."""
+
     def __init__(self, attribute_name: str):
         self.attribute_name = attribute_name
 
@@ -32,28 +41,15 @@ class AttributeSerializer(Serializer):
         return getattr(model, self.attribute_name)
 
 
-def create_getter_dict(attribute_serializers: Dict[str, Serializer]):
-    attribute_names = set(attribute_serializers.keys())
-
-    class GetterDictSerializer(GetterDict):
-        def get(self, key: Any, default: Any = None) -> Any:
-            if key in attribute_names:
-                attribute = getattr(self._obj, key)
-                if attribute is not None:
-                    serializer = attribute_serializers[key]
-                    if isinstance(attribute, list):
-                        return [serializer.serialize(v) for v in attribute]
-                    return serializer.serialize(attribute)
-            return super().get(key, default)
-
-    return GetterDictSerializer
-
-
 @dataclasses.dataclass
 class FindByIdentifierDeserializer(DeSerializer[SQLModel]):
+    """
+    Return a list of objects based on their identifiers.
+    """
+
     clazz: type[SQLModel]
 
-    def deserialize(self, session: Session, ids: list[int]) -> SQLModel | list[SQLModel]:
+    def deserialize(self, session: Session, ids: list[int]) -> list[SQLModel]:
         if not isinstance(ids, list):
             raise ValueError("Expected list. This deserializer is not needed for single values.")
         query = select(self.clazz).where(self.clazz.identifier.in_(ids))  # noqa
@@ -70,6 +66,13 @@ class FindByIdentifierDeserializer(DeSerializer[SQLModel]):
 
 @dataclasses.dataclass
 class FindByNameDeserializer(DeSerializer[NamedRelation]):
+    """
+    Deserialization of NamedValues: uniquely identified by their name.
+
+    In case of a single name, this deserializer returns the identifier. In case of a list of
+    names, it returns the list of NamedValues.
+    """
+
     clazz: type[NamedRelation]
 
     def deserialize(
@@ -97,6 +100,10 @@ class FindByNameDeserializer(DeSerializer[NamedRelation]):
 
 @dataclasses.dataclass
 class CastDeserializer(DeSerializer[SQLModel]):
+    """
+    Deserialize by casting it to a class.
+    """
+
     clazz: type[SQLModel]
 
     def deserialize(self, session: Session, serialized: Any) -> SQLModel | List[SQLModel]:
@@ -106,16 +113,41 @@ class CastDeserializer(DeSerializer[SQLModel]):
 
     def _deserialize_single_resource(self, serialized, session):
         resource = self.clazz.from_orm(serialized)
-        update_resource_relationships(session, self.clazz, resource, serialized)
+        deserialize_resource_relationships(session, self.clazz, resource, serialized)
         return resource
 
 
-def update_resource_relationships(
+def create_getter_dict(attribute_serializers: Dict[str, Serializer]):
+    """Based on a dictionary of `variable_name, Serializer`, generate a `getter_dict`. A
+    `getter_dict` is used by Pydantic to perform serialization.
+
+    We have added a layer of Serializers instead of directly using a getter_dict, to make it
+    easier to configure the serialization per object attribute, instead of for each complete
+    object."""
+    attribute_names = set(attribute_serializers.keys())
+
+    class GetterDictSerializer(GetterDict):
+        def get(self, key: Any, default: Any = None) -> Any:
+            if key in attribute_names:
+                attribute = getattr(self._obj, key)
+                if attribute is not None:
+                    serializer = attribute_serializers[key]
+                    if isinstance(attribute, list):
+                        return [serializer.serialize(v) for v in attribute]
+                    return serializer.serialize(attribute)
+            return super().get(key, default)
+
+    return GetterDictSerializer
+
+
+def deserialize_resource_relationships(
     session: Session,
     resource_class: Type[SQLModel],
     resource: SQLModel,
     resource_create_instance: SQLModel,
 ):
+    """After deserialization of a resource, this function will deserialize all it's related
+    objects."""
     if hasattr(resource_class, "RelationshipConfig"):
         relationships = {
             k: v

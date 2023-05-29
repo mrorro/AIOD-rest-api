@@ -22,7 +22,7 @@ from database.model.resource import (
     resource_create,
     resource_read,
 )
-from serialization import update_resource_relationships
+from serialization import deserialize_resource_relationships
 from platform_names import PlatformName
 from authentication import get_current_user
 
@@ -319,7 +319,7 @@ class ResourceRouter(abc.ABC):
                         resource_create_instance, update={"identifier": asset.identifier}
                     )
 
-                    update_resource_relationships(
+                    deserialize_resource_relationships(
                         session, self.resource_class, resource, resource_create_instance
                     )
                     session.add(resource)
@@ -373,7 +373,7 @@ class ResourceRouter(abc.ABC):
                         if hasattr(resource_create_instance, attribute_name):
                             new_value = getattr(resource_create_instance, attribute_name)
                             setattr(resource, attribute_name, new_value)
-                    update_resource_relationships(
+                    deserialize_resource_relationships(
                         session, self.resource_class, resource, resource_create_instance
                     )
                     session.merge(resource)
