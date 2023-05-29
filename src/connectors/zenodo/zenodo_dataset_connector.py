@@ -126,20 +126,29 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
                 return xml_string[start:end]
         return None
 
-    def _retrieve_dataset_from_datetime(self, sk: Sickle, dt: datetime)-> Iterator[AIoDDataset]:
+    def _retrieve_dataset_from_datetime(
+        self,
+        sk: Sickle,
+        dt: datetime,
+        limit: int | None = None,
+    ) -> Iterator[AIoDDataset]:
         records = sk.ListRecords(
             **{
                 "metadataPrefix": "oai_datacite",
                 "from": dt.isoformat(),
             }
         )
-        for record in records:
+        counter = 0
+        record = next(records, None)
+        while record and (limit is None or counter <= limit):
             if self._get_resource_type(record) == "Dataset":
                 dataset = self._dataset_from_record(record)
                 if dataset is not None:
                     yield dataset
+            record = next(records, None)
+            counter += 1
 
     def fetch_all(self, limit: int | None = None) -> Iterator[AIoDDataset]:
         sickle = Sickle("https://zenodo.org/oai2d")
         date = datetime(2000, 1, 1, 12, 0, 0)  # this should be a paramater
-        return self._retrieve_dataset_from_datetime(sickle, date)
+        return self._retrieve_dataset_from_datetime(sickle, date, limit)
