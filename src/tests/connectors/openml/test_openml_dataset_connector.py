@@ -28,7 +28,7 @@ def test_fetch_happy_path():
     assert dataset.platform == PlatformName.openml.value
     assert dataset.platform_identifier == id_
     assert dataset.same_as == "https://www.openml.org/api/v1/json/data/2"
-    # assert len(dataset.citations) == 0
+    assert len(dataset.citations) == 0
     assert dataset.license.name == "Public"
     assert dataset.version == "1"
     assert dataset.is_accessible_for_free
@@ -66,7 +66,7 @@ def test_fetch_all_happy_path():
         datasets = list(connector.fetch_all(limit=3))
 
     assert len(datasets) == 3
-    # assert {len(d.citations) for d in datasets} == {0}
+    assert {len(d.citations) for d in datasets} == {0}
 
 
 def test_fetch_missing_dataset():
