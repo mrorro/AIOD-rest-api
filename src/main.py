@@ -12,13 +12,9 @@ from typing import Dict
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
-from fastapi.encoders import jsonable_encoder
-from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse
 from pydantic import Json
 from sqlalchemy.engine import Engine
-from starlette import status
-from starlette.responses import JSONResponse
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_501_NOT_IMPLEMENTED
 
 import connectors
@@ -135,13 +131,6 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
     def get_platforms() -> list:
         """Retrieve information about all known platforms"""
         return list(PlatformName)
-
-    @app.exception_handler(RequestValidationError)
-    async def standard_validation_exception_handler(request, exc: RequestValidationError):
-        return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content=jsonable_encoder({"detail": exc.errors(), "body": exc.body}),
-        )
 
     for router in routers.routers:
         app.include_router(router.create(engine, url_prefix))
