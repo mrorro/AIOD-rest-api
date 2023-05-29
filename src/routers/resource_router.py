@@ -373,7 +373,6 @@ class ResourceRouter(abc.ABC):
                         if hasattr(resource_create_instance, attribute_name):
                             new_value = getattr(resource_create_instance, attribute_name)
                             setattr(resource, attribute_name, new_value)
-                    # resource = self.resource_class.from_orm(resource_create)
                     update_resource_relationships(
                         session, self.resource_class, resource, resource_create_instance
                     )
