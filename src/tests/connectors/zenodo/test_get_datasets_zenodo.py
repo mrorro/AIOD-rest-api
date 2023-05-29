@@ -44,7 +44,7 @@ def mock_zenodo_responses(mocked_requests: responses.RequestsMock):
         path_test_resources() / "connectors" / "zenodo" / "list_records.xml",
         "r",
     ) as f:
-        records_list = f.read()  # Lee el contenido del archivo
+        records_list = f.read()
     mocked_requests.add(
         responses.GET,
         "https://zenodo.org/oai2d?metadataPrefix=oai_datacite&from=2000-01-01T12%3A00%3A00&verb=ListRecords",  # noqa E501
