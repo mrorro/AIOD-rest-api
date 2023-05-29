@@ -126,7 +126,8 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
             end = xml_string.find('"', start)
             if end != -1:
                 return xml_string[start:end]
-        logging.error("Error while getting the resource type")
+        id, _ = self._get_record_dictionary(record)
+        logging.error(f"Error while getting the resource type of the record {id}")
         return None
 
     def _retrieve_dataset_from_datetime(
