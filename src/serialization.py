@@ -126,7 +126,9 @@ def update_resource_relationships(
             new_value = getattr(resource_create_instance, attribute)
             if new_value is not None:
                 if relationship.deserializer is not None:
-                    deserialized = relationship.deserializer.deserialize(session, new_value)
-                    setattr(resource, relationship.identifier_name or attribute, deserialized)
+                    new_value = relationship.deserializer.deserialize(session, new_value)
+                if hasattr(relationship, "identifier_name"):
+                    # a `ResourceRelationshipSingleInfo`, so a many-to-one relationship
+                    setattr(resource, relationship.identifier_name, new_value)
                 else:
-                    setattr(resource, relationship.identifier_name or attribute, new_value)
+                    setattr(resource, attribute, new_value)

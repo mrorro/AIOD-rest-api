@@ -8,9 +8,10 @@ from starlette.testclient import TestClient
 
 from authentication import keycloak_openid
 from database.model import AIAsset
+from database.model.relationships import ResourceRelationshipSingle, ResourceRelationshipList
 from database.model.named_relation import NamedRelation
-from database.model.resource import ResourceRelationship, Resource
-from database.serialization import AttributeSerializer, FindByNameDeserializer, CastDeserializer
+from database.model.resource import Resource
+from serialization import AttributeSerializer, FindByNameDeserializer, CastDeserializer
 from routers import ResourceRouter
 
 
@@ -86,20 +87,20 @@ class TestObject(TestObjectBase, table=True):  # type: ignore [call-arg]
     )
 
     class RelationshipConfig:
-        named_string: Optional[str] = ResourceRelationship(
+        named_string: Optional[str] = ResourceRelationshipSingle(
             description="this is a test for a string stored in a separate table",
             identifier_name="named_string_identifier",
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(TestEnum),
             example="test",
         )
-        named_string_list: List[str] = ResourceRelationship(
+        named_string_list: List[str] = ResourceRelationshipList(
             description="this is a test for a list of strings",
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(TestEnum2),
             example=["test1", "test2"],
         )
-        related_objects: List[TestRelatedObject] = ResourceRelationship(
+        related_objects: List[TestRelatedObject] = ResourceRelationshipList(
             description="this is a test for a list of objects",
             deserializer=CastDeserializer(TestRelatedObjectOrm),
         )

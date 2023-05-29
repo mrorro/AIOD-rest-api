@@ -61,8 +61,10 @@ from sqlmodel import Relationship
 from typing import TYPE_CHECKING
 
 from database.model.named_relation import NamedRelation
+
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
     from database.model.example import Example
+
 
 class ExampleEnum(NamedRelation, table=True):  # type: ignore [call-arg]
     """An example of an enum stored in a separate table"""
@@ -73,16 +75,17 @@ class ExampleEnum(NamedRelation, table=True):  # type: ignore [call-arg]
 ```
 
 Next we create the `Example` in `src/database/model/example/example.py`, inheriting from 
-`ExampleBase`. 
+`ExampleBase`.
 
 ```python
 from sqlalchemy import UniqueConstraint
-from database.model.resource import ResourceRelationship
+from database.model.relationships import ResourceRelationshipSingle
 from sqlmodel import Field, Relationship
-from database.serialization import (
+from serialization import (
     AttributeSerializer,
     FindByNameDeserializer
 )
+
 
 class Example(ExampleBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "example"
@@ -98,10 +101,9 @@ class Example(ExampleBase, table=True):  # type: ignore [call-arg]
 
     example_enum_identifier: int | None = Field(foreign_key="example_enum.identifier")
     example_enum: ExampleEnum | None = Relationship(back_populates="examples")
-    
 
     class RelationshipConfig:  # This is AIoD-specific code, used to go from Pydantic to SqlAlchemy
-        example_enum: str | None = ResourceRelationship(
+        example_enum: str | None = ResourceRelationshipSingle(
             identifier_name="example_enum_identifier",
             serializer=AttributeSerializer("name"),  # code to serialize ORM to Pydantic
             deserializer=FindByNameDeserializer(ExampleEnum),  # deserialize Pydantic to ORM
@@ -110,13 +112,13 @@ class Example(ExampleBase, table=True):  # type: ignore [call-arg]
 ```
 
 ### Types of relations
-#### One to many Enum
+#### Many-to-one Enum
 See `ExampleEnum` above. Example: `Dataset.license`: we keep a list of possible licenses. Each 
 license relates back to multiple datasets.
 
-#### Many to Many Enum.
-If, instead, we needed a many-to-many enum, we need a separate table linking them together. 
-Example: `Dataset.alternate_name`:
+#### Many-to-many Enum or one-to-many.
+If, instead, we needed a many-to-many or one-to-many enum, we need a separate table linking them 
+together. Example: `Dataset.alternate_name`:
 
 In `src/database/model/example/example_enum.py`:
 ```python
@@ -144,7 +146,7 @@ class Example(ExampleBase, table=True):  # type: ignore [call-arg]
 
     class RelationshipConfig:
         # [...]
-        alternate_names: List[str] = ResourceRelationship(
+        alternate_names: List[str] = ResourceRelationshipList(
             example=["alias 1", "alias 2"],
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ExampleEnum),
@@ -205,7 +207,7 @@ class Example(ExampleBase, table=True):  # type: ignore [call-arg]
 
     class RelationshipConfig:
         # [...]
-        nested: List[Nested] = ResourceRelationship(
+        nested: List[Nested] = ResourceRelationshipList(
             deserializer=CastDeserializer(DataDownloadORM)
         )
 ```

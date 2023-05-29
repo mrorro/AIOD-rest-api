@@ -1,10 +1,10 @@
 from typing import List
 from typing import TYPE_CHECKING
 
-from database.serialization import CastDeserializer
+from serialization import CastDeserializer
 from sqlmodel import SQLModel, Field, Relationship
 from database.model.dataset.checksum import ChecksumORM, Checksum
-from database.model.resource import ResourceRelationship
+from database.model.relationships import ResourceRelationshipList
 
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
     from database.model.dataset.dataset import Dataset
@@ -34,7 +34,9 @@ class DataDownloadORM(DataDownloadBase, table=True):  # type: ignore [call-arg]
     checksum: List[ChecksumORM] = Relationship(back_populates="distribution")
 
     class RelationshipConfig:
-        checksum: List[Checksum] = ResourceRelationship(deserializer=CastDeserializer(ChecksumORM))
+        checksum: List[Checksum] = ResourceRelationshipList(
+            deserializer=CastDeserializer(ChecksumORM)
+        )
 
 
 class DataDownload(DataDownloadBase):

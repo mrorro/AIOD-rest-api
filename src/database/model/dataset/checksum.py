@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 from sqlmodel import Relationship, SQLModel, Field
 
 from database.model.dataset.checksum_algorithm import ChecksumAlgorithm
-from database.model.resource import ResourceRelationship
-from database.serialization import AttributeSerializer, FindByNameDeserializer, create_getter_dict
+from database.model.relationships import ResourceRelationshipSingle
+from serialization import AttributeSerializer, FindByNameDeserializer, create_getter_dict
 
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
     from database.model.dataset.data_download import DataDownloadORM
@@ -28,7 +28,7 @@ class ChecksumORM(ChecksumBase, table=True):  # type: ignore [call-arg]
     distribution: "DataDownloadORM" = Relationship(back_populates="checksum")
 
     class RelationshipConfig:
-        algorithm: str | None = ResourceRelationship(
+        algorithm: str | None = ResourceRelationshipSingle(
             identifier_name="algorithm_identifier",
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ChecksumAlgorithm),

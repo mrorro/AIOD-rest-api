@@ -1,17 +1,18 @@
 from datetime import datetime
 from typing import Optional, List
+from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship
 
 from database.model.dataset.publication import DatasetPublicationLink
 from database.model.general.license import License
 from database.model.general.resource_type import ResourceType
-from database.model.resource import Resource, ResourceRelationship
-from database.serialization import (
+from database.model.relationships import ResourceRelationshipList, ResourceRelationshipSingle
+from database.model.resource import Resource
+from serialization import (
     AttributeSerializer,
     FindByNameDeserializer,
 )
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from database.model.dataset import Dataset
@@ -51,16 +52,16 @@ class Publication(PublicationBase, table=True):  # type: ignore [call-arg]
     resource_type: Optional[ResourceType] = Relationship(back_populates="publications")
 
     class RelationshipConfig:
-        datasets: List[int] = ResourceRelationship(
+        datasets: List[int] = ResourceRelationshipList(
             serializer=AttributeSerializer("identifier"), example=[1]
         )
-        license: Optional[str] = ResourceRelationship(
+        license: Optional[str] = ResourceRelationshipSingle(
             identifier_name="license_identifier",
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(License),
             example="https://creativecommons.org/share-your-work/public-domain/cc0/",
         )
-        resource_type: Optional[str] = ResourceRelationship(
+        resource_type: Optional[str] = ResourceRelationshipSingle(
             identifier_name="resource_type_identifier",
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ResourceType),

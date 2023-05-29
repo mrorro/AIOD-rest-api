@@ -16,8 +16,9 @@ from database.model.dataset.publication import DatasetPublicationLink
 from database.model.general.license import License
 from database.model.general.keyword import Keyword
 from database.model.publication import Publication
-from database.model.resource import Resource, ResourceRelationship
-from database.serialization import (
+from database.model.resource import Resource
+from database.model.relationships import ResourceRelationshipList, ResourceRelationshipSingle
+from serialization import (
     AttributeSerializer,
     FindByNameDeserializer,
     CastDeserializer,
@@ -117,39 +118,39 @@ class Dataset(DatasetBase, table=True):  # type: ignore [call-arg]
     )
 
     class RelationshipConfig:
-        alternate_names: List[str] = ResourceRelationship(
+        alternate_names: List[str] = ResourceRelationshipList(
             example=["alias 1", "alias 2"],
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(DatasetAlternateName),
         )
-        citations: List[int] = ResourceRelationship(
+        citations: List[int] = ResourceRelationshipList(
             example=[1, 2],
             deserializer=FindByIdentifierDeserializer(Publication),
             serializer=AttributeSerializer("identifier"),
         )
-        distributions: List[DataDownload] = ResourceRelationship(
+        distributions: List[DataDownload] = ResourceRelationshipList(
             deserializer=CastDeserializer(DataDownloadORM)
         )
-        is_part: List[int] = ResourceRelationship(
+        is_part: List[int] = ResourceRelationshipList(
             example=[1, 2],
             serializer=AttributeSerializer("identifier"),
         )
-        has_parts: List[int] = ResourceRelationship(
+        has_parts: List[int] = ResourceRelationshipList(
             example=[3, 4],
             serializer=AttributeSerializer("identifier"),
         )
-        license: Optional[str] = ResourceRelationship(
+        license: Optional[str] = ResourceRelationshipSingle(
             identifier_name="license_identifier",
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(License),
             example="https://creativecommons.org/share-your-work/public-domain/cc0/",
         )
-        keywords: List[str] = ResourceRelationship(
+        keywords: List[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(Keyword),
             example=["keyword1", "keyword2"],
         )
-        measured_values: List[MeasuredValue] = ResourceRelationship(
+        measured_values: List[MeasuredValue] = ResourceRelationshipList(
             deserializer=CastDeserializer(MeasuredValueORM)
         )
 

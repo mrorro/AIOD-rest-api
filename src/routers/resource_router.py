@@ -22,7 +22,7 @@ from database.model.resource import (
     resource_create,
     resource_read,
 )
-from database.serialization import update_resource_relationships
+from serialization import update_resource_relationships
 from platform_names import PlatformName
 from authentication import get_current_user
 

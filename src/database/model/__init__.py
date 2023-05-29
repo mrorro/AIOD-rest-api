@@ -1,1 +1,1 @@
-from .ai_asset import AIAsset  # noqa
+from database.model.ai_asset import AIAsset  # noqa
