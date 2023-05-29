@@ -6,12 +6,14 @@ from typing import List
 from connectors.resource_with_relations import ResourceWithRelations
 from database.model import AIAsset
 from database.model.dataset import Dataset
-from sqlalchemy import text
+from sqlalchemy import text, and_
 from sqlalchemy.engine import Engine
 from sqlmodel import create_engine, Session, select
 
 from connectors import ResourceConnector
+from database.model.publication import Publication
 from database.model.resource import Resource
+from platform_names import PlatformName
 
 
 def connect_to_database(
@@ -65,8 +67,7 @@ def populate_database(
 
     with Session(engine) as session:
         data_exists = (
-            # session.scalars(select(OrmPublication)).first() or
-            session.scalars(select(Dataset)).first()
+            session.scalars(select(Publication)).first() or session.scalars(select(Dataset)).first()
         )
         if only_if_empty and data_exists:
             return
@@ -74,29 +75,73 @@ def populate_database(
         for connector in connectors:
             for item in connector.fetch_all(limit=limit):
                 if isinstance(item, ResourceWithRelations):
-                    # _add_related_objects(session, orm_resource, item.related_resources)
                     resource = item.resource
+                    _create_or_fetch_related_objects(session, item.related_resources)
                 else:
                     resource = item
-                asset = AIAsset(type=resource.__tablename__)
-                session.add(asset)
+                if _get_existing_resource(session, resource) is None:
+                    asset = AIAsset(type=resource.__tablename__)
+                    session.add(asset)
+                    session.flush()
+                    resource.identifier = asset.identifier
+                    session.add(resource)
+                if isinstance(item, ResourceWithRelations):
+                    _link_resource_with_relations(item)
                 session.flush()
-                resource.identifier = asset.identifier
-                session.add(resource)
         session.commit()
 
 
-# def _add_related_objects(
-#     session: Session,
-#     orm_resource: OrmAIResource,
-#     related_resources: dict[str, AIoDAIResource | List[AIoDAIResource]],
-# ):
-#     for field_name, related_resource_or_list in related_resources.items():
-#         if isinstance(related_resource_or_list, AIoDAIResource):
-#             resource: AIoDAIResource = related_resource_or_list
-#             related_orm = _convert(session, resource)
-#             orm_resource.__setattr__(field_name, related_orm)
-#         else:
-#             resources: list[AIoDAIResource] = related_resource_or_list
-#             related_orms = [_convert(session, resource) for resource in resources]
-#             orm_resource.__setattr__(field_name, related_orms)
+def _link_resource_with_relations(item: ResourceWithRelations):
+    """
+    Set the relationship from `item.resource` to the `item.related_resources`.
+    This should be performed after all resources have been inserted in the database.
+    """
+    for field_name, related_resource_or_list in item.related_resources.items():
+        if isinstance(related_resource_or_list, Resource):
+            resource: Resource = related_resource_or_list
+            item.resource.__setattr__(field_name, resource)
+        else:
+            resources: list[Resource] = related_resource_or_list
+            item.resource.__setattr__(field_name, resources)
+
+
+def _get_existing_resource(session: Session, resource: Resource) -> Resource | None:
+    """Selecting a resource based on platform and platform_identifier"""
+    clazz = type(resource)
+    query = select(clazz).where(
+        and_(
+            clazz.platform == resource.platform,
+            clazz.platform_identifier == resource.platform_identifier,
+        )
+    )
+    return session.scalars(query).first()
+
+
+def _create_or_fetch_related_objects(
+    session: Session, related_resources: dict[str, Resource | List[Resource]]
+):
+    """
+    For all resources in the `related_resources`, make sure they have an identifier, by either
+    inserting them in the database, or retrieving the existing values.
+    """
+    for related_resource_or_list in related_resources.values():
+        resources: list[Resource] = []
+        if isinstance(related_resource_or_list, Resource):
+            resources = [related_resource_or_list]
+        else:
+            resources = related_resource_or_list
+        for resource in resources:
+            if (
+                resource.platform is not None
+                and resource.platform != PlatformName.aiod
+                and resource.platform_identifier is not None
+            ):
+                existing = _get_existing_resource(session, resource)
+                if existing is None:
+                    asset = AIAsset(type=resource.__tablename__)
+                    session.add(asset)
+                    session.flush()
+                    resource.identifier = asset.identifier
+                    session.add(resource)
+                else:
+                    resource.identifier = existing.identifier

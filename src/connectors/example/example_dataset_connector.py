@@ -3,6 +3,7 @@ import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused'
 from connectors import ResourceConnector
 from connectors.resource_with_relations import ResourceWithRelations
 from database.model.dataset import Dataset
+from database.model.publication import Publication
 from platform_names import PlatformName
 
 
@@ -31,13 +32,15 @@ class ExampleDatasetConnector(ResourceConnector[Dataset]):
                 ),
                 related_resources={
                     "citations": [
-                        # AIoDPublication(
-                        #     title="Searching for exotic particles in high-energy physics with deep "  # noqa
-                        #     "learning",
-                        #     doi="2",
-                        #     platform="example",
-                        #     platform_identifier="2",
-                        # )
+                        Publication(
+                            title=(
+                                "Searching for exotic particles in high-energy physics with deep "
+                                "learning"
+                            ),
+                            doi="2",
+                            platform="example",
+                            platform_identifier="2",
+                        )
                     ]
                 },
             ),

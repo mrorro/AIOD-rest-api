@@ -3,6 +3,8 @@ from typing import TypeVar, Generic, List
 
 from sqlmodel import SQLModel
 
+from database.model.resource import Resource
+
 RESOURCE = TypeVar("RESOURCE", bound=SQLModel)
 
 
@@ -13,7 +15,7 @@ class ResourceWithRelations(Generic[RESOURCE]):
     """
 
     resource: RESOURCE
-    related_resources: dict[str, SQLModel | List[SQLModel]] = dataclasses.field(
+    related_resources: dict[str, Resource | List[Resource]] = dataclasses.field(
         default_factory=dict
     )
     # For each field name, another resource or a list of other resources
