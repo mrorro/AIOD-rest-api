@@ -126,7 +126,7 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
                 return xml_string[start:end]
         return None
 
-    def _retrieve_dataset_from_datetime(self, sk: Sickle, dt: datetime):
+    def _retrieve_dataset_from_datetime(self, sk: Sickle, dt: datetime)-> Iterator[AIoDDataset]:
         records = sk.ListRecords(
             **{
                 "metadataPrefix": "oai_datacite",
