@@ -8,6 +8,8 @@ from connectors import ResourceConnector
 from platform_names import PlatformName
 from schemas import AIoDDataset
 
+DATE_FORMAT = "%Y-%m-%d"
+
 
 class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
     @property
@@ -62,13 +64,13 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
             self._bad_record_format(id, "description")
             return None
         date_published = None
-        date_format = "%Y-%m-%d"
+
         date_raw = record["dates"]["date"]
         if isinstance(date_raw, list):
             (description,) = [e.get("#text") for e in date_raw if e.get("@dateType") == "Issued"]
         elif date_raw["@dateType"] == "Issued":
             date_string = date_raw["#text"]
-            date_published = datetime.strptime(date_string, date_format)
+            date_published = datetime.strptime(date_string, DATE_FORMAT)
         else:
             self._bad_record_format(id, "date_published")
             return None
