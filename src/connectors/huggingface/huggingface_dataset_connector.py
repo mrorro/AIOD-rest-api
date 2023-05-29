@@ -1,6 +1,7 @@
 import logging
 import typing
 
+import bibtexparser
 import datasets
 import dateutil.parser
 import requests
@@ -11,6 +12,7 @@ from database.model.dataset import Dataset
 from database.model.dataset.data_download import DataDownloadORM
 from database.model.general.license import License
 from database.model.general.keyword import Keyword
+from database.model.publication import Publication
 from platform_names import PlatformName
 
 
@@ -42,32 +44,32 @@ class HuggingFaceDatasetConnector(ResourceConnector[Dataset]):
     ) -> typing.Iterator[ResourceWithRelations[Dataset]]:
         for dataset in datasets.list_datasets(with_details=True)[:limit]:
             try:
-                # citations = []
-                # if dataset.citation is not None:
-                #     parsed_citations = bibtexparser.loads(dataset.citation).entries
-                #     if len(parsed_citations) == 0:
-                #         citations = [
-                #             # AIoDPublication(
-                #             #     title=dataset.citation,
-                #             #     platform=self.platform_name,
-                #             #     platform_identifier=dataset.citation,
-                #             # )
-                #         ]
-                #     elif len(parsed_citations) == 1:
-                #         citation = parsed_citations[0]
-                #         citations = [
-                #             # AIoDPublication(
-                #             #     title=citation["title"],
-                #             #     platform=self.platform_name,
-                #             #     platform_identifier=citation["ID"],
-                #             #     url=citation["link"] if "link" in citation else None,
-                #             # )
-                #         ]
-                #     else:
-                #         raise ValueError(
-                #             f"Unexpected number of citations found for dataset "
-                #             f"{dataset.id} in {dataset.citation}: {len(parsed_citations)}"
-                #         )
+                citations = []
+                if dataset.citation is not None:
+                    parsed_citations = bibtexparser.loads(dataset.citation).entries
+                    if len(parsed_citations) == 0:
+                        citations = [
+                            Publication(
+                                title=dataset.citation,
+                                platform=self.platform_name,
+                                platform_identifier=dataset.citation,
+                            )
+                        ]
+                    elif len(parsed_citations) == 1:
+                        citation = parsed_citations[0]
+                        citations = [
+                            Publication(
+                                title=citation["title"],
+                                platform=self.platform_name,
+                                platform_identifier=citation["ID"],
+                                url=citation["link"] if "link" in citation else None,
+                            )
+                        ]
+                    else:
+                        raise ValueError(
+                            f"Unexpected number of citations found for dataset "
+                            f"{dataset.id} in {dataset.citation}: {len(parsed_citations)}"
+                        )
 
                 parquet_info = HuggingFaceDatasetConnector._get(
                     url="https://datasets-server.huggingface.co/parquet",
@@ -113,7 +115,7 @@ class HuggingFaceDatasetConnector(ResourceConnector[Dataset]):
                         size=size,
                         keywords=[Keyword(name=tag) for tag in dataset.tags],
                     ),
-                    # related_resources={"citations": citations},
+                    related_resources={"citations": citations},
                 )
             except Exception as e:
                 logging.error(

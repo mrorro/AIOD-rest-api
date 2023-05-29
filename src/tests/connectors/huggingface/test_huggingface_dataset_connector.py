@@ -40,8 +40,8 @@ def test_fetch_all_happy_path():
     names = {d.name for d in datasets}
     assert ids == ids_expected
     assert names == ids_expected
-    # assert all(len(r.related_resources) == 1 for r in resources_with_relations)
-    # assert all(len(r.related_resources["citations"]) == 1 for r in resources_with_relations)
+    assert all(len(r.related_resources) == 1 for r in resources_with_relations)
+    assert all(len(r.related_resources["citations"]) == 1 for r in resources_with_relations)
 
 
 def mock_parquet(mocked_requests: responses.RequestsMock, dataset_id: str):
