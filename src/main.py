@@ -165,13 +165,13 @@ def create_app() -> FastAPI:
         _connector_from_platform_name("dataset", connectors.dataset_connectors, platform_name)
         for platform_name in args.populate_datasets
     ]
-    # publication_connectors = [
-    #     _connector_from_platform_name(
-    #         "publication", connectors.publication_connectors, platform_name
-    #     )
-    #     for platform_name in args.populate_publications
-    # ]
-    connectors_ = dataset_connectors  # + publication_connectors
+    publication_connectors = [
+        _connector_from_platform_name(
+            "publication", connectors.publication_connectors, platform_name
+        )
+        for platform_name in args.populate_publications
+    ]
+    connectors_ = dataset_connectors + publication_connectors
     engine = _engine(args.rebuild_db)
     if len(connectors_) > 0:
         populate_database(
