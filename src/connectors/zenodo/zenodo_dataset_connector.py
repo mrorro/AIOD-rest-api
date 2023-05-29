@@ -51,7 +51,9 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
         else:
             self._bad_record_format(id, "title")
             return None
-
+        number_str = id.rsplit("/", 1)[-1]
+        idNumber = "".join(filter(str.isdigit, number_str))
+        same_as = f"https://zenodo.org/api/records/{idNumber}"
         description = ""
         description_raw = record["descriptions"]["description"]
         if isinstance(description_raw, list):
@@ -104,7 +106,7 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
             platform="zenodo",
             platform_identifier=id,
             name=title[:150],
-            same_as="",
+            same_as=same_as,
             creator=creator[
                 :150
             ],  # TODO not enough characters for creator list, change to array or allow more length
@@ -140,7 +142,7 @@ class ZenodoDatasetConnector(ResourceConnector[AIoDDataset]):
         )
         counter = 0
         record = next(records, None)
-        while record and (limit is None or counter <= limit):
+        while record and (limit is None or counter < limit):
             if self._get_resource_type(record) == "Dataset":
                 dataset = self._dataset_from_record(record)
                 if dataset is not None:
