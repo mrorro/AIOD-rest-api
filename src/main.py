@@ -14,7 +14,8 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import Json
-from sqlalchemy import Engine
+from sqlalchemy.engine import Engine
+from starlette.status import HTTP_400_BAD_REQUEST, HTTP_501_NOT_IMPLEMENTED
 
 import connectors
 import routers
@@ -86,7 +87,10 @@ def _connector_from_platform_name(connector_type: str, connector_dict: Dict, pla
     try:
         platform = PlatformName(platform_name)
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"platform '{platform_name}' not recognized.")
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"platform " f"'{platform_name}' not recognized.",
+        )
     connector = connector_dict.get(platform, None)
     if connector is None:
         possibilities = ", ".join(f"`{c}`" for c in connectors.dataset_connectors.keys())
@@ -94,7 +98,7 @@ def _connector_from_platform_name(connector_type: str, connector_dict: Dict, pla
             f"No {connector_type} connector for platform '{platform_name}' available. Possible "
             f"values: {possibilities}"
         )
-        raise HTTPException(status_code=501, detail=msg)
+        raise HTTPException(status_code=HTTP_501_NOT_IMPLEMENTED, detail=msg)
     return connector
 
 

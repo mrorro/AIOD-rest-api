@@ -1,25 +1,25 @@
 from typing import Iterator
 
 from connectors import ResourceConnector
+from database.model.publication import Publication
 from platform_names import PlatformName
-from schemas import AIoDPublication
 
 
-class ExamplePublicationConnector(ResourceConnector[AIoDPublication]):
+class ExamplePublicationConnector(ResourceConnector[Publication]):
     @property
     def platform_name(self) -> PlatformName:
         return PlatformName.example
 
-    def fetch_all(self, limit: int | None = None) -> Iterator[AIoDPublication]:
+    def fetch_all(self, limit: int | None = None) -> Iterator[Publication]:
         yield from [
-            AIoDPublication(
+            Publication(
                 title="AMLB: an AutoML Benchmark",
                 url="https://arxiv.org/abs/2207.12560",
                 doi="1",
                 platform="example",
                 platform_identifier="1",
             ),
-            AIoDPublication(
+            Publication(
                 title="Searching for exotic particles in high-energy physics with deep learning",
                 doi="2",
                 platform="example",
@@ -27,8 +27,8 @@ class ExamplePublicationConnector(ResourceConnector[AIoDPublication]):
             ),
         ][:limit]
 
-    def fetch(self, platform_identifier: str) -> AIoDPublication:
-        return AIoDPublication(
+    def fetch(self, platform_identifier: str) -> Publication:
+        return Publication(
             doi="10.5281/zenodo.7712947",
             title="International Journal of Current Science Research and Review",
         )

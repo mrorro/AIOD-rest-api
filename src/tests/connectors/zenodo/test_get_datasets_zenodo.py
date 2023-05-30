@@ -25,12 +25,12 @@ def test_fetch_all_happy_path():
         == "Hansen, Peter Martin; Alstrøm, henrik; Damm-Hejmdal, Anders; Mikkelsen, Søren"
     )
     assert dataset.date_published == datetime(2023, 5, 6)
-    assert dataset.license == "https://creativecommons.org/licenses/by/4.0/legalcode"
+    assert dataset.license.name == "https://creativecommons.org/licenses/by/4.0/legalcode"
     assert dataset.platform == "zenodo"
     assert dataset.platform_identifier == "zenodo.org:7961614"
     assert dataset.publisher == "Zenodo"
     assert len(dataset.keywords) == 5
-    assert set(dataset.keywords) == {
+    assert {k.name for k in dataset.keywords} == {
         "Mass casualty",
         "Major incident",
         "Management and leadership",

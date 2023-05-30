@@ -2,11 +2,12 @@ import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused'
 
 from connectors import ResourceConnector
 from connectors.resource_with_relations import ResourceWithRelations
+from database.model.dataset import Dataset
+from database.model.publication import Publication
 from platform_names import PlatformName
-from schemas import AIoDDataset, AIoDPublication
 
 
-class ExampleDatasetConnector(ResourceConnector[AIoDDataset]):
+class ExampleDatasetConnector(ResourceConnector[Dataset]):
     @property
     def platform_name(self) -> PlatformName:
         return PlatformName.example
@@ -19,10 +20,10 @@ class ExampleDatasetConnector(ResourceConnector[AIoDDataset]):
 
     def fetch_all(
         self, limit: int | None = None
-    ) -> typing.Iterator[ResourceWithRelations[AIoDDataset]]:
+    ) -> typing.Iterator[ResourceWithRelations[Dataset]]:
         yield from [
-            ResourceWithRelations[AIoDDataset](
-                resource=AIoDDataset(
+            ResourceWithRelations[Dataset](
+                resource=Dataset(
                     name="Higgs",
                     platform="openml",
                     description="Higgs dataset",
@@ -31,9 +32,11 @@ class ExampleDatasetConnector(ResourceConnector[AIoDDataset]):
                 ),
                 related_resources={
                     "citations": [
-                        AIoDPublication(
-                            title="Searching for exotic particles in high-energy physics with deep "
-                            "learning",
+                        Publication(
+                            title=(
+                                "Searching for exotic particles in high-energy physics with deep "
+                                "learning"
+                            ),
                             doi="2",
                             platform="example",
                             platform_identifier="2",
@@ -41,8 +44,8 @@ class ExampleDatasetConnector(ResourceConnector[AIoDDataset]):
                     ]
                 },
             ),
-            ResourceWithRelations[AIoDDataset](
-                resource=AIoDDataset(
+            ResourceWithRelations[Dataset](
+                resource=Dataset(
                     name="porto-seguro",
                     platform="openml",
                     description="Porto seguro dataset",

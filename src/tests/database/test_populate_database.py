@@ -1,12 +1,10 @@
-from sqlalchemy import Engine, select
-from sqlalchemy.orm import Session
+from connectors.example.example_publication_connector import ExamplePublicationConnector
+from database.model.dataset import Dataset
+from sqlalchemy.engine import Engine
+from sqlmodel import Session, select
 
-from connectors import (
-    ExampleDatasetConnector,
-    ExamplePublicationConnector,
-)
-from database.model.dataset import OrmDataset
-from database.model.publication import OrmPublication
+from connectors import ExampleDatasetConnector
+from database.model.publication import Publication
 from database.setup import populate_database
 
 OPENML_URL = "https://www.openml.org/api/v1/json"
@@ -19,8 +17,8 @@ def test_example_happy_path(engine: Engine):
         connectors=[ExampleDatasetConnector(), ExamplePublicationConnector()],
     )
     with Session(engine) as session:
-        datasets = session.scalars(select(OrmDataset)).all()
-        publications = session.scalars(select(OrmPublication)).all()
+        datasets = session.scalars(select(Dataset)).all()
+        publications = session.scalars(select(Publication)).all()
         assert len(datasets) == 2
         assert len(publications) == 2
         assert {len(d.citations) for d in datasets} == {0, 1}

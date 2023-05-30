@@ -5,8 +5,8 @@ import responses
 from fastapi import HTTPException
 
 import connectors
+from database.model.dataset import Dataset
 from platform_names import PlatformName
-from schemas import AIoDDataset
 from tests.testutils.paths import path_test_resources
 
 OPENML_URL = "https://www.openml.org/api/v1/json"
@@ -20,7 +20,7 @@ def test_fetch_happy_path():
         dataset = connector.fetch(id_)
     with open(path_test_resources() / "connectors" / "openml" / "data_2.json", "r") as f:
         expected = json.load(f)["data_set_description"]
-    assert isinstance(dataset, AIoDDataset)
+    assert isinstance(dataset, Dataset)
 
     assert dataset.name == "anneal"
     assert dataset.description == expected["description"]
@@ -29,7 +29,7 @@ def test_fetch_happy_path():
     assert dataset.platform_identifier == id_
     assert dataset.same_as == "https://www.openml.org/api/v1/json/data/2"
     assert len(dataset.citations) == 0
-    assert dataset.license == "Public"
+    assert dataset.license.name == "Public"
     assert dataset.version == "1"
     assert dataset.is_accessible_for_free
     assert dataset.size == 898
@@ -40,7 +40,7 @@ def test_fetch_happy_path():
     assert distribution.content_url == "https://api.openml.org/data/v1/download/1666876/anneal.arff"
 
     assert len(dataset.keywords) == 9
-    assert set(dataset.keywords) == {
+    assert {k.name for k in dataset.keywords} == {
         "study_1",
         "study_14",
         "study_34",

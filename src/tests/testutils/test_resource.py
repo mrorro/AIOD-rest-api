@@ -3,32 +3,22 @@ Test resource with router and mocked converter
 """
 
 from typing import Type
-from unittest.mock import Mock
 
-from pydantic import Field
-from sqlalchemy import String
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlmodel import Field
 
-from converters import OrmConverter
-from database.model.resource import OrmResource
+from database.model.resource import Resource
 from routers import ResourceRouter
-from schemas import AIoDResource
 
 
-class OrmTestResource(OrmResource):
-    """Resource only used for unittests"""
-
-    __tablename__ = "test_resource"
-    title: Mapped[str] = mapped_column(String(250), nullable=False)
+class TestResourceBase(Resource):
+    title: str = Field(max_length=250, nullable=False)
 
 
-class AIoDTestResource(AIoDResource):
-    """Resource only used for unittests"""
-
-    title: str = Field(max_length=250)
+class TestResource(TestResourceBase, table=True):  # type: ignore [call-arg]
+    identifier: int = Field(default=None, primary_key=True)
 
 
-class RouterTestResource(ResourceRouter[OrmTestResource, AIoDTestResource]):
+class RouterTestResource(ResourceRouter):
     """Router with only "aiod" as possible output format, used only for unittests"""
 
     @property
@@ -44,22 +34,5 @@ class RouterTestResource(ResourceRouter[OrmTestResource, AIoDTestResource]):
         return "test_resources"
 
     @property
-    def aiod_class(self) -> Type[AIoDTestResource]:
-        return AIoDTestResource
-
-    @property
-    def orm_class(self) -> Type[OrmTestResource]:
-        return OrmTestResource
-
-    @property
-    def converter(self) -> OrmConverter[AIoDTestResource, OrmTestResource]:
-        converter = Mock(spec=OrmConverter)
-        converter.orm_to_aiod = Mock(
-            return_value=AIoDTestResource(
-                title="A title", platform="example", platform_identifier=1
-            )
-        )
-        converter.aiod_to_orm = Mock(
-            return_value=OrmTestResource(title="test", platform="example", platform_identifier=1)
-        )
-        return converter
+    def resource_class(self) -> Type[TestResource]:
+        return TestResource

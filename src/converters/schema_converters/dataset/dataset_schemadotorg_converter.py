@@ -7,10 +7,10 @@ from converters.schema.schema_dot_org import (
     SchemaDotOrgDataDownload,
 )
 from converters.schema_converters.schema_converter import SchemaConverter
-from schemas import AIoDDataset
+from database.model.dataset import Dataset
 
 
-class DatasetConverterSchemaDotOrg(SchemaConverter[AIoDDataset, SchemaDotOrgDataset]):
+class DatasetConverterSchemaDotOrg(SchemaConverter[Dataset, SchemaDotOrgDataset]):
     """
     Convert an AIoD Dataset into a schema.org json-ld representation.
     """
@@ -19,7 +19,7 @@ class DatasetConverterSchemaDotOrg(SchemaConverter[AIoDDataset, SchemaDotOrgData
     def to_class(self) -> Type[SchemaDotOrgDataset]:
         return SchemaDotOrgDataset
 
-    def convert(self, aiod: AIoDDataset) -> SchemaDotOrgDataset:
+    def convert(self, aiod: Dataset) -> SchemaDotOrgDataset:
         temporal_coverage_parts = [
             d.isoformat()
             for d in [aiod.temporal_coverage_from, aiod.temporal_coverage_to]
@@ -33,13 +33,13 @@ class DatasetConverterSchemaDotOrg(SchemaConverter[AIoDDataset, SchemaDotOrgData
             identifier=aiod.identifier,
             name=aiod.name,
             maintainer=SchemaDotOrgOrganization(name=aiod.platform),
-            alternateName=_list_to_one_or_none(aiod.alternate_names),
-            citation=_list_to_one_or_none(aiod.citations),
+            alternateName=_list_to_one_or_none([a.name for a in aiod.alternate_names]),
+            # citation=_list_to_one_or_none(aiod.citations),
             creator=SchemaDotOrgPerson(name=aiod.creator) if aiod.creator is not None else None,
             dateModified=aiod.date_modified,
             datePublished=aiod.date_published,
             isAccessibleForFree=aiod.is_accessible_for_free,
-            keywords=_list_to_one_or_none(aiod.keywords),
+            keywords=_list_to_one_or_none([a.name for a in aiod.keywords]),
             sameAs=aiod.same_as,
             version=aiod.version,
             url=f"https://aiod.eu/api/datasets/{aiod.identifier}",  # TODO: update url
@@ -59,7 +59,7 @@ class DatasetConverterSchemaDotOrg(SchemaConverter[AIoDDataset, SchemaDotOrgData
             hasPart=_list_to_one_or_none(aiod.has_parts),
             isPartOf=_list_to_one_or_none(aiod.is_part),
             issn=aiod.issn,
-            license=aiod.license,
+            license=aiod.license.name if aiod.license is not None else None,
             measurementTechnique=_list_to_one_or_none([m.technique for m in aiod.measured_values]),
             size=str(aiod.size) if aiod.size is not None else None,
             spatialCoverage=aiod.spatial_coverage,

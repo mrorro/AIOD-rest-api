@@ -14,10 +14,10 @@ from converters.schema.dcat import (
     DctPeriodOfTime,
 )
 from converters.schema_converters.schema_converter import SchemaConverter
-from schemas import AIoDDataset
+from database.model.dataset import Dataset
 
 
-class DatasetConverterDcatAP(SchemaConverter[AIoDDataset, DcatApWrapper]):
+class DatasetConverterDcatAP(SchemaConverter[Dataset, DcatApWrapper]):
     """
     Convert an AIoD Dataset into a dcat-ap json-ld representation.
     """
@@ -26,7 +26,7 @@ class DatasetConverterDcatAP(SchemaConverter[AIoDDataset, DcatApWrapper]):
     def to_class(self) -> Type[DcatApWrapper]:
         return DcatApWrapper
 
-    def convert(self, aiod: AIoDDataset) -> DcatApWrapper:
+    def convert(self, aiod: Dataset) -> DcatApWrapper:
         release_date = (
             XSDDateTime(value_=aiod.date_published) if aiod.date_published is not None else None
         )
@@ -37,7 +37,7 @@ class DatasetConverterDcatAP(SchemaConverter[AIoDDataset, DcatApWrapper]):
             id_=aiod.identifier,
             description=aiod.description,
             title=aiod.name,
-            keyword=list(aiod.keywords),
+            keyword=[k.name for k in aiod.keywords],
             landing_page=[aiod.same_as] if aiod.same_as is not None else [],
             theme=[measured_value.variable for measured_value in aiod.measured_values],
             release_date=release_date,
@@ -87,7 +87,9 @@ class DatasetConverterDcatAP(SchemaConverter[AIoDDataset, DcatApWrapper]):
                 aiod_checksum = aiod_distribution.checksum[0]
                 checksum = SpdxChecksum(
                     id_=aiod_checksum.value,
-                    algorithm=aiod_checksum.algorithm,
+                    algorithm=aiod_checksum.algorithm.name
+                    if aiod_checksum.algorithm is not None
+                    else None,
                     checksumValue=aiod_checksum.value,
                 )
                 graph.append(checksum)
@@ -99,7 +101,7 @@ class DatasetConverterDcatAP(SchemaConverter[AIoDDataset, DcatApWrapper]):
                 download_url=aiod_distribution.content_url,
                 description=aiod_distribution.description,
                 format=aiod_distribution.encoding_format,
-                license=aiod.license,
+                license=aiod.license.name if aiod.license is not None else None,
             )
             dataset.distribution.append(DcatAPIdentifier(id_=aiod_distribution.content_url))
             graph.append(distribution)

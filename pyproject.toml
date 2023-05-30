@@ -12,7 +12,6 @@ authors = [
 ]
 dependencies = [
     "urllib3==1.26.15",
-    "sqlalchemy==2.0.0b4",
     "bibtexparser",
     "datasets",
     "fastapi",
@@ -22,9 +21,9 @@ dependencies = [
     "oic",
     "python-keycloak",
     "python-dotenv",
-    "pydantic",
     "pydantic_schemaorg",
     "python-dateutil",
+    "sqlmodel",
     "httpx",
     "sickle",
     "xmltodict"

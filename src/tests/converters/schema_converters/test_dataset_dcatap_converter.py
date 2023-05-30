@@ -1,11 +1,11 @@
 from converters.schema_converters import dataset_converter_dcatap_instance
-from schemas import AIoDDataset
+from database.model.dataset import Dataset
 from tests.testutils.paths import path_test_resources
 
 
-def test_aiod_to_dcatap_happy_path(aiod_dataset: AIoDDataset):
+def test_aiod_to_dcatap_happy_path(dataset: Dataset):
     converter = dataset_converter_dcatap_instance
-    dcat_ap = converter.convert(aiod_dataset)
+    dcat_ap = converter.convert(dataset)
     actual = dcat_ap.json(by_alias=True, indent=4)
     with open(path_test_resources() / "schemes" / "dcatap" / "dataset.json", "r") as f:
         expected = f.read()
