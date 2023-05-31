@@ -171,8 +171,6 @@ The `--reload` argument will automatically restart the app if changes are made t
 3. Run using DevContainer (see next subsection)
 
 #### (Optional) Devcontainer Installation
-Instead of running  
-
 If you want to run the server on and isolated container pre configured for the proyect you can open the proyect via docker dashboard. On the dev container section click `create a new enviroment`
 
 <img width="1270" alt="image" src="https://user-images.githubusercontent.com/46299278/224726755-a8843f78-9cd8-41f2-a042-c24838c79fea.png">
