@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship
 
-from database.model.dataset.publication import DatasetPublicationLink
+from database.model.dataset.publication_link import DatasetPublicationLink
 from database.model.general.license import License
 from database.model.general.resource_type import ResourceType
 from database.model.relationships import ResourceRelationshipList, ResourceRelationshipSingle

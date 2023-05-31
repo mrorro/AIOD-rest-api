@@ -11,8 +11,9 @@ docker run \
 	--name apiserver \
 	-v $SRC_PATH:/app \
 	ai4eu_server_demo \
-	--rebuild-db only-if-empty \
+	--rebuild-db always \
 	--populate-datasets example \
 	--populate-publications example \
 	--limit 10 \
-	--url-prefix ""
+	--url-prefix "" \
+	--reload 
