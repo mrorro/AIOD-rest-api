@@ -2,28 +2,11 @@
 
 ## Build and run the API, SQL and Keycloak
 
-First of all, create a docker network:
-
-```
-docker network create sql-network
-```
-
-Then, open a terminal in the root folder to run the mysql server:
-
-```bash
-./scripts/run_mysql_server.sh
-```
-
-Open another terminal in the root folder to build and run the api:
-```
-docker build --tag ai4eu_server_demo:latest -f Dockerfile .
-printf "# Authentication\nKEYCLOAK_CLIENT_ID=aiod-api\nKEYCLOAK_CLIENT_SECRET=7qpbFTGpONBPIn9nBovgd2843BK8Khjg" > src/.env
-./scripts/run_apiserver.sh
-```
+See the main [README.md](../README.md)
 
 
 ## Usage
-First, run the Mysql server and the API (see above).
+First, run the Mysql server and the API.
 
 Now you can use Swagger (easiest) or Postman (convenient for development).
 
