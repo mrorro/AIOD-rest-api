@@ -125,7 +125,7 @@ then create a container from that image, remember to forward the port and connec
 docker network (alternatively you can use the script at `scripts/run_apiserver.sh`)
 
 ```bash
-docker run --network sql-network -it -p 8000:8000 --name apiserver ai4eu_server_demo
+docker run --network sql-network -it --rm -p 8000:8000 --name apiserver ai4eu_server_demo
 ```
 
 At this point you should be able to visit the server from your browser at `localhost:8000/docs`.
