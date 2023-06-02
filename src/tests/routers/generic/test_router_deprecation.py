@@ -50,6 +50,8 @@ def test_deprecated_router(
             ).dict(),
             "headers": {"Authorization": "fake-token"},
         }
+    if verb in ("delete"):
+        kwargs = {"headers": {"Authorization": "fake-token"}}
     response = getattr(client, verb)(url, **kwargs)
     assert response.status_code == 200
     assert "deprecated" in response.headers
