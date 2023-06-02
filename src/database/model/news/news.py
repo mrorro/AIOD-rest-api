@@ -1,6 +1,14 @@
 from datetime import datetime
-from sqlmodel import Field
+from typing import List
+from sqlmodel import Field, Relationship
+from database.model.general.news_category import NewsCategory
+from database.model.news.news_category import NewsCategoryNewsLink
+from database.model.relationships import ResourceRelationshipList
 from database.model.resource import Resource
+from serialization import (
+    AttributeSerializer,
+    FindByNameDeserializer,
+)
 
 
 class NewsBase(Resource):
@@ -25,3 +33,13 @@ class NewsBase(Resource):
 class News(NewsBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "news"
     identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
+    news_categories: List[NewsCategory] = Relationship(
+        back_populates="news", link_model=NewsCategoryNewsLink
+    )
+
+    class RelationshipConfig:
+        news_categories: List[str] = ResourceRelationshipList(
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(NewsCategory),
+            example=["news_category1", "news_category2"],
+        )
