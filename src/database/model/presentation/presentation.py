@@ -25,7 +25,7 @@ class PresentationBase(Resource):
     is_accessible_for_free: bool = Field(default=True)
 
 
-class Presentation(PresentationBase):
+class Presentation(PresentationBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "presentations"
 
     identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
