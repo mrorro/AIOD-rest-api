@@ -12,7 +12,7 @@ from .publication_router import PublicationRouter
 # from .event_router import EventRouter
 # from .organisation_router import OrganisationRouter
 # from .project_router import ProjectRouter
-# from .presentation_router import PresentationRouter
+from .presentation_router import PresentationRouter
 
 routers = [
     # CaseStudyRouter(),
@@ -23,5 +23,5 @@ routers = [
     # OrganisationRouter(),
     PublicationRouter(),
     # ProjectRouter(),
-    # PresentationRouter(),
+    PresentationRouter(),
 ]  # type: typing.List[ResourceRouter]
