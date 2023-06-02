@@ -21,3 +21,9 @@ class PresentationBase(Resource):
     author:str | None = Field(max_length=250, default=None, schema_extra={"example": "John Doe"})
     image:str | None= Field(max_length=250,default=None, schema_extra={"example": "https://example.example"})
     is_accessible_for_free: bool = Field(default=True)
+
+class Presentation(PresentationBase):
+    __tablename__ = "presentations"
+
+
+    identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
