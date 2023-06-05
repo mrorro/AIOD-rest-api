@@ -1,7 +1,9 @@
 from datetime import datetime
 from sqlmodel import Field, Relationship, SQLModel
 from typing import List
+from database.model.event.application_area_link import EventApplicationAreaLink
 from database.model.event.research_area_link import EventResearchAreaLink
+from database.model.general.application_areas import ApplicationArea
 from database.model.general.research_areas import ResearchArea
 from database.model.relationships import ResourceRelationshipList
 from database.model.resource import Resource
@@ -50,6 +52,9 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
     research_areas: List["ResearchArea"] = Relationship(
         back_populates="events", link_model=EventResearchAreaLink
     )
+    application_areas: List["ApplicationArea"] = Relationship(
+        back_populates="events", link_model=EventApplicationAreaLink
+    )
     sub_events: List["Event"] = Relationship(
         back_populates="super_events",
         link_model=EventParentChildLink,
@@ -80,6 +85,11 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ResearchArea),
             example=["research_area1", "research_area2"],
+        )
+        application_areas: List[str] = ResourceRelationshipList(
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(ApplicationArea),
+            example=["application_area1", "application_area2"],
         )
 
 
