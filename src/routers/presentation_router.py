@@ -1,4 +1,4 @@
-from database.model.presentation import Presentation
+from database.model.presentation.presentation import Presentation
 from routers.resource_router import ResourceRouter
 
 
