@@ -2,7 +2,11 @@ from datetime import datetime
 from sqlmodel import Field, Relationship
 from typing import List
 from database.model.educational_resource.language_link import EducationalResourceLanguageLink
+from database.model.educational_resource.target_audience_link import (
+    EducationalResourceTargetAudienceLink,
+)
 from database.model.general.language import Language
+from database.model.general.target_audience import TargetAudience
 from database.model.relationships import ResourceRelationshipList
 from database.model.resource import Resource
 from serialization import AttributeSerializer, FindByNameDeserializer
@@ -79,7 +83,10 @@ class EducationalResource(EducationalResourceBase, table=True):  # type: ignore 
     __tablename__ = "educational_resource"
     identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
     languages: List[Language] = Relationship(
-        back_populates="datasets", link_model=EducationalResourceLanguageLink
+        back_populates="educational_resources", link_model=EducationalResourceLanguageLink
+    )
+    target_audience: List[TargetAudience] = Relationship(
+        back_populates="educational_resources", link_model=EducationalResourceTargetAudienceLink
     )
 
     class RelationshipConfig:
@@ -87,4 +94,9 @@ class EducationalResource(EducationalResourceBase, table=True):  # type: ignore 
             example=["language 1", "language 2"],
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(Language),
+        )
+        target_audience: List[str] = ResourceRelationshipList(
+            example=["target audience 1", "target audience 2"],
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(TargetAudience),
         )
