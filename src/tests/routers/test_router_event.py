@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.engine import Engine
 from authentication import keycloak_openid
 from database.model.ai_asset import AIAsset
+from database.model.dataset.dataset import Dataset
 from database.model.event.event import Event
 
 
@@ -22,6 +23,15 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
                     description="description text",
                     registration_url="https://example.com/event/example/registration",
                     location="Example location Event",
+                ),
+                AIAsset(type="dataset"),
+                Dataset(
+                    identifier="2",
+                    name="Parent",
+                    platform="example",
+                    platform_identifier="1",
+                    description="description text",
+                    same_as="",
                 ),
             ]
         )
@@ -43,15 +53,16 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "sub_events": [],
         "research_areas": ["research_area1", "research_area2"],
         "application_areas": ["application_area1", "application_area2"],
+        "relevant_resources": [2],
     }
     response = client.post("/events/v0", json=body, headers={"Authorization": "Fake token"})
     assert response.status_code == 200
 
-    response = client.get("/events/v0/2")
+    response = client.get("/events/v0/3")
     assert response.status_code == 200
 
     response_json = response.json()
-    assert response_json["identifier"] == 2
+    assert response_json["identifier"] == 3
     assert response_json["platform"] == "example"
     assert response_json["platform_identifier"] == "2"
     assert response_json["name"] == "Example Event"
@@ -67,3 +78,4 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert set(response_json["super_events"]) == {1}
     assert set(response_json["research_areas"]) == {"research_area1", "research_area2"}
     assert set(response_json["application_areas"]) == {"application_area1", "application_area2"}
+    assert set(response_json["relevant_resources"]) == {2}
