@@ -60,6 +60,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "is_accessible_for_free": True,
         "credits": True,
         "duration_in_years": 0,
+        "languages": ["language 1", "language 2"],
     }
     response = client.post(
         "/educational_resources/v0", json=body, headers={"Authorization": "Fake token"}
@@ -99,3 +100,4 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert response_json["is_accessible_for_free"]
     assert response_json["credits"]
     assert response_json["duration_in_years"] == 0
+    assert set(response_json["languages"]) == {"language 1", "language 2"}
