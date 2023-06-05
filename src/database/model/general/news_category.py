@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from sqlmodel import Relationship
 from database.model.named_relation import NamedRelation
-from database.model.news.news_category_link import NewsCategoryNewsLink
+from database.model.news.news_category import NewsCategoryNewsLink
 
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
     from database.model.news import News
