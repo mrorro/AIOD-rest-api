@@ -15,7 +15,7 @@ from serialization import (
 )
 
 if TYPE_CHECKING:
-    from database.model.dataset import Dataset
+    from database.model.dataset.dataset import Dataset
 
 
 class PublicationBase(Resource):

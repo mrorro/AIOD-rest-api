@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from sqlmodel import Relationship
 
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
-    from database.model.publication import Publication
+    from database.model.publication.publication import Publication
 from database.model.named_relation import NamedRelation
 
 

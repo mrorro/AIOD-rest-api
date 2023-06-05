@@ -1,7 +1,7 @@
 from typing import Iterator
 
 from connectors import ResourceConnector
-from database.model.publication import Publication
+from database.model.publication.publication import Publication
 from platform_names import PlatformName
 
 

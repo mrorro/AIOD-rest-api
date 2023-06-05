@@ -16,4 +16,5 @@ docker run \
 	--populate-publications example \
 	--limit 10 \
 	--url-prefix "" \
-	--reload 
+	--reload
+

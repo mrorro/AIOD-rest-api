@@ -5,7 +5,7 @@ from sickle import Sickle
 import xmltodict
 
 from connectors import ResourceConnector
-from database.model.dataset import Dataset
+from database.model.dataset.dataset import Dataset
 from database.model.general.keyword import Keyword
 from database.model.general.license import License
 from platform_names import PlatformName

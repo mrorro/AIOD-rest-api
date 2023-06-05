@@ -34,6 +34,16 @@ Note that this synchronization process between the platform and the database, is
 the synchronization between database instances. The latter is under discussion in the AIoD 
 Synchronization Meetings. 
 
+## Prerequisites
+- Linux/MacOS/Windows (should all work)
+- [Docker](https://docs.docker.com/get-docker/)
+
+For development:
+- `Python3.11` with `python3.11-dev` (`sudo apt install python3.11-dev` on Debian)
+- Additional 'mysqlclient' dependencies. Please have a look at [their installation instructions]
+  (https://github.com/PyMySQL/mysqlclient#install).
+
+
 ## Installation
 
 This repository contains two systems; the database and the REST API.
@@ -77,6 +87,8 @@ mysql> SHOW DATABASES;
 4 rows in set (0.03 sec)
 ```
 
+For ease of use, you can also make use of the script in `scripts/run_mysql_server.sh`.
+
 #### Persistent Storage
 
 The data is persistent when simply stopping and restarting the server:
@@ -109,28 +121,25 @@ First, build the docker image from the dockerfile:
 docker build --tag ai4eu_server_demo:latest -f Dockerfile .
 ```
 
-then create a container from that image, remember to forward the port and connect to the right docker network.
+then create a container from that image, remember to forward the port and connect to the right 
+docker network (alternatively you can use the script at `scripts/run_apiserver.sh`)
 
 ```bash
-docker run --network sql-network -it -p 8000:8000 --name apiserver ai4eu_server_demo
+docker run --network sql-network -it --rm -p 8000:8000 --name apiserver ai4eu_server_demo
 ```
 
 At this point you should be able to visit the server from your browser at `localhost:8000/docs`.
 
 #### Local Installation
 
-If you want to run the server locally, you need Python 3.11.
+If you want to run the server locally, you need **Python 3.11**.
 We advise creating a virtual environment first and install the dependencies there:
 
 ```bash
-python3 -m venv venv
+python3.11 -m venv venv
 source venv/bin/activate
 python -m pip install .
 ```
-
-Note that the `mysqlclient` dependency requires additional tooling before it can be installed.
-In case this tooling is not already available, please have a look
-at [their installation instructions](https://github.com/PyMySQL/mysqlclient#install).
 
 For development, you will need to install the optional dependencies as well:
 
@@ -144,24 +153,24 @@ run before every commit:
 ```bash
 pre-commit install
 ```
-Alternatively, you can run 
+You can run 
 ```bash
-precommit run --all-files
+pre-commit run --all-files
 ```
 To run pre-commit manually.
 
-After installing the dependencies you can start the server:
+After installing the dependencies you can start the server. You have 3 options:
 
+1. Run from your machine: 
 ```bash
 cd src
 python main.py --reload
 ```
-
 The `--reload` argument will automatically restart the app if changes are made to the source files.
+2. Run using docker. For instance using `scripts/run_apiserver.sh`
+3. Run using DevContainer (see next subsection)
 
-
-#### Devcontainer Installation
-
+#### (Optional) Devcontainer Installation
 If you want to run the server on and isolated container pre configured for the proyect you can open the proyect via docker dashboard. On the dev container section click `create a new enviroment`
 
 <img width="1270" alt="image" src="https://user-images.githubusercontent.com/46299278/224726755-a8843f78-9cd8-41f2-a042-c24838c79fea.png">
@@ -170,11 +179,26 @@ Follow the instructions and select the root folder of the project:
 
 <img width="895" alt="image" src="https://user-images.githubusercontent.com/46299278/224727211-0615d20b-e42f-499d-87c6-ec33b9e20e57.png">
  
- After it docker will ask you for selection de devcontainer and open it on vscode, you should choose aiod-app-1:
+ After this, docker will ask you for selection de devcontainer and open it on vscode, you should 
+ choose aiod-app-1:
  
  <img width="883" alt="image" src="https://user-images.githubusercontent.com/46299278/224727507-5b77fa99-6e59-4df1-a280-46214930e1d0.png">
 
+### Authentication
+Currently, the code is on default coupled with a keycloak running on test.openml.org. To make 
+this work, you need to set some environment variables. You can do this by creating a `.env` file 
+and place it in the `src` directory. The `.env` file needs two variables:
 
+```bash
+# Authentication
+KEYCLOAK_CLIENT_ID=aiod-api
+KEYCLOAK_CLIENT_SECRET=[SECRET]
+```
+
+Please ask Jos van der Velde (j.d.v.d.velde@tue.nl) for the keycloak secret, and to give your 
+user the correct roles.
+
+See [authentication README](authentication/README.md) for more information.
 
 ### Populating the Database
 
@@ -189,13 +213,20 @@ You can change this behavior through parameters of the script:
       Effectively a `DROP DATABASE` followed by a `CREATE DATABASE` and the creation of the tables.
       The database is then repopulated according to `populate`.
       **Important:** data in the database is not restored. All data will be lost. Do not use this option
-      if you are not sure it is what you need.
+      if you are not sure if it is what you need.
 
-* **populate**: one of "nothing", "example", or "openml". Default is "example".
-  Specifies what data to add the database, only used if `rebuild-db` is "only-if-empty" or "always".
+* **populate-datasets**: one or multiple of "example", "huggingface", "zenodo" or "openml". 
+  Default is nothing. Specifies what data to add the database, only used if `rebuild-db` is 
+  "only-if-empty" or "always".
     * nothing: don't add any data.
     * example: registers two datasets and two publications.
-    * openml: registers all datasets on OpenML, this may take a while (~30 minutes).
+    * openml: registers datasets of OpenML, this may take a while, depending on the limit (~30 
+      minutes).
+
+* **populate-publications**: similar to populate-datasets. Only "example" is currently implemented.
+
+* **limit**: limit the number of initial resources with which the database is populated. This 
+  limit is per resource and per platform.
 
 ## Usage
 

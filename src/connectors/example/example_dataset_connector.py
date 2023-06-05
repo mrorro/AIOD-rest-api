@@ -2,8 +2,8 @@ import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused'
 
 from connectors import ResourceConnector
 from connectors.resource_with_relations import ResourceWithRelations
-from database.model.dataset import Dataset
-from database.model.publication import Publication
+from database.model.dataset.dataset import Dataset
+from database.model.publication.publication import Publication
 from platform_names import PlatformName
 
 

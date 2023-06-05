@@ -15,7 +15,7 @@ from database.model.dataset.measured_value import (
 from database.model.dataset.publication_link import DatasetPublicationLink
 from database.model.general.license import License
 from database.model.general.keyword import Keyword
-from database.model.publication import Publication
+from database.model.publication.publication import Publication
 from database.model.resource import Resource
 from database.model.relationships import ResourceRelationshipList, ResourceRelationshipSingle
 from serialization import (

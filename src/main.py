@@ -52,7 +52,7 @@ def _parse_args() -> argparse.Namespace:
         type=int,
         default=None,
         help="Limit the number of initial resources with which the database is populated, "
-        "per resources and per platform.",
+        "per resource and per platform.",
     )
     parser.add_argument(
         "--reload",
