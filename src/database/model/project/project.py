@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List
+from pydantic import condecimal
 
 from sqlmodel import Field, Relationship
 from database.model.relationships import ResourceRelationshipList
@@ -11,6 +12,9 @@ from serialization import (
 
 from database.model.general.keyword import Keyword
 from database.model.project.keyword_link import ProjectKeywordLink
+
+
+MONEY_TYPE = condecimal(max_digits=12, decimal_places=2)
 
 
 class ProjectBase(Resource):
@@ -29,8 +33,13 @@ class ProjectBase(Resource):
     founded_under: str | None = Field(
         max_length=250, default=None, schema_extra={"example": "John Doe"}
     )
-    total_cost_euro: float | None = Field(default=None, schema_extra={"example": 100000000.54})
-    eu_contribution_euro: float | None = Field(default=None, schema_extra={"example": 100000000.54})
+    total_cost_euro: MONEY_TYPE | None = Field(  # type: ignore
+        default=None, schema_extra={"example": 100000000.54}
+    )
+    eu_contribution_euro: MONEY_TYPE | None = Field(  # type: ignore
+        default=None, schema_extra={"example": 100000000.54}
+    )
+
     coordinated_by: str | None = Field(
         max_length=250, default=None, schema_extra={"example": "John Doe"}
     )
