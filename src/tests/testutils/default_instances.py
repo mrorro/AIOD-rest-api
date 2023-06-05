@@ -9,7 +9,7 @@ import datetime
 
 import pytest
 
-from database.model.dataset import Dataset
+from database.model.dataset.dataset import Dataset
 from database.model.dataset.alternate_name import DatasetAlternateName
 from database.model.dataset.checksum import ChecksumORM
 from database.model.dataset.checksum_algorithm import ChecksumAlgorithm
