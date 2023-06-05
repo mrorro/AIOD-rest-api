@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import List
 from sqlmodel import Field, Relationship
+from database.model.general.media import Media
 from database.model.general.news_category import NewsCategory
+from database.model.news.media_link import NewsMediaLink
 from database.model.news.news_category import NewsCategoryNewsLink
 from database.model.relationships import ResourceRelationshipList
 from database.model.resource import Resource
@@ -36,10 +38,16 @@ class News(NewsBase, table=True):  # type: ignore [call-arg]
     news_categories: List[NewsCategory] = Relationship(
         back_populates="news", link_model=NewsCategoryNewsLink
     )
+    media: List[Media] = Relationship(back_populates="news", link_model=NewsMediaLink)
 
     class RelationshipConfig:
         news_categories: List[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(NewsCategory),
             example=["news_category1", "news_category2"],
+        )
+        media: List[str] = ResourceRelationshipList(
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(Media),
+            example=["media1", "media2"],
         )

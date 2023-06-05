@@ -47,6 +47,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "source": "https://news.source.example",
         "alternative_headline": "Example news alternative headline",
         "news_categories": ["news_category1", "news_category2"],
+        "media": ["media1", "media2"],
     }
     response = client.post("/news/v0", json=body, headers={"Authorization": "Fake token"})
     assert response.status_code == 200
@@ -68,3 +69,4 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert response_json["source"] == "https://news.source.example"
     assert response_json["alternative_headline"] == "Example news alternative headline"
     assert set(response_json["news_categories"]) == {"news_category1", "news_category2"}
+    assert set(response_json["media"]) == {"media1", "media2"}
