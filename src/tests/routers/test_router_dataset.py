@@ -1,5 +1,3 @@
-
-import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 """
 Dataset is a complex resource, so they are tested separately.
 """
