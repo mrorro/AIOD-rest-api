@@ -40,6 +40,7 @@ class News(NewsBase, table=True):  # type: ignore [call-arg]
     news_categories: List[NewsCategory] = Relationship(
         back_populates="news", link_model=NewsCategoryNewsLink
     )
+    # TODO: add business_categories
     media: List[Media] = Relationship(back_populates="news", link_model=NewsMediaLink)
     keywords: List[Keyword] = Relationship(back_populates="news", link_model=NewsKeywordLink)
 
