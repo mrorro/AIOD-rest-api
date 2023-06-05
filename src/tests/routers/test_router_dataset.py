@@ -1,7 +1,3 @@
-"""
-Dataset is a complex resource, so they are tested separately.
-"""
-
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 from unittest.mock import Mock
 

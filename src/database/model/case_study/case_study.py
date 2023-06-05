@@ -80,10 +80,10 @@ class CaseStudy(CaseStudyBase, table=True):  # type: ignore [call-arg]
         business_categories: List[str] = ResourceRelationshipList(
             example=["business category 1", "business category 2"],
             serializer=AttributeSerializer("name"),
-            deserializer=FindByNameDeserializer(CaseStudyBusinessCategoryLink),
+            deserializer=FindByNameDeserializer(BusinessCategory),
         )
         technical_categories: List[str] = ResourceRelationshipList(
             example=["technical category 1", "technical category 2"],
             serializer=AttributeSerializer("name"),
-            deserializer=FindByNameDeserializer(CaseStudyTechnicalCategoryLink),
+            deserializer=FindByNameDeserializer(TechnicalCategory),
         )
