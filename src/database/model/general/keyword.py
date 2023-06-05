@@ -6,7 +6,7 @@ from sqlmodel import Relationship
 
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
     from database.model.news.news import News
-    from database.model.dataset import Dataset
+    from database.model.dataset.dataset import Dataset
 from database.model.dataset.keyword import DatasetKeywordLink
 from database.model.news.keyword_link import NewsKeywordLink
 from database.model.named_relation import NamedRelation

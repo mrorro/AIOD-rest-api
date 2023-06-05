@@ -1,5 +1,5 @@
 from typing import Type
-from database.model.news import News
+from database.model.news.news import News
 from routers.resource_router import ResourceRouter
 
 

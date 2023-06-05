@@ -1,40 +1,12 @@
-"""
-Dataset is a complex resource, so they are tested separately.
-"""
-
-import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 from unittest.mock import Mock
 
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from authentication import keycloak_openid
-from database.model import AIAsset
-from database.model.news import News
 
 
-def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token: Mock):
+def test_happy_path(client: TestClient, mocked_privileged_token: Mock):
     keycloak_openid.decode_token = mocked_privileged_token
-    with Session(engine) as session:
-        session.add_all(
-            [
-                AIAsset(type="news"),
-                News(
-                    identifier=1,
-                    title="news title",
-                    platform_identifier="1",
-                    platform="example",
-                    date_modified="2021-02-05T15:15:00.000Z",
-                    body="body",
-                    section="example section",
-                    word_count=100,
-                    headline="example headline",
-                ),
-            ]
-        )
-        session.commit()
-
     body = {
         "platform": "example",
         "platform_identifier": "2",
@@ -48,15 +20,16 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "alternative_headline": "Example news alternative headline",
         "news_categories": ["news_category1", "news_category2"],
         "media": ["media1", "media2"],
+        "keywords": ["keyword1", "keyword2"],
     }
     response = client.post("/news/v0", json=body, headers={"Authorization": "Fake token"})
     assert response.status_code == 200
 
-    response = client.get("/news/v0/2")
+    response = client.get("/news/v0/1")
     assert response.status_code == 200
 
     response_json = response.json()
-    assert response_json["identifier"] == 2
+    assert response_json["identifier"] == 1
     assert response_json["platform"] == "example"
     assert response_json["platform_identifier"] == "2"
     assert response_json["title"] == "Example News"
@@ -70,3 +43,4 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert response_json["alternative_headline"] == "Example news alternative headline"
     assert set(response_json["news_categories"]) == {"news_category1", "news_category2"}
     assert set(response_json["media"]) == {"media1", "media2"}
+    assert set(response_json["keywords"]) == {"keyword1", "keyword2"}

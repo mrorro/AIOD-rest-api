@@ -1,10 +1,10 @@
 from connectors.example.example_publication_connector import ExamplePublicationConnector
-from database.model.dataset import Dataset
+from database.model.dataset.dataset import Dataset
 from sqlalchemy.engine import Engine
 from sqlmodel import Session, select
 
 from connectors import ExampleDatasetConnector
-from database.model.publication import Publication
+from database.model.publication.publication import Publication
 from database.setup import populate_database
 
 OPENML_URL = "https://www.openml.org/api/v1/json"

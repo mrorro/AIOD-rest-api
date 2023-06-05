@@ -1,5 +1,5 @@
 from converters.schema_converters import dataset_converter_schema_dot_org_instance
-from database.model.dataset import Dataset
+from database.model.dataset.dataset import Dataset
 from tests.testutils.paths import path_test_resources
 
 

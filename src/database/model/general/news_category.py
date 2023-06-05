@@ -6,7 +6,7 @@ from database.model.named_relation import NamedRelation
 from database.model.news.news_category import NewsCategoryNewsLink
 
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
-    from database.model.news import News
+    from database.model.news.news import News
 
 
 class NewsCategory(NamedRelation, table=True):  # type: ignore [call-arg]

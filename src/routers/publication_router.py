@@ -1,4 +1,4 @@
-from database.model.publication import Publication
+from database.model.publication.publication import Publication
 from routers.resource_router import ResourceRouter
 
 

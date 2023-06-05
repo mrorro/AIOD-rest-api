@@ -5,7 +5,7 @@ import responses
 from fastapi import HTTPException
 
 import connectors
-from database.model.dataset import Dataset
+from database.model.dataset.dataset import Dataset
 from platform_names import PlatformName
 from tests.testutils.paths import path_test_resources
 
