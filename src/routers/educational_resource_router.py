@@ -6,7 +6,7 @@
 # from routers.resource_router import ResourceRouter
 # from schemas import AIoDEducationalResource
 #
-from database.model.educational_resource import EducationalResource
+from database.model.educational_resource.educational_resource import EducationalResource
 from routers.resource_router import ResourceRouter
 
 

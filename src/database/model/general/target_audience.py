@@ -8,7 +8,7 @@ from database.model.educational_resource.target_audience_link import (
 
 
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
-    from database.model.educational_resource import EducationalResource
+    from database.model.educational_resource.educational_resource import EducationalResource
 from database.model.named_relation import NamedRelation
 
 

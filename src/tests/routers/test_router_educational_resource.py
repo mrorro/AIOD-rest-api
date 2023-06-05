@@ -1,36 +1,13 @@
 import typing  # noqa:F401 (flake8 raises incorrect 'Module imported but unused' error)
 from unittest.mock import Mock
 
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from authentication import keycloak_openid
-from database.model import AIAsset
-from database.model.educational_resource import EducationalResource
 
 
-def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token: Mock):
+def test_happy_path(client: TestClient, mocked_privileged_token: Mock):
     keycloak_openid.decode_token = mocked_privileged_token
-    with Session(engine) as session:
-        session.add_all(
-            [
-                AIAsset(type="educational_resource"),
-                EducationalResource(
-                    identifier=1,
-                    title="news title",
-                    platform_identifier="1",
-                    platform="example",
-                    date_modified="2021-02-05T15:15:00.000Z",
-                    body="body",
-                    website_url="url",
-                    educational_level="educational_level",
-                    educational_type="educational_type",
-                    pace="pace",
-                ),
-            ]
-        )
-        session.commit()
 
     body = {
         "platform": "zenodo",
@@ -68,11 +45,11 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     )
     assert response.status_code == 200
 
-    response = client.get("/educational_resources/v0/2")
+    response = client.get("/educational_resources/v0/1")
     assert response.status_code == 200
 
     response_json = response.json()
-    assert response_json["identifier"] == 2
+    assert response_json["identifier"] == 1
     assert response_json["platform"] == "zenodo"
     assert response_json["title"] == "Example News"
     assert response_json["date_modified"] == "2022-01-01T15:15:00"
