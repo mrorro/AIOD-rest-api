@@ -10,7 +10,7 @@ import requests
 from fastapi import HTTPException
 
 from connectors.abstract.resource_connector import ResourceConnector
-from database.model.dataset import Dataset
+from database.model.dataset.dataset import Dataset
 from database.model.dataset.data_download import DataDownloadORM
 from database.model.general.keyword import Keyword
 from database.model.general.license import License

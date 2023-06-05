@@ -8,11 +8,11 @@ import requests
 
 from connectors import ResourceConnector
 from connectors.resource_with_relations import ResourceWithRelations
-from database.model.dataset import Dataset
+from database.model.dataset.dataset import Dataset
 from database.model.dataset.data_download import DataDownloadORM
 from database.model.general.license import License
 from database.model.general.keyword import Keyword
-from database.model.publication import Publication
+from database.model.publication.publication import Publication
 from platform_names import PlatformName
 
 

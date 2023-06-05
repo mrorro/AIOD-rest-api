@@ -5,13 +5,13 @@ from typing import List
 
 from connectors.resource_with_relations import ResourceWithRelations
 from database.model import AIAsset
-from database.model.dataset import Dataset
+from database.model.dataset.dataset import Dataset
 from sqlalchemy import text, and_
 from sqlalchemy.engine import Engine
 from sqlmodel import create_engine, Session, select
 
 from connectors import ResourceConnector
-from database.model.publication import Publication
+from database.model.publication.publication import Publication
 from database.model.resource import Resource
 from platform_names import PlatformName
 
