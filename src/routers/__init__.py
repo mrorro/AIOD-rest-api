@@ -7,8 +7,8 @@ from .resource_router import ResourceRouter  # noqa:F401
 
 # from .news_router import NewsRouter
 from .publication_router import PublicationRouter
+from .educational_resource_router import EducationalResourceRouter
 
-# from .educational_resource_router import EducationalResourceRouter
 # from .event_router import EventRouter
 # from .organisation_router import OrganisationRouter
 # from .project_router import ProjectRouter
@@ -17,7 +17,7 @@ from .publication_router import PublicationRouter
 routers = [
     # CaseStudyRouter(),
     DatasetRouter(),
-    # EducationalResourceRouter(),
+    EducationalResourceRouter(),
     # EventRouter(),
     # NewsRouter(),
     # OrganisationRouter(),

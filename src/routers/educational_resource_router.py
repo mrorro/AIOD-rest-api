@@ -6,28 +6,23 @@
 # from routers.resource_router import ResourceRouter
 # from schemas import AIoDEducationalResource
 #
-#
-# class EducationalResourceRouter(ResourceRouter[OrmEducationalResource, AIoDEducationalResource]):
-#     @property
-#     def version(self) -> int:
-#         return 0
-#
-#     @property
-#     def resource_name(self) -> str:
-#         return "educational-resource"
-#
-#     @property
-#     def resource_name_plural(self) -> str:
-#         return "educational-resources"
-#
-#     @property
-#     def aiod_class(self) -> Type[AIoDEducationalResource]:
-#         return AIoDEducationalResource
-#
-#     @property
-#     def orm_class(self) -> Type[OrmEducationalResource]:
-#         return OrmEducationalResource
-#
-#     @property
-#     def converter(self) -> OrmConverter[AIoDEducationalResource, OrmEducationalResource]:
-#         return educational_resource_converter_instance
+from database.model.educational_resource import EducationalResource
+from routers.resource_router import ResourceRouter
+
+
+class EducationalResourceRouter(ResourceRouter):
+    @property
+    def version(self) -> int:
+        return 0
+
+    @property
+    def resource_name(self) -> str:
+        return "educational_resource"
+
+    @property
+    def resource_name_plural(self) -> str:
+        return "educational_resources"
+
+    @property
+    def resource_class(self) -> type[EducationalResource]:
+        return EducationalResource
