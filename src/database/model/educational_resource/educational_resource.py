@@ -89,6 +89,10 @@ class EducationalResource(EducationalResourceBase, table=True):  # type: ignore 
         back_populates="educational_resources", link_model=EducationalResourceTargetAudienceLink
     )
 
+    # These entities are implemented in the pr 52
+    # this atributes will be implemented after merging them
+    # TODO add business_categories
+    # TODO add techncal_categories
     class RelationshipConfig:
         languages: List[str] = ResourceRelationshipList(
             example=["language 1", "language 2"],
