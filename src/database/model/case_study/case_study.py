@@ -40,7 +40,7 @@ class CaseStudyBase(Resource):
     date_published: datetime | None = Field(
         default=None, schema_extra={"example": "2022-01-01T15:15:00.000Z"}
     )
-    same_as: str = Field(
+    same_as: str | None = Field(
         max_length=150,
         unique=True,
         schema_extra={"example": "https://www.example.com/case_study/example"},
