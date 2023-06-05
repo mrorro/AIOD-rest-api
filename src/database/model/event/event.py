@@ -5,6 +5,7 @@ from database.model.ai_asset import AIAsset
 from database.model.event.application_area_link import EventApplicationAreaLink
 from database.model.event.relevant_resources_link import EventRelevantResourcesLink
 from database.model.event.research_area_link import EventResearchAreaLink
+from database.model.event.used_resources_link import EventUsedResourcesLink
 from database.model.general.application_areas import ApplicationArea
 from database.model.general.research_areas import ResearchArea
 from database.model.relationships import ResourceRelationshipList
@@ -74,6 +75,7 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
         ),
     )
     relevant_resources: List["AIAsset"] = Relationship(link_model=EventRelevantResourcesLink)
+    used_resources: List["AIAsset"] = Relationship(link_model=EventUsedResourcesLink)
 
     class RelationshipConfig:
         sub_events: List[int] = ResourceRelationshipList(
@@ -95,6 +97,11 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
             example=["application_area1", "application_area2"],
         )
         relevant_resources: List[int] = ResourceRelationshipList(
+            example=[1, 2],
+            serializer=AttributeSerializer("identifier"),
+            deserializer=FindByIdentifierDeserializer(AIAsset),
+        )
+        used_resources: List[int] = ResourceRelationshipList(
             example=[1, 2],
             serializer=AttributeSerializer("identifier"),
             deserializer=FindByIdentifierDeserializer(AIAsset),
