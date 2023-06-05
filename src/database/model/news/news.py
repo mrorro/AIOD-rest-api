@@ -6,7 +6,7 @@ from database.model.general.media import Media
 from database.model.general.news_category import NewsCategory
 from database.model.news.keyword_link import NewsKeywordLink
 from database.model.news.media_link import NewsMediaLink
-from database.model.news.news_category import NewsCategoryNewsLink
+from database.model.news.news_category_link import NewsCategoryNewsLink
 from database.model.relationships import ResourceRelationshipList
 from database.model.resource import Resource
 from serialization import (
