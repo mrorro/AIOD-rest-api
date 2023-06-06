@@ -39,7 +39,7 @@
 #
 #     parent_organisation_id: Mapped[int] = mapped_column(
 #         ForeignKey("organisations.identifier"), nullable=True, default=None
-#     )
+#     )#is_parts
 #
 #     subsidiary_organisation_id: Mapped[int] = mapped_column(
 #         ForeignKey("organisations.identifier"), nullable=True, default=None
@@ -61,7 +61,7 @@
 #     email_addresses: Mapped[list["OrmEmail"]] = relationship(
 #         cascade="all, delete-orphan",
 #         default_factory=list,
-#     )
+#     ) #many to one relation, 1 org many email address,
 #
 #     members: Mapped[list["OrmAgent"]] = relationship(
 #         secondary=organisation_member_agent_relationship,
@@ -74,9 +74,15 @@
 #         backref="departments1",
 #         passive_deletes=True,
 #         default_factory=list,
-#     )
+#     )#has parts
 #
 #     __mapper_args__ = {
 #         "polymorphic_identity": "organisation",
 #         "inherit_condition": identifier == OrmAgent.identifier,
 #     }
+
+
+# project can be org
+# use indentifier - creating member, in post request of the agent.
+# create ai asset (organisation and person).
+# org generic router
