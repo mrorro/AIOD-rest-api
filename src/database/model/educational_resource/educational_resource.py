@@ -9,10 +9,14 @@ from database.model.educational_resource.language_link import EducationalResourc
 from database.model.educational_resource.target_audience_link import (
     EducationalResourceTargetAudienceLink,
 )
+from database.model.educational_resource.technical_categories_link import (
+    EducationalResourceTechnicalCategoryLink,
+)
 from database.model.general.business_category import BusinessCategory
 from database.model.general.keyword import Keyword
 from database.model.general.language import Language
 from database.model.general.target_audience import TargetAudience
+from database.model.general.technical_category import TechnicalCategory
 from database.model.relationships import ResourceRelationshipList
 from database.model.resource import Resource
 from serialization import AttributeSerializer, FindByNameDeserializer
@@ -98,14 +102,13 @@ class EducationalResource(EducationalResourceBase, table=True):  # type: ignore 
         back_populates="educational_resources", link_model=EducationalResourceKeywordLink
     )
 
-    # These entities are implemented in the pr 52
-    # this atributes will be implemented after merging them
-    # TODO add business_categories
     business_categories: List[BusinessCategory] = Relationship(
         back_populates="educational_resources", link_model=EducationalResourceBusinessCategoryLink
     )
+    technical_categories: List[TechnicalCategory] = Relationship(
+        back_populates="educational_resources", link_model=EducationalResourceTechnicalCategoryLink
+    )
 
-    # TODO add techncal_categories
     class RelationshipConfig:
         languages: List[str] = ResourceRelationshipList(
             example=["language 1", "language 2"],
@@ -126,4 +129,9 @@ class EducationalResource(EducationalResourceBase, table=True):  # type: ignore 
             example=["bussines category 1", "bussines category 2"],
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(BusinessCategory),
+        )
+        technical_categories: List[str] = ResourceRelationshipList(
+            example=["technical category 1", "technical category 2"],
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(TechnicalCategory),
         )

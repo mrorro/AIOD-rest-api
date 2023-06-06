@@ -41,6 +41,7 @@ def test_happy_path(client: TestClient, mocked_privileged_token: Mock):
         "target_audience": ["target audience 1", "target audience 2"],
         "keywords": ["keyword1", "keyword2"],
         "business_categories": ["business category 1", "business category 2"],
+        "technical_categories": ["technical category 1", "technical category 2"],
     }
     response = client.post(
         "/educational_resources/v0", json=body, headers={"Authorization": "Fake token"}
@@ -86,4 +87,8 @@ def test_happy_path(client: TestClient, mocked_privileged_token: Mock):
     assert set(response_json["business_categories"]) == {
         "business category 1",
         "business category 2",
+    }
+    assert set(response_json["technical_categories"]) == {
+        "technical category 1",
+        "technical category 2",
     }
