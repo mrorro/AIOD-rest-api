@@ -1,20 +1,28 @@
 from datetime import datetime
 
-# from typing import List
-from sqlmodel import Field
+from typing import List
+from sqlmodel import Field, Relationship, SQLModel
 
-# from database.model.general.keyword import Keyword
-# from database.model.general.business_category import BusinessCategory
-# from database.model.news.keyword_link import NewsKeywordLink
-# from database.model.news.media_link import NewsMediaLink
-# from database.model.news.news_category_link import NewsCategoryNewsLink
-# from database.model.relationships import ResourceRelationshipList
+from database.model.agent import Agent
+
+from database.model.general.business_category import BusinessCategory
+from database.model.organisation.business_category_link import OrganisationBusinessCategoryLink
+
+from database.model.general.technical_category import TechnicalCategory
+from database.model.organisation.technical_category_link import OrganisationTechnicalCategoryLink
+
+from database.model.relationships import ResourceRelationshipList
 from database.model.resource import Resource
 
-# from serialization import (
-#     AttributeSerializer,
-#     FindByNameDeserializer,
-# )
+from database.model.organisation.member_link import OrganisationMemberLink
+
+from serialization import AttributeSerializer, FindByNameDeserializer, FindByIdentifierDeserializer
+
+
+class OrganisationParentChildLink(SQLModel, table=True):  # type: ignore [call-arg]
+    __tablename__ = "organisation_parent_child_link"
+    parent_identifier: int = Field(foreign_key="organisation.identifier", primary_key=True)
+    child_identifier: int = Field(foreign_key="organisation.identifier", primary_key=True)
 
 
 class OrganisationBase(Resource):
@@ -42,63 +50,69 @@ class OrganisationBase(Resource):
         default=None, schema_extra={"example": "2023-01-01T15:15:00.000Z"}
     )
     legal_name: str | None = Field(
-        max_length=500, default=None, schema_example={"example": "Example official name"}
+        max_length=500, default=None, schema_extra={"example": "Example official name"}
     )
     alternate_name: str | None = Field(
-        max_length=500, default=None, schema_example={"example": "Example alternate name"}
+        max_length=500, default=None, schema_extra={"example": "Example alternate name"}
     )
     address: str | None = Field(
-        max_length=500, default=None, schema_example={"example": "Example address"}
+        max_length=500, default=None, schema_extra={"example": "Example address"}
     )
     telephone: str | None = Field(
-        max_length=500, default=None, schema_example={"example": "Example telephone number"}
+        max_length=500, default=None, schema_extra={"example": "Example telephone number"}
     )
     parent_organisation_id: int | None = Field(
-        foreign_key="organisations.identifier",
+        foreign_key="organisation.identifier",
         default=None,
-        schema_example={"example": "Example parent organisation 1"},
+        schema_extra={"example": "Example parent organisation 1"},
     )
     subsidiary_organisation_id: int | None = Field(
-        foreign_key="organisations.identifier",
+        foreign_key="organisation.identifier",
         default=None,
-        schema_example={"example": "Example subsidiary organisation 1"},
+        schema_extra={"example": "Example subsidiary organisation 1"},
     )
 
 
-# class Organisation(OrganisationBase, table=True):  # type: ignore
-#     __tablename__ = "organisation"
+class Organisation(OrganisationBase, table=True):  # type: ignore
+    __tablename__ = "organisation"
 
-#     identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
+    identifier: int = Field(primary_key=True, foreign_key="agent.identifier")
 
-#     business_categories: List[BusinessCategory] = Relationship(
-#         back_populates="organisations", link_model=OrganisationBusinessCategoryLink
-#     )
-#     technical_categories: List[TechnicalCategory] = Relationship(
-#         back_populates="organisations", link_model=OrganisationTechnicalCategoryLink
-#     )
-#     email_address: List[Email] = Relationship(
-#         sa_relationship_kwargs={"cascade", "all, delete-orphan"}
-#     )
-#     members: list[Agent] = Relationship(
-#         back_populates="members",
-#         sa_relationship_kwargs={"passive_deletes": "all"},
-#         link_model=OrganisationMember,
-#     )
-#     departments: List[Agent] = Relationship(
-#         back_populates="departments",
-#         sa_relationship_kwargs={"passive_deletes": "all"},
-#         link_model=OrganisationDepartment,
-#     )
+    business_categories: List[BusinessCategory] = Relationship(
+        back_populates="organisations", link_model=OrganisationBusinessCategoryLink
+    )
+    technical_categories: List[TechnicalCategory] = Relationship(
+        back_populates="organisations", link_model=OrganisationTechnicalCategoryLink
+    )
+    # email_address: List[Email] = Relationship(
+    #     sa_relationship_kwargs={"cascade", "all, delete-orphan"}
+    # )
+    members: list[Agent] = Relationship(
+        link_model=OrganisationMemberLink,
+    )
+    # departments: List[Agent] = Relationship(
+    #     link_model=OrganisationDepartmentLink,
+    # )
 
-#     class RelationshipConfig:
+    class RelationshipConfig:
 
-#         business_categories: List[str] = ResourceRelationshipList(
-#             example=["business category 1", "business category 2"],
-#             serializer=AttributeSerializer("name"),
-#             deserializer=FindByNameDeserializer(BusinessCategory),
-#         )
-#         technical_categories: List[str] = ResourceRelationshipList(
-#             example=["technical category 1", "technical category 2"],
-#             serializer=AttributeSerializer("name"),
-#             deserializer=FindByNameDeserializer(TechnicalCategory),
-#         )
+        business_categories: List[str] = ResourceRelationshipList(
+            example=["business category 1", "business category 2"],
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(BusinessCategory),
+        )
+        technical_categories: List[str] = ResourceRelationshipList(
+            example=["technical category 1", "technical category 2"],
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(TechnicalCategory),
+        )
+        members: List[int] = ResourceRelationshipList(
+            example=[1, 2],
+            serializer=AttributeSerializer("identifier"),
+            deserializer=FindByIdentifierDeserializer(Agent),
+        )
+
+
+# Defined separate because it references Organisation,
+# and can therefor not be defined inside Organisation
+deserializer = FindByIdentifierDeserializer(Organisation)
