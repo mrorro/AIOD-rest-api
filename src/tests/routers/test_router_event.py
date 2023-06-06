@@ -50,7 +50,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "attendance_mode": "Example attendance mode Event",
         "type": "Example type Event",
         "super_events": [1],
-        "sub_events": [],
+        "sub_events": [1],
         "research_areas": ["research_area1", "research_area2"],
         "application_areas": ["application_area1", "application_area2"],
         "relevant_resources": [2],
@@ -77,6 +77,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert response_json["attendance_mode"] == "Example attendance mode Event"
     assert response_json["type"] == "Example type Event"
     assert set(response_json["super_events"]) == {1}
+    assert set(response_json["sub_events"]) == {1}
     assert set(response_json["research_areas"]) == {"research_area1", "research_area2"}
     assert set(response_json["application_areas"]) == {"application_area1", "application_area2"}
     assert set(response_json["relevant_resources"]) == {2}

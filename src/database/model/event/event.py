@@ -29,7 +29,7 @@ class EventBase(Resource):
     location: str = Field(max_length=500, schema_extra={"example": "Example location Event"})
     # Recommended fields
     start_date: datetime | None = Field(
-        default=None, schema_extra={"example": "2022-01-01T15:15:00"}
+        default=None, schema_extra={"example": "2021-02-03T15:15:00"}
     )
     end_date: datetime | None = Field(default=None, schema_extra={"example": "2022-01-01T15:15:00"})
     duration: str | None = Field(
@@ -108,7 +108,7 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
         )
 
 
-# Defined separate because it references Event, and can therefor not be defined inside Dataset
+# Defined separate because it references Event, and can therefor not be defined inside Event
 deserializer = FindByIdentifierDeserializer(Event)
 Event.RelationshipConfig.super_events.deserializer = deserializer  # type: ignore[attr-defined]
 Event.RelationshipConfig.sub_events.deserializer = deserializer  # type: ignore[attr-defined]
