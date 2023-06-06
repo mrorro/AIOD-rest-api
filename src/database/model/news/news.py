@@ -2,11 +2,13 @@ from datetime import datetime
 from typing import List
 from sqlmodel import Field, Relationship
 from database.model.general.keyword import Keyword
+from database.model.general.business_category import BusinessCategory
 from database.model.general.media import Media
 from database.model.general.news_category import NewsCategory
 from database.model.news.keyword_link import NewsKeywordLink
 from database.model.news.media_link import NewsMediaLink
 from database.model.news.news_category_link import NewsCategoryNewsLink
+from database.model.news.business_category_link import NewsBusinessCategoryLink
 from database.model.relationships import ResourceRelationshipList
 from database.model.resource import Resource
 from serialization import (
@@ -40,9 +42,11 @@ class News(NewsBase, table=True):  # type: ignore [call-arg]
     news_categories: List[NewsCategory] = Relationship(
         back_populates="news", link_model=NewsCategoryNewsLink
     )
-    # TODO: add business_categories
     media: List[Media] = Relationship(back_populates="news", link_model=NewsMediaLink)
     keywords: List[Keyword] = Relationship(back_populates="news", link_model=NewsKeywordLink)
+    business_categories: List[BusinessCategory] = Relationship(
+        back_populates="news", link_model=NewsBusinessCategoryLink
+    )
 
     class RelationshipConfig:
         news_categories: List[str] = ResourceRelationshipList(
@@ -59,4 +63,9 @@ class News(NewsBase, table=True):  # type: ignore [call-arg]
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(Keyword),
             example=["keyword1", "keyword2"],
+        )
+        business_categories: List[str] = ResourceRelationshipList(
+            example=["business category 1", "business category 2"],
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(BusinessCategory),
         )

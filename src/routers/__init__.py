@@ -3,7 +3,7 @@ import typing  # noqa:F401
 from .dataset_router import DatasetRouter
 from .resource_router import ResourceRouter  # noqa:F401
 
-# from .case_study_router import CaseStudyRouter
+from .case_study_router import CaseStudyRouter
 
 from .news_router import NewsRouter
 from .publication_router import PublicationRouter
@@ -17,7 +17,7 @@ from .project_router import ProjectRouter
 from .presentation_router import PresentationRouter
 
 routers = [
-    # CaseStudyRouter(),
+    CaseStudyRouter(),
     DatasetRouter(),
     EducationalResourceRouter(),
     EventRouter(),

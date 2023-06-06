@@ -6,13 +6,13 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from database.model.dataset.alternate_name import DatasetAlternateNameLink, DatasetAlternateName
 from database.model.dataset.data_download import DataDownloadORM, DataDownload
-from database.model.dataset.keyword import DatasetKeywordLink
+from database.model.dataset.keyword_link import DatasetKeywordLink
 from database.model.dataset.measured_value import (
     DatasetMeasuredValueNameLink,
     MeasuredValueORM,
     MeasuredValue,
 )
-from database.model.dataset.publication import DatasetPublicationLink
+from database.model.dataset.publication_link import DatasetPublicationLink
 from database.model.general.license import License
 from database.model.general.keyword import Keyword
 from database.model.publication.publication import Publication
