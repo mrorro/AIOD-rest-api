@@ -1,11 +1,15 @@
 from datetime import datetime
 from sqlmodel import Field, Relationship
 from typing import List
+from database.model.educational_resource.business_categories_link import (
+    EducationalResourceBusinessCategoryLink,
+)
 from database.model.educational_resource.keyword_link import EducationalResourceKeywordLink
 from database.model.educational_resource.language_link import EducationalResourceLanguageLink
 from database.model.educational_resource.target_audience_link import (
     EducationalResourceTargetAudienceLink,
 )
+from database.model.general.business_category import BusinessCategory
 from database.model.general.keyword import Keyword
 from database.model.general.language import Language
 from database.model.general.target_audience import TargetAudience
@@ -97,6 +101,10 @@ class EducationalResource(EducationalResourceBase, table=True):  # type: ignore 
     # These entities are implemented in the pr 52
     # this atributes will be implemented after merging them
     # TODO add business_categories
+    business_categories: List[BusinessCategory] = Relationship(
+        back_populates="educational_resources", link_model=EducationalResourceBusinessCategoryLink
+    )
+
     # TODO add techncal_categories
     class RelationshipConfig:
         languages: List[str] = ResourceRelationshipList(
@@ -113,4 +121,9 @@ class EducationalResource(EducationalResourceBase, table=True):  # type: ignore 
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(Keyword),
             example=["keyword1", "keyword2"],
+        )
+        business_categories: List[str] = ResourceRelationshipList(
+            example=["bussines category 1", "bussines category 2"],
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(BusinessCategory),
         )

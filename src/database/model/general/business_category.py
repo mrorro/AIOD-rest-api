@@ -2,10 +2,16 @@ from typing import List
 from typing import TYPE_CHECKING
 
 from sqlmodel import Relationship
+from database.model.educational_resource.business_categories_link import (
+    EducationalResourceBusinessCategoryLink,
+)
+
 
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
     from database.model.case_study.case_study import CaseStudy
     from database.model.news.news import News
+    from database.model.educational_resource.educational_resource import EducationalResource
+
 
 from database.model.case_study.business_category_link import CaseStudyBusinessCategoryLink
 from database.model.news.business_category_link import NewsBusinessCategoryLink
@@ -26,4 +32,7 @@ class BusinessCategory(NamedRelation, table=True):  # type: ignore [call-arg]
 
     news: List["News"] = Relationship(
         back_populates="business_categories", link_model=NewsBusinessCategoryLink
+    )
+    educational_resources: List["EducationalResource"] = Relationship(
+        back_populates="business_categories", link_model=EducationalResourceBusinessCategoryLink
     )
