@@ -391,7 +391,13 @@ class ResourceRouter(abc.ABC):
         docstring is dynamic and used in Swagger.
         """
 
-        def delete_resource(identifier: str):
+        def delete_resource(identifier: str, user: dict = Depends(get_current_user)):
+            if "edit_aiod_resources" not in user["realm_access"]["roles"]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You do not have permission to edit Aiod resources.",
+                )
+
             try:
                 with Session(engine) as session:
                     self._retrieve_resource(session, identifier)  # Raise error if it does not exist
