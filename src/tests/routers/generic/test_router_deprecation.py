@@ -44,14 +44,13 @@ def test_deprecated_router(
 
     kwargs = {}
     if verb in ("post", "put"):
-        kwargs = {
-            "json": TestResource(
-                title="Another title", platform="example", platform_identifier="2"
-            ).dict(),
-            "headers": {"Authorization": "fake-token"},
-        }
-    if verb in ("delete"):
-        kwargs = {"headers": {"Authorization": "fake-token"}}
+        kwargs["json"] = TestResource(
+            title="Another title", platform="example", platform_identifier="2"
+        ).dict()
+
+    if verb in ("post", "put", "delete"):
+        kwargs["headers"] = {"Authorization": "fake-token"}
+
     response = getattr(client, verb)(url, **kwargs)
     assert response.status_code == 200
     assert "deprecated" in response.headers
