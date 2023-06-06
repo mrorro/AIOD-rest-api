@@ -40,10 +40,8 @@ def test_platform_get_unauthenticated(
 
 
 def test_platform_delete_unauthenticated(
-    client_test_resource: TestClient,
-    engine_test_resource_filled: Engine,
+    client_test_resource: TestClient, engine_test_resource_filled: Engine
 ):
-    """TODO: you should need authentication for DELETE"""
     response = client_test_resource.delete("/test_resources/v0/1")
     assert response.status_code == 401
 
