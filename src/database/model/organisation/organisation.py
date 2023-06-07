@@ -5,6 +5,11 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from database.model.agent import Agent
 
+from database.model.organisation.email import (
+    OrganisationEmail,
+    OrganisationEmailLink,
+)
+
 from database.model.general.business_category import BusinessCategory
 from database.model.organisation.business_category_link import OrganisationBusinessCategoryLink
 
@@ -65,12 +70,12 @@ class OrganisationBase(Resource):
     parent_organisation_id: int | None = Field(
         foreign_key="organisation.identifier",
         default=None,
-        schema_extra={"example": "Example parent organisation 1"},
+        schema_extra={"example": 1},
     )
     subsidiary_organisation_id: int | None = Field(
         foreign_key="organisation.identifier",
         default=None,
-        schema_extra={"example": "Example subsidiary organisation 1"},
+        schema_extra={"example": 2},
     )
 
 
@@ -85,9 +90,9 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
     technical_categories: List[TechnicalCategory] = Relationship(
         back_populates="organisations", link_model=OrganisationTechnicalCategoryLink
     )
-    # email_address: List[Email] = Relationship(
-    #     sa_relationship_kwargs={"cascade", "all, delete-orphan"}
-    # )
+    emails: List[OrganisationEmail] = Relationship(
+        back_populates="organisations", link_model=OrganisationEmailLink
+    )
     members: list[Agent] = Relationship(
         link_model=OrganisationMemberLink,
     )
@@ -106,6 +111,11 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
             example=["technical category 1", "technical category 2"],
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(TechnicalCategory),
+        )
+        emails: List[str] = ResourceRelationshipList(
+            example=["email@org.com"],
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(OrganisationEmail),
         )
         members: List[int] = ResourceRelationshipList(
             example=[1, 2],
