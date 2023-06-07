@@ -1,6 +1,6 @@
 [
     {
-        "platform": "zenodo",
+        "platform": "example",
         "platform_identifier": "1",
         "description": "A description.",
         "name": "Example Case Study",

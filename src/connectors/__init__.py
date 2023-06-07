@@ -7,6 +7,7 @@ from .zenodo.zenodo_dataset_connector import ZenodoDatasetConnector
 from .example.example_news_connector import ExampleNewsConnector
 from .example.example_event_connector import ExampleEventConnector
 from .example.example_case_study_connector import ExampleCaseStudyConnector
+from .example.example_presentation_connector import ExamplePresentationConnector
 
 dataset_connectors = {
     c.platform_name: c
@@ -25,4 +26,5 @@ example_connectors = {
     "news": ExampleNewsConnector(),
     "events": ExampleEventConnector(),
     "case_study": ExampleCaseStudyConnector(),
+    "presentations": ExamplePresentationConnector(),
 }
