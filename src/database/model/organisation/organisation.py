@@ -15,6 +15,7 @@ from database.model.relationships import ResourceRelationshipList
 from database.model.resource import Resource
 
 from database.model.organisation.member_link import OrganisationMemberLink
+from database.model.organisation.department_link import OrganisationDepartmentLink
 
 from serialization import AttributeSerializer, FindByNameDeserializer, FindByIdentifierDeserializer
 
@@ -90,9 +91,9 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
     members: list[Agent] = Relationship(
         link_model=OrganisationMemberLink,
     )
-    # departments: List[Agent] = Relationship(
-    #     link_model=OrganisationDepartmentLink,
-    # )
+    departments: List[Agent] = Relationship(
+        link_model=OrganisationDepartmentLink,
+    )
 
     class RelationshipConfig:
 
@@ -107,6 +108,12 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
             deserializer=FindByNameDeserializer(TechnicalCategory),
         )
         members: List[int] = ResourceRelationshipList(
+            example=[1, 2],
+            serializer=AttributeSerializer("identifier"),
+            deserializer=FindByIdentifierDeserializer(Agent),
+        )
+
+        departments: List[int] = ResourceRelationshipList(
             example=[1, 2],
             serializer=AttributeSerializer("identifier"),
             deserializer=FindByIdentifierDeserializer(Agent),
