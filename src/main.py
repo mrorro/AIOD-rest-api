@@ -48,6 +48,12 @@ def _parse_args() -> argparse.Namespace:
         help="Zero, one or more platforms with which the publications should get populated.",
     )
     parser.add_argument(
+        "--fill-with-examples",
+        default=[],
+        nargs="+",
+        help="Zero, one or more resources with which the database will have examples.",
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         default=None,
@@ -96,6 +102,19 @@ def _connector_from_platform_name(connector_type: str, connector_dict: Dict, pla
         possibilities = ", ".join(f"`{c}`" for c in connectors.dataset_connectors.keys())
         msg = (
             f"No {connector_type} connector for platform '{platform_name}' available. Possible "
+            f"values: {possibilities}"
+        )
+        raise HTTPException(status_code=HTTP_501_NOT_IMPLEMENTED, detail=msg)
+    return connector
+
+
+def _connector_example_from_resource(resource):
+    connector_dict = connectors.example_connectors
+    connector = connector_dict.get(resource, None)
+    if connector is None:
+        possibilities = ", ".join(f"`{c}`" for c in connectors.dataset_connectors.keys())
+        msg = (
+            f"No example connector for resource '{resource}' available. Possible "
             f"values: {possibilities}"
         )
         raise HTTPException(status_code=HTTP_501_NOT_IMPLEMENTED, detail=msg)
@@ -154,13 +173,17 @@ def create_app() -> FastAPI:
         _connector_from_platform_name("dataset", connectors.dataset_connectors, platform_name)
         for platform_name in args.populate_datasets
     ]
-    publication_connectors = [
-        _connector_from_platform_name(
-            "publication", connectors.publication_connectors, platform_name
-        )
-        for platform_name in args.populate_publications
+    # publication_connectors = [
+    #    _connector_from_platform_name(
+    #        "publication", connectors.publication_connectors, platform_name
+    #    )
+    #    for platform_name in args.populate_publications
+    # ]
+
+    examples_connectors = [
+        _connector_example_from_resource(resource) for resource in args.fill_with_examples
     ]
-    connectors_ = dataset_connectors + publication_connectors
+    connectors_ = dataset_connectors + examples_connectors
     engine = _engine(args.rebuild_db)
     if len(connectors_) > 0:
         populate_database(

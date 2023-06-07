@@ -15,4 +15,6 @@ dataset_connectors = {
     )
 }
 
-publication_connectors = {p.platform_name: p for p in ([ExamplePublicationConnector()])}
+# publication_connectors = {p.platform_name: p for p in ([])}
+
+example_connectors = {"publications": ExamplePublicationConnector()}
