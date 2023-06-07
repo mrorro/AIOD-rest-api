@@ -9,5 +9,5 @@ cd $SRC_PATH
 python main.py \
 	--rebuild-db always \
 	--populate-datasets example \
-	--fill-with-examples publications news \
+	--fill-with-examples publications news events \
 	--url-prefix ""

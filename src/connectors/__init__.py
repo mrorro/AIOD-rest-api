@@ -5,6 +5,7 @@ from .huggingface.huggingface_dataset_connector import HuggingFaceDatasetConnect
 from .openml.openml_dataset_connector import OpenMlDatasetConnector
 from .zenodo.zenodo_dataset_connector import ZenodoDatasetConnector
 from .example.example_news_connector import ExampleNewsConnector
+from .example.example_event_connector import ExampleEventConnector
 
 dataset_connectors = {
     c.platform_name: c
@@ -21,4 +22,5 @@ dataset_connectors = {
 example_connectors = {
     "publications": ExamplePublicationConnector(),
     "news": ExampleNewsConnector(),
+    "events": ExampleEventConnector(),
 }
