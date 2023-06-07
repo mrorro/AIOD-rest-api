@@ -1,6 +1,6 @@
 [
     {
-        "platform": "zenodo",
+        "platform": "example",
         "platform_identifier": "1",
         "name": "Example Project",
         "doi": "0000000/000000000000",
