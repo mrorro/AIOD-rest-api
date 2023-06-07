@@ -8,6 +8,5 @@ cd $SRC_PATH
 
 python main.py \
 	--rebuild-db always \
-	--populate-datasets example \
-	--fill-with-examples publications news events case_study presentations projects educational_resources \
+	--fill-with-examples datasets publications news events case_study presentations projects educational_resources \
 	--url-prefix ""

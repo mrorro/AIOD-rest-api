@@ -14,7 +14,6 @@ from .example.example_educational_resources_connector import ExampleEducationalR
 dataset_connectors = {
     c.platform_name: c
     for c in (
-        ExampleDatasetConnector(),
         OpenMlDatasetConnector(),
         HuggingFaceDatasetConnector(),
         ZenodoDatasetConnector(),
@@ -24,6 +23,7 @@ dataset_connectors = {
 # publication_connectors = {p.platform_name: p for p in ([])}
 
 example_connectors = {
+    "datasets": ExampleDatasetConnector(),
     "publications": ExamplePublicationConnector(),
     "news": ExampleNewsConnector(),
     "events": ExampleEventConnector(),
