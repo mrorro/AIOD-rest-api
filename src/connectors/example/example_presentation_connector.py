@@ -15,7 +15,7 @@ class ExamplePresentationConnector(ResourceConnector[Presentation]):
     def fetch_all(self, limit: int | None = None) -> Iterator[Presentation]:
         json_data = loadJsonData("presentations.json")
 
-        publications = [
+        presentations = [
             Presentation(
                 platform=item["platform"],
                 platform_identifier=item["platform_identifier"],
@@ -31,7 +31,7 @@ class ExamplePresentationConnector(ResourceConnector[Presentation]):
             for item in json_data
         ][:limit]
 
-        yield from publications
+        yield from presentations
 
     def fetch(self, platform_identifier: str) -> Presentation:
         (publication,) = [

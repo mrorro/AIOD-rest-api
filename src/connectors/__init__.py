@@ -8,6 +8,7 @@ from .example.example_news_connector import ExampleNewsConnector
 from .example.example_event_connector import ExampleEventConnector
 from .example.example_case_study_connector import ExampleCaseStudyConnector
 from .example.example_presentation_connector import ExamplePresentationConnector
+from .example.example_project_connector import ExampleProjectConnector
 
 dataset_connectors = {
     c.platform_name: c
@@ -27,4 +28,5 @@ example_connectors = {
     "events": ExampleEventConnector(),
     "case_study": ExampleCaseStudyConnector(),
     "presentations": ExamplePresentationConnector(),
+    "projects": ExampleProjectConnector(),
 }
