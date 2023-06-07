@@ -20,7 +20,7 @@ def test_example_happy_path(engine: Engine):
         datasets = session.scalars(select(Dataset)).all()
         publications = session.scalars(select(Publication)).all()
         assert len(datasets) == 2
-        assert len(publications) == 2
+        assert len(publications) == 20
         assert {len(d.citations) for d in datasets} == {0, 1}
         assert {len(p.datasets) for p in publications} == {0, 1}
 

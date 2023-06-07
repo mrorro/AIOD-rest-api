@@ -1,6 +1,7 @@
 from typing import Iterator
 
 from connectors import ResourceConnector
+from connectors.example.utils import loadJsonData
 from database.model.publication.publication import Publication
 from platform_names import PlatformName
 
@@ -11,24 +12,23 @@ class ExamplePublicationConnector(ResourceConnector[Publication]):
         return PlatformName.example
 
     def fetch_all(self, limit: int | None = None) -> Iterator[Publication]:
-        yield from [
+        json_data = loadJsonData("publications.json")
+
+        publications = [
             Publication(
-                title="AMLB: an AutoML Benchmark",
-                url="https://arxiv.org/abs/2207.12560",
-                doi="1",
-                platform="example",
-                platform_identifier="1",
-            ),
-            Publication(
-                title="Searching for exotic particles in high-energy physics with deep learning",
-                doi="2",
-                platform="example",
-                platform_identifier="2",
-            ),
+                title=item["title"],
+                url=item["url"],
+                doi=item["doi"],
+                platform=item["platform"],
+                platform_identifier=item["platform_identifier"],
+            )
+            for item in json_data
         ][:limit]
 
+        yield from publications
+
     def fetch(self, platform_identifier: str) -> Publication:
-        return Publication(
-            doi="10.5281/zenodo.7712947",
-            title="International Journal of Current Science Research and Review",
-        )
+        (publication,) = [
+            p for p in self.fetch_all(None) if p.resource.platform_identifier == platform_identifier
+        ]
+        return publication
