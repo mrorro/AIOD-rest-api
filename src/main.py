@@ -45,6 +45,7 @@ def _parse_args() -> argparse.Namespace:
         "--fill-with-examples",
         default=[],
         nargs="+",
+        choices=connectors.example_connectors.keys(),
         help="Zero, one or more resources with which the database will have examples.",
     )
     parser.add_argument(
@@ -106,7 +107,7 @@ def _connector_example_from_resource(resource):
     connector_dict = connectors.example_connectors
     connector = connector_dict.get(resource, None)
     if connector is None:
-        possibilities = ", ".join(f"`{c}`" for c in connectors.dataset_connectors.keys())
+        possibilities = ", ".join(f"`{c}`" for c in connectors.example_connectors.keys())
         msg = (
             f"No example connector for resource '{resource}' available. Possible "
             f"values: {possibilities}"
