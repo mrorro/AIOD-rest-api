@@ -8,12 +8,15 @@ from connectors import ResourceConnector
 from database.model.resource import resource_create
 from platform_names import PlatformName
 
-TEMPORARY_IDENTIFIER = -1  # will be overwritten
 
 RESOURCE = TypeVar("RESOURCE", bound=SQLModel)
 
 
 class ExampleConnector(ResourceConnector[RESOURCE]):
+    """
+    Creating hardcoded values example values based on json files
+    """
+
     def __init__(self, json_path: pathlib.Path, resource_class: type[RESOURCE]):
         self.json_path = json_path
         self._resource_class = resource_class

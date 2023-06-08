@@ -337,6 +337,7 @@ class ResourceRouter(abc.ABC):
         return register_resource
 
     def create_resource(self, session: Session, resource_create_instance: SQLModel):
+        """Store a resource in the database"""
         asset = AIAsset(type=self.resource_class.__tablename__)
         session.add(asset)
         session.flush()
