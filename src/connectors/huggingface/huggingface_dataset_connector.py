@@ -1,3 +1,4 @@
+import itertools
 import logging
 import typing
 
@@ -44,7 +45,7 @@ class HuggingFaceDatasetConnector(ResourceConnector[Dataset]):
     ) -> typing.Iterator[ResourceWithRelations[Dataset]]:
         pydantic_class = resource_create(Dataset)
         pydantic_class_publication = resource_create(Publication)
-        for dataset in datasets.list_datasets(with_details=True)[:limit]:
+        for dataset in itertools.islice(datasets.list_datasets(with_details=True), limit):
             try:
                 citations = []
                 if dataset.citation is not None:
