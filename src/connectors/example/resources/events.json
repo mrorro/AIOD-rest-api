@@ -14,8 +14,14 @@
         "type": "Conference",
         "sub_events": [],
         "super_events": [],
-        "research_areas": [],
-        "application_areas": [],
+        "research_areas": [
+            "research_area1",
+            "research_area2"
+        ],
+        "application_areas": [
+            "application_area1",
+            "application_area2"
+        ],
         "relevant_resources": [],
         "used_resources": []
     },
@@ -34,8 +40,12 @@
         "type": "Symposium",
         "sub_events": [],
         "super_events": [],
-        "research_areas": [],
-        "application_areas": [],
+        "research_areas": [
+            "research_area3"
+        ],
+        "application_areas": [
+            "application_area3"
+        ],
         "relevant_resources": [],
         "used_resources": []
     },

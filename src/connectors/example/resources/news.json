@@ -10,7 +10,10 @@
         "word_count": 100,
         "source": "https://news.source.example/1",
         "alternative_headline": "Example news alternative headline 1",
-        "news_categories": [],
+        "news_categories": [
+            "news_category1",
+            "news_category2"
+        ],
         "media": [
             "media1",
             "media2"
@@ -19,7 +22,10 @@
             "keyword1",
             "keyword2"
         ],
-        "business_categories": []
+        "business_categories": [
+            "business category 1",
+            "business category 2"
+        ]
     },
     {
         "platform": "example",
