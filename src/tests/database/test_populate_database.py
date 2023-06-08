@@ -1,9 +1,8 @@
-from connectors.example.example_publication_connector import ExamplePublicationConnector
-from database.model.dataset.dataset import Dataset
 from sqlalchemy.engine import Engine
 from sqlmodel import Session, select
 
-from connectors import ExampleDatasetConnector
+from connectors import example_connectors
+from database.model.dataset.dataset import Dataset
 from database.model.publication.publication import Publication
 from database.setup import populate_database
 
@@ -14,7 +13,7 @@ HUGGINGFACE_URL = "https://datasets-server.huggingface.co"
 def test_example_happy_path(engine: Engine):
     populate_database(
         engine,
-        connectors=[ExampleDatasetConnector(), ExamplePublicationConnector()],
+        connectors=[example_connectors["datasets"], example_connectors["publications"]],
     )
     with Session(engine) as session:
         datasets = session.scalars(select(Dataset)).all()

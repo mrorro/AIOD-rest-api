@@ -29,6 +29,6 @@
         "duration_in_years": 0,
         "languages": [],
         "target_audience": [],
-        "keywords": []
+        "keywords": ["keyword1", "keyword2"]
     }
 ]

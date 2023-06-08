@@ -15,11 +15,12 @@ DATE_FORMAT = "%Y-%m-%d"
 
 class ZenodoDatasetConnector(ResourceConnector[Dataset]):
     @property
+    def resource_class(self) -> type[Dataset]:
+        return Dataset
+
+    @property
     def platform_name(self) -> PlatformName:
         return PlatformName.zenodo
-
-    def fetch(self, platform_identifier: str) -> Dataset:
-        raise Exception("Not implemented")
 
     def _get_record_dictionary(self, record):
         xml_string = record.raw

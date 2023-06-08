@@ -11,9 +11,9 @@
         "same_as": "https://www.example.com/case_study/example",
         "url": "aiod.eu/case_study/0",
         "is_accessible_for_free": true,
-        "alternate_names": [],
-        "keywords": [],
-        "business_categories": [],
-        "technical_categories": []
+        "alternate_names": ["alias1", "alias2"],
+        "keywords": ["keyword1", "keyword2"],
+        "business_categories": ["finance", "healthcare"],
+        "technical_categories": ["technical_category"]
     }
 ]

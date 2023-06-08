@@ -5,6 +5,7 @@ Note: order matters for overloaded paths
 (https://fastapi.tiangolo.com/tutorial/path-params/#order-matters).
 """
 import argparse
+import logging
 import os
 import tomllib
 from typing import Dict
@@ -39,13 +40,6 @@ def _parse_args() -> argparse.Namespace:
         nargs="+",
         choices=[p.name for p in PlatformName],
         help="Zero, one or more platforms with which the datasets should get populated.",
-    )
-    parser.add_argument(
-        "--populate-publications",
-        default=[],
-        nargs="+",
-        choices=[p.name for p in PlatformName],
-        help="Zero, one or more platforms with which the publications should get populated.",
     )
     parser.add_argument(
         "--fill-with-examples",
@@ -117,6 +111,7 @@ def _connector_example_from_resource(resource):
             f"No example connector for resource '{resource}' available. Possible "
             f"values: {possibilities}"
         )
+        logging.warning(msg)
         raise HTTPException(status_code=HTTP_501_NOT_IMPLEMENTED, detail=msg)
     return connector
 
@@ -173,12 +168,6 @@ def create_app() -> FastAPI:
         _connector_from_platform_name("dataset", connectors.dataset_connectors, platform_name)
         for platform_name in args.populate_datasets
     ]
-    # publication_connectors = [
-    #    _connector_from_platform_name(
-    #        "publication", connectors.publication_connectors, platform_name
-    #    )
-    #    for platform_name in args.populate_publications
-    # ]
 
     examples_connectors = [
         _connector_example_from_resource(resource) for resource in args.fill_with_examples

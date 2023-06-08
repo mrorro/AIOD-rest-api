@@ -8,21 +8,25 @@ from typing import Iterator
 import dateutil.parser
 import requests
 from fastapi import HTTPException
+from sqlmodel import SQLModel
 
 from connectors.abstract.resource_connector import ResourceConnector
+from database.model.dataset.data_download import DataDownload
 from database.model.dataset.dataset import Dataset
-from database.model.dataset.data_download import DataDownloadORM
-from database.model.general.keyword import Keyword
-from database.model.general.license import License
+from database.model.resource import resource_create
 from platform_names import PlatformName
 
 
 class OpenMlDatasetConnector(ResourceConnector[Dataset]):
     @property
+    def resource_class(self) -> type[Dataset]:
+        return Dataset
+
+    @property
     def platform_name(self) -> PlatformName:
         return PlatformName.openml
 
-    def fetch(self, platform_identifier: str) -> Dataset:
+    def fetch(self, platform_identifier: str) -> SQLModel:
         url_data = f"https://www.openml.org/api/v1/json/data/{platform_identifier}"
         response = requests.get(url_data)
         if not response.ok:
@@ -51,8 +55,8 @@ class OpenMlDatasetConnector(ResourceConnector[Dataset]):
             quality["name"]: quality["value"]
             for quality in response.json()["data_qualities"]["quality"]
         }
-
-        return Dataset(
+        pydantic_class = resource_create(Dataset)
+        return pydantic_class(
             platform=self.platform_name,
             platform_identifier=platform_identifier,
             name=dataset_json["name"],
@@ -61,18 +65,23 @@ class OpenMlDatasetConnector(ResourceConnector[Dataset]):
             date_published=dateutil.parser.parse(dataset_json["upload_date"]),
             date_modified=dateutil.parser.parse(dataset_json["processing_date"]),
             distributions=[
-                DataDownloadORM(
+                DataDownload(
                     content_url=dataset_json["url"], encoding_format=dataset_json["format"]
                 )
             ],
             size=_as_int(qualities_json["NumberOfInstances"]),
             is_accessible_for_free=True,
-            keywords=[Keyword(name=tag) for tag in dataset_json["tag"]],
-            license=License(name=dataset_json["licence"]) if "licence" in dataset_json else None,
+            keywords=[tag for tag in dataset_json["tag"]],
+            license=dataset_json["licence"] if "licence" in dataset_json else None,
             version=dataset_json["version"],
+            alternate_names=[],
+            citations=[],
+            is_part=[],
+            has_parts=[],
+            measured_values=[],
         )
 
-    def fetch_all(self, limit: int | None = None) -> Iterator[Dataset]:
+    def fetch_all(self, limit: int | None = None) -> Iterator[SQLModel]:
         url = "https://www.openml.org/api/v1/json/data/list"
         if limit is not None:
             url = f"{url}/limit/{limit}"

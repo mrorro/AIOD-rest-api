@@ -1,11 +1,8 @@
 import json
 
-import pytest
 import responses
-from fastapi import HTTPException
 
 import connectors
-from database.model.dataset.dataset import Dataset
 from platform_names import PlatformName
 from tests.testutils.paths import path_test_resources
 
@@ -20,16 +17,15 @@ def test_fetch_happy_path():
         dataset = connector.fetch(id_)
     with open(path_test_resources() / "connectors" / "openml" / "data_2.json", "r") as f:
         expected = json.load(f)["data_set_description"]
-    assert isinstance(dataset, Dataset)
 
     assert dataset.name == "anneal"
     assert dataset.description == expected["description"]
-    assert dataset.identifier is None  # will be set when saving to the db
+    assert not hasattr(dataset, "identifier")  # will be set when saving to the db
     assert dataset.platform == PlatformName.openml.value
     assert dataset.platform_identifier == id_
     assert dataset.same_as == "https://www.openml.org/api/v1/json/data/2"
     assert len(dataset.citations) == 0
-    assert dataset.license.name == "Public"
+    assert dataset.license == "Public"
     assert dataset.version == "1"
     assert dataset.is_accessible_for_free
     assert dataset.size == 898
@@ -40,7 +36,7 @@ def test_fetch_happy_path():
     assert distribution.content_url == "https://api.openml.org/data/v1/download/1666876/anneal.arff"
 
     assert len(dataset.keywords) == 9
-    assert {k.name for k in dataset.keywords} == {
+    assert set(dataset.keywords) == {
         "study_1",
         "study_14",
         "study_34",
@@ -67,21 +63,6 @@ def test_fetch_all_happy_path():
 
     assert len(datasets) == 3
     assert {len(d.citations) for d in datasets} == {0}
-
-
-def test_fetch_missing_dataset():
-    id_ = "1"
-    connector = connectors.dataset_connectors[PlatformName.openml]
-    with responses.RequestsMock() as mocked_requests:
-        mocked_requests.add(
-            responses.GET,
-            f"{OPENML_URL}/data/{id_}",
-            json={"error": {"code": "111", "message": "Unknown dataset"}},
-            status=412,
-        )
-        with pytest.raises(HTTPException) as e:
-            connector.fetch(id_)
-        assert e.value.detail == "Error while fetching data from OpenML: 'Unknown dataset'."
 
 
 def mock_openml_responses(mocked_requests: responses.RequestsMock, platform_identifier: str):

@@ -18,6 +18,6 @@
         "founding_scheme": "founding scheme",
         "image": "Example image",
         "url": "aiod.eu/project/0",
-        "keywords": []
+        "keywords": ["keyword1", "keyword2"]
     }
 ]
