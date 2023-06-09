@@ -5,6 +5,7 @@ Note: order matters for overloaded paths
 (https://fastapi.tiangolo.com/tutorial/path-params/#order-matters).
 """
 import argparse
+import logging
 import os
 import tomllib
 from typing import Dict
@@ -41,11 +42,11 @@ def _parse_args() -> argparse.Namespace:
         help="Zero, one or more platforms with which the datasets should get populated.",
     )
     parser.add_argument(
-        "--populate-publications",
+        "--fill-with-examples",
         default=[],
         nargs="+",
-        choices=[p.name for p in PlatformName],
-        help="Zero, one or more platforms with which the publications should get populated.",
+        choices=connectors.example_connectors.keys(),
+        help="Zero, one or more resources with which the database will have examples.",
     )
     parser.add_argument(
         "--limit",
@@ -102,6 +103,20 @@ def _connector_from_platform_name(connector_type: str, connector_dict: Dict, pla
     return connector
 
 
+def _connector_example_from_resource(resource):
+    connector_dict = connectors.example_connectors
+    connector = connector_dict.get(resource, None)
+    if connector is None:
+        possibilities = ", ".join(f"`{c}`" for c in connectors.example_connectors.keys())
+        msg = (
+            f"No example connector for resource '{resource}' available. Possible "
+            f"values: {possibilities}"
+        )
+        logging.warning(msg)
+        raise HTTPException(status_code=HTTP_501_NOT_IMPLEMENTED, detail=msg)
+    return connector
+
+
 def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
     """Add routes to the FastAPI application"""
 
@@ -154,13 +169,11 @@ def create_app() -> FastAPI:
         _connector_from_platform_name("dataset", connectors.dataset_connectors, platform_name)
         for platform_name in args.populate_datasets
     ]
-    publication_connectors = [
-        _connector_from_platform_name(
-            "publication", connectors.publication_connectors, platform_name
-        )
-        for platform_name in args.populate_publications
+
+    examples_connectors = [
+        _connector_example_from_resource(resource) for resource in args.fill_with_examples
     ]
-    connectors_ = dataset_connectors + publication_connectors
+    connectors_ = dataset_connectors + examples_connectors
     engine = _engine(args.rebuild_db)
     if len(connectors_) > 0:
         populate_database(
