@@ -1,9 +1,10 @@
-from database.model.resource import Resource
 from sqlmodel import Field
 from datetime import datetime
 
+from database.model.ai_asset import AIAsset
 
-class PresentationBase(Resource):
+
+class PresentationBase(AIAsset):
     # Required fields
     name: str = Field(max_length=150, schema_extra={"example": "Example Presentation"})
 
@@ -32,4 +33,4 @@ class PresentationBase(Resource):
 class Presentation(PresentationBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "presentations"
 
-    identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
+    identifier: int = Field(primary_key=True, foreign_key="ai_asset_table.identifier")

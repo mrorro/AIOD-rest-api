@@ -4,7 +4,7 @@ Utility functions for initializing the database and tables through SQLAlchemy.
 from typing import List
 
 from connectors.resource_with_relations import ResourceWithRelations
-from database.model import AIAsset
+from database.model.ai_asset_table import AIAssetTable
 from database.model.dataset.dataset import Dataset
 from sqlalchemy import text, and_
 from sqlalchemy.engine import Engine
@@ -80,7 +80,7 @@ def populate_database(
                 else:
                     resource = item
                 if _get_existing_resource(session, resource) is None:
-                    asset = AIAsset(type=resource.__tablename__)
+                    asset = AIAssetTable(type=resource.__tablename__)
                     session.add(asset)
                     session.flush()
                     resource.identifier = asset.identifier
@@ -138,7 +138,7 @@ def _create_or_fetch_related_objects(
             ):
                 existing = _get_existing_resource(session, resource)
                 if existing is None:
-                    asset = AIAsset(type=resource.__tablename__)
+                    asset = AIAssetTable(type=resource.__tablename__)
                     session.add(asset)
                     session.flush()
                     resource.identifier = asset.identifier

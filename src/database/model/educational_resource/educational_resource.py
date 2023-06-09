@@ -10,11 +10,12 @@ from database.model.general.keyword import Keyword
 from database.model.general.language import Language
 from database.model.general.target_audience import TargetAudience
 from database.model.relationships import ResourceRelationshipList
-from database.model.resource import Resource
 from serialization import AttributeSerializer, FindByNameDeserializer
 
+from database.model.ai_asset import AIAsset
 
-class EducationalResourceBase(Resource):
+
+class EducationalResourceBase(AIAsset):
     # Required fields
     title: str = Field(max_length=150, schema_extra={"example": "Example News"})
     date_modified: datetime | None = Field(
@@ -83,7 +84,7 @@ class EducationalResourceBase(Resource):
 
 class EducationalResource(EducationalResourceBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "educational_resource"
-    identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
+    identifier: int = Field(primary_key=True, foreign_key="ai_asset_table.identifier")
     languages: List[Language] = Relationship(
         back_populates="educational_resources", link_model=EducationalResourceLanguageLink
     )

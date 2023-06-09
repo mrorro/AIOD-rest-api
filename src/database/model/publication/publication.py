@@ -8,7 +8,6 @@ from database.model.dataset.publication_link import DatasetPublicationLink
 from database.model.general.license import License
 from database.model.general.resource_type import ResourceType
 from database.model.relationships import ResourceRelationshipList, ResourceRelationshipSingle
-from database.model.resource import Resource
 from serialization import (
     AttributeSerializer,
     FindByNameDeserializer,
@@ -17,8 +16,10 @@ from serialization import (
 if TYPE_CHECKING:
     from database.model.dataset.dataset import Dataset
 
+from database.model.ai_asset import AIAsset
 
-class PublicationBase(Resource):
+
+class PublicationBase(AIAsset):
     # Required fields
     title: str = Field(max_length=250, schema_extra={"example": "A publication"})
 
@@ -40,7 +41,7 @@ class PublicationBase(Resource):
 class Publication(PublicationBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "publication"
 
-    identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
+    identifier: int = Field(primary_key=True, foreign_key="ai_asset_table.identifier")
 
     license_identifier: int | None = Field(foreign_key="license.identifier")
     license: Optional[License] = Relationship(back_populates="publications")

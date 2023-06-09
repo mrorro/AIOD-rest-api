@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlmodel import Field, Relationship, SQLModel
 from typing import List
-from database.model.ai_asset import AIAsset
+from database.model.ai_asset_table import AIAssetTable
 from database.model.event.application_area_link import EventApplicationAreaLink
 from database.model.event.relevant_resources_link import EventRelevantResourcesLink
 from database.model.event.research_area_link import EventResearchAreaLink
@@ -48,7 +48,7 @@ class EventBase(Resource):
 
 class Event(EventBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "event"
-    identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
+    identifier: int = Field(default=None, primary_key=True)  # remove identifier
     # This entity is implemented in the pr 52, it atributes will be implemented after merging it
     # TODO add business_categories
 
@@ -74,8 +74,8 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
             secondaryjoin="Event.identifier==EventParentChildLink.parent_identifier",
         ),
     )
-    relevant_resources: List["AIAsset"] = Relationship(link_model=EventRelevantResourcesLink)
-    used_resources: List["AIAsset"] = Relationship(link_model=EventUsedResourcesLink)
+    relevant_resources: List["AIAssetTable"] = Relationship(link_model=EventRelevantResourcesLink)
+    used_resources: List["AIAssetTable"] = Relationship(link_model=EventUsedResourcesLink)
 
     class RelationshipConfig:
         sub_events: List[int] = ResourceRelationshipList(
@@ -99,12 +99,12 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
         relevant_resources: List[int] = ResourceRelationshipList(
             example=[1, 2],
             serializer=AttributeSerializer("identifier"),
-            deserializer=FindByIdentifierDeserializer(AIAsset),
+            deserializer=FindByIdentifierDeserializer(AIAssetTable),
         )
         used_resources: List[int] = ResourceRelationshipList(
             example=[1, 2],
             serializer=AttributeSerializer("identifier"),
-            deserializer=FindByIdentifierDeserializer(AIAsset),
+            deserializer=FindByIdentifierDeserializer(AIAssetTable),
         )
 
 

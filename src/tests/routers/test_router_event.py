@@ -4,7 +4,7 @@ from starlette.testclient import TestClient
 from sqlalchemy.orm import Session
 from sqlalchemy.engine import Engine
 from authentication import keycloak_openid
-from database.model.ai_asset import AIAsset
+from database.model.ai_asset_table import AIAssetTable
 from database.model.dataset.dataset import Dataset
 from database.model.event.event import Event
 
@@ -14,7 +14,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     with Session(engine) as session:
         session.add_all(
             [
-                AIAsset(type="event"),
+                AIAssetTable(type="event"),
                 Event(
                     identifier="1",
                     name="Parent",
@@ -24,7 +24,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
                     registration_url="https://example.com/event/example/registration",
                     location="Example location Event",
                 ),
-                AIAsset(type="dataset"),
+                AIAssetTable(type="dataset"),
                 Dataset(
                     identifier="2",
                     name="Parent",
@@ -59,11 +59,11 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     response = client.post("/events/v0", json=body, headers={"Authorization": "Fake token"})
     assert response.status_code == 200
 
-    response = client.get("/events/v0/3")
+    response = client.get("/events/v0/2")
     assert response.status_code == 200
 
     response_json = response.json()
-    assert response_json["identifier"] == 3
+    assert response_json["identifier"] == 2
     assert response_json["platform"] == "example"
     assert response_json["platform_identifier"] == "2"
     assert response_json["name"] == "Example Event"

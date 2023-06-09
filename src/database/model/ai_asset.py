@@ -1,17 +1,12 @@
-from sqlmodel import SQLModel, Field
+from database.model.resource import Resource
 
 
-class AIAsset(SQLModel, table=True):  # type: ignore [call-arg]
-    __tablename__ = "ai_asset"
+class AIAsset(Resource):
+    """
+    Every database, publication, etc has relationship to the AIAsset.
+    AIAsset inherets from Resource.
+    class AIAsset only defines an entity of type AIAsset, however the relationship
+    between ai_asset and an entity is defined in ai_asset_table.py.
+    """
 
-    """Every Dataset, Publication, etc. has a relationship to the AIAsset. They are thus separate
-    models (which is different from the Metadata description) where all the fields of the
-    AIAsset, such as name and description, are put on every asset themselves."""
-    identifier: int = Field(
-        default=None,
-        primary_key=True,
-        description="The identifier of each asset should be the same as this " "identifier",
-    )
-    type: str = Field(
-        description="The name of the table of the asset. E.g. 'dataset' or " "'publication'"
-    )
+    pass

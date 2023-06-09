@@ -16,7 +16,7 @@ from sqlmodel import SQLModel, Session, select
 from starlette.responses import JSONResponse
 
 from converters.schema_converters.schema_converter import SchemaConverter
-from database.model import AIAsset
+
 from database.model.resource import (
     Resource,
     resource_create,
@@ -25,6 +25,11 @@ from database.model.resource import (
 from serialization import deserialize_resource_relationships
 from platform_names import PlatformName
 from authentication import get_current_user
+from database.model.agent_table import AgentTable
+from database.model.agent import Agent
+
+from database.model.ai_asset_table import AIAssetTable
+from database.model.ai_asset import AIAsset
 
 
 class Pagination(BaseModel):
@@ -312,12 +317,31 @@ class ResourceRouter(abc.ABC):
                 )
             try:
                 with Session(engine) as session:
-                    asset = AIAsset(type=clz.__tablename__)
-                    session.add(asset)
-                    session.flush()
-                    resource = self.resource_class.from_orm(
-                        resource_create_instance, update={"identifier": asset.identifier}
-                    )
+                    if issubclass(clz, AIAsset):
+                        """
+                        example - dataset, publications, etc.
+                        """
+                        asset = AIAssetTable(type=clz.__tablename__)
+                        session.add(asset)
+                        session.flush()
+                        resource = self.resource_class.from_orm(
+                            resource_create_instance, update={"identifier": asset.identifier}
+                        )
+                    elif issubclass(clz, Agent):
+                        """
+                        example - organisaton
+                        """
+                        agent = AgentTable(type=clz.__tablename__)
+                        session.add(agent)
+                        session.flush()
+                        resource = self.resource_class.from_orm(
+                            resource_create_instance, update={"identifier": agent.identifier}
+                        )
+                    else:
+                        """
+                        example - event, case_study, news, etc.
+                        """
+                        resource = self.resource_class.from_orm(resource_create_instance)
 
                     deserialize_resource_relationships(
                         session, self.resource_class, resource, resource_create_instance

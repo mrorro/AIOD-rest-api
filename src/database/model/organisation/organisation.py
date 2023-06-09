@@ -1,8 +1,9 @@
 from datetime import datetime
 
 from typing import List
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
 
+from database.model.agent_table import AgentTable
 from database.model.agent import Agent
 
 from database.model.organisation.email import (
@@ -17,7 +18,8 @@ from database.model.general.technical_category import TechnicalCategory
 from database.model.organisation.technical_category_link import OrganisationTechnicalCategoryLink
 
 from database.model.relationships import ResourceRelationshipList
-from database.model.resource import Resource
+
+# from database.model.resource import Resource
 
 from database.model.organisation.member_link import OrganisationMemberLink
 from database.model.organisation.department_link import OrganisationDepartmentLink
@@ -25,28 +27,24 @@ from database.model.organisation.department_link import OrganisationDepartmentLi
 from serialization import AttributeSerializer, FindByNameDeserializer, FindByIdentifierDeserializer
 
 
-class OrganisationParentChildLink(SQLModel, table=True):  # type: ignore [call-arg]
-    __tablename__ = "organisation_parent_child_link"
-    parent_identifier: int = Field(foreign_key="organisation.identifier", primary_key=True)
-    child_identifier: int = Field(foreign_key="organisation.identifier", primary_key=True)
-
-
-class OrganisationBase(Resource):
+# inheret from Agent.
+class OrganisationBase(Agent):
     # Required fields
     type: str = Field(max_length=500, schema_extra={"example": "Example Research Insititution"})
 
     # Recommended fields
     connection_to_ai: str | None = Field(
-        max_length=50,
+        max_length=500,
         default=None,
-        schema_extra={"example": "Example description of positioning in European AI ecosystem."},
+        schema_extra={"example": "Example positioning in European AI ecosystem."},
     )
     logo_url: str | None = Field(
-        max_length=50, default=None, schema_extra={"example": "aiod.eu/project/0/logo"}
+        max_length=500, default=None, schema_extra={"example": "aiod.eu/project/0/logo"}
     )
     same_as: str | None = Field(
-        max_length=150,
+        max_length=500,
         unique=True,
+        default=None,
         schema_extra={"example": "https://www.example.com/organisation/example"},
     )
     founding_date: datetime | None = Field(
@@ -72,17 +70,17 @@ class OrganisationBase(Resource):
         default=None,
         schema_extra={"example": 1},
     )
-    subsidiary_organisation_id: int | None = Field(
-        foreign_key="organisation.identifier",
-        default=None,
-        schema_extra={"example": 2},
-    )
+    # subsidiary_organisation_id: int | None = Field(
+    #     foreign_key="organisation.identifier",
+    #     default=None,
+    #     schema_extra={"example": 2},
+    # )
 
 
 class Organisation(OrganisationBase, table=True):  # type: ignore
     __tablename__ = "organisation"
 
-    identifier: int = Field(primary_key=True, foreign_key="agent.identifier")
+    identifier: int = Field(primary_key=True, foreign_key="agent_table.identifier")
 
     business_categories: List[BusinessCategory] = Relationship(
         back_populates="organisations", link_model=OrganisationBusinessCategoryLink
@@ -93,10 +91,10 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
     emails: List[OrganisationEmail] = Relationship(
         back_populates="organisations", link_model=OrganisationEmailLink
     )
-    members: list[Agent] = Relationship(
+    members: List["AgentTable"] = Relationship(
         link_model=OrganisationMemberLink,
     )
-    departments: List[Agent] = Relationship(
+    departments: List[AgentTable] = Relationship(
         link_model=OrganisationDepartmentLink,
     )
 
@@ -113,23 +111,22 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
             deserializer=FindByNameDeserializer(TechnicalCategory),
         )
         emails: List[str] = ResourceRelationshipList(
-            example=["email@org.com"],
+            example=["email@org.com", "ceo@org.com"],
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(OrganisationEmail),
         )
         members: List[int] = ResourceRelationshipList(
             example=[1, 2],
             serializer=AttributeSerializer("identifier"),
-            deserializer=FindByIdentifierDeserializer(Agent),
+            deserializer=FindByIdentifierDeserializer(AgentTable),
         )
-
         departments: List[int] = ResourceRelationshipList(
             example=[1, 2],
             serializer=AttributeSerializer("identifier"),
-            deserializer=FindByIdentifierDeserializer(Agent),
+            deserializer=FindByIdentifierDeserializer(AgentTable),
         )
 
 
-# Defined separate because it references Organisation,
-# and can therefor not be defined inside Organisation
-deserializer = FindByIdentifierDeserializer(Organisation)
+# # Defined separate because it references Organisation,
+# # and can therefor not be defined inside Organisation
+# deserializer = FindByIdentifierDeserializer(Organisation)

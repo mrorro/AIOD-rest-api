@@ -4,7 +4,6 @@ from pydantic import condecimal
 
 from sqlmodel import Field, Relationship
 from database.model.relationships import ResourceRelationshipList
-from database.model.resource import Resource
 from serialization import (
     AttributeSerializer,
     FindByNameDeserializer,
@@ -13,11 +12,12 @@ from serialization import (
 from database.model.general.keyword import Keyword
 from database.model.project.keyword_link import ProjectKeywordLink
 
+from database.model.ai_asset import AIAsset
 
 MONEY_TYPE = condecimal(max_digits=12, decimal_places=2)
 
 
-class ProjectBase(Resource):
+class ProjectBase(AIAsset):
 
     # Required fields
     name: str = Field(max_length=250, schema_extra={"example": "Example Project"})
@@ -66,7 +66,7 @@ class ProjectBase(Resource):
 class Project(ProjectBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "project"
 
-    identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
+    identifier: int = Field(primary_key=True, foreign_key="ai_asset_table.identifier")
     keywords: List[Keyword] = Relationship(back_populates="projects", link_model=ProjectKeywordLink)
 
     class RelationshipConfig:

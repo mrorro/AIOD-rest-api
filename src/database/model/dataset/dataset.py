@@ -16,7 +16,6 @@ from database.model.dataset.publication_link import DatasetPublicationLink
 from database.model.general.license import License
 from database.model.general.keyword import Keyword
 from database.model.publication.publication import Publication
-from database.model.resource import Resource
 from database.model.relationships import ResourceRelationshipList, ResourceRelationshipSingle
 from serialization import (
     AttributeSerializer,
@@ -26,13 +25,16 @@ from serialization import (
 )
 
 
+from database.model.ai_asset import AIAsset
+
+
 class DatasetParentChildLink(SQLModel, table=True):  # type: ignore [call-arg]
     __tablename__ = "dataset_parent_child_link"
     parent_identifier: int = Field(foreign_key="dataset.identifier", primary_key=True)
     child_identifier: int = Field(foreign_key="dataset.identifier", primary_key=True)
 
 
-class DatasetBase(Resource):
+class DatasetBase(AIAsset):
     # Required fields
     description: str = Field(max_length=5000, schema_extra={"example": "A description."})
     name: str = Field(max_length=150, schema_extra={"example": "Example Dataset"})
@@ -82,7 +84,7 @@ class Dataset(DatasetBase, table=True):  # type: ignore [call-arg]
         ),
     )
 
-    identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
+    identifier: int = Field(primary_key=True, foreign_key="ai_asset_table.identifier")
 
     license_identifier: int | None = Field(foreign_key="license.identifier")
     license: Optional[License] = Relationship(back_populates="datasets")
