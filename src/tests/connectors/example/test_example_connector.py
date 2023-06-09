@@ -20,5 +20,5 @@ def test_fetch_all_happy_path(datatype: str):
     resources = list(connector.fetch_all(limit=None))
     assert len(resources) >= 1
     resource = resources[0]
-    if hasattr(resource, "keywords"):  # otherwise, ony tested that connector can run
+    if hasattr(resource, "keywords"):  # otherwise, only tested that connector can run
         assert set(resource.keywords) == {"keyword1", "keyword2"}

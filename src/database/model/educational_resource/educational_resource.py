@@ -126,7 +126,7 @@ class EducationalResource(EducationalResourceBase, table=True):  # type: ignore 
             example=["keyword1", "keyword2"],
         )
         business_categories: List[str] = ResourceRelationshipList(
-            example=["bussines category 1", "bussines category 2"],
+            example=["business category 1", "business category 2"],
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(BusinessCategory),
         )
