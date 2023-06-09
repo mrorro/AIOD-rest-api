@@ -302,11 +302,10 @@ class ResourceRouter(abc.ABC):
         This function returns a function (instead of being that function directly) because the
         docstring is dynamic and used in Swagger.
         """
-        clz = self.resource_class
         clz_create = self.resource_class_create
 
         def register_resource(
-            resource_create_instance: clz_create,  # type: ignore
+            resource_pydantic: clz_create,  # type: ignore
             user: dict = Depends(get_current_user),
         ):
             f"""Register a {self.resource_name} with AIoD."""
@@ -348,14 +347,17 @@ class ResourceRouter(abc.ABC):
                     )
                     session.add(resource)
                     try:
-                        session.commit()
+                        resource = self.create_resource(session, resource_pydantic)
+                        return self._wrap_with_headers({"identifier": resource.identifier})
                     except IntegrityError as e:
                         logging.warning(e)
                         session.rollback()
+                        platform = resource_pydantic.platform  # type: ignore[attr-defined]
+                        id_ = resource_pydantic.platform_identifier  # type: ignore[attr-defined]
                         query = select(self.resource_class).where(
                             and_(
-                                clz.platform == resource.platform,
-                                clz.platform_identifier == resource.platform_identifier,
+                                self.resource_class.platform == platform,
+                                self.resource_class.platform_identifier == id_,
                             )
                         )
                         existing_resource = session.scalars(query).first()
@@ -364,11 +366,26 @@ class ResourceRouter(abc.ABC):
                             detail=f"There already exists a {self.resource_name} with the same "
                             f"platform and name, with identifier={existing_resource.identifier}.",
                         )
-                    return self._wrap_with_headers({"identifier": resource.identifier})
             except Exception as e:
                 raise _wrap_as_http_exception(e)
 
         return register_resource
+
+    def create_resource(self, session: Session, resource_create_instance: SQLModel):
+        """Store a resource in the database"""
+        asset = AIAsset(type=self.resource_class.__tablename__)
+        session.add(asset)
+        session.flush()
+        resource = self.resource_class.from_orm(
+            resource_create_instance, update={"identifier": asset.identifier}
+        )
+
+        deserialize_resource_relationships(
+            session, self.resource_class, resource, resource_create_instance
+        )
+        session.add(resource)
+        session.commit()
+        return resource
 
     def put_resource_func(self, engine: Engine):
         """

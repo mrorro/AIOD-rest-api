@@ -17,18 +17,18 @@ class ResourceConnector(abc.ABC, Generic[RESOURCE]):
 
     @property
     @abc.abstractmethod
+    def resource_class(self) -> type[RESOURCE]:
+        pass
+
+    @property
+    @abc.abstractmethod
     def platform_name(self) -> PlatformName:
         """The platform of this connector"""
         pass
 
     @abc.abstractmethod
-    def fetch(self, platform_identifier: str) -> RESOURCE | ResourceWithRelations[RESOURCE]:
-        """Retrieve information of specific resource"""
-        pass
-
-    @abc.abstractmethod
     def fetch_all(
         self, limit: int | None = None
-    ) -> Iterator[RESOURCE | ResourceWithRelations[RESOURCE]]:
+    ) -> Iterator[SQLModel | ResourceWithRelations[SQLModel]]:
         """Retrieve information of all resources"""
         pass

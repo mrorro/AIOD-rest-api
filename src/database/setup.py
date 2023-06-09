@@ -1,16 +1,18 @@
 """
 Utility functions for initializing the database and tables through SQLAlchemy.
 """
+import logging
 from typing import List
 
-from connectors.resource_with_relations import ResourceWithRelations
-from database.model.ai_asset_table import AIAssetTable
-from database.model.dataset.dataset import Dataset
 from sqlalchemy import text, and_
 from sqlalchemy.engine import Engine
-from sqlmodel import create_engine, Session, select
+from sqlalchemy.exc import IntegrityError
+from sqlmodel import create_engine, Session, select, SQLModel
 
+import routers
 from connectors import ResourceConnector
+from connectors.resource_with_relations import ResourceWithRelations
+from database.model.dataset.dataset import Dataset
 from database.model.publication.publication import Publication
 from database.model.resource import Resource
 from platform_names import PlatformName
@@ -73,41 +75,41 @@ def populate_database(
             return
 
         for connector in connectors:
+            (router,) = [
+                router
+                for router in routers.routers
+                if router.resource_class == connector.resource_class
+            ]
+            # We use the create_resource function for this router.
+            # This is a temporary solution. After finishing the Connectors (so that they're
+            # synchronizing), we will probably just perform a HTTP POST instead.
+
             for item in connector.fetch_all(limit=limit):
                 if isinstance(item, ResourceWithRelations):
-                    resource = item.resource
-                    _create_or_fetch_related_objects(session, item.related_resources)
+                    resource_create_instance = item.resource
+                    _create_or_fetch_related_objects(session, item)
                 else:
-                    resource = item
-                if _get_existing_resource(session, resource) is None:
-                    asset = AIAssetTable(type=resource.__tablename__)
-                    session.add(asset)
-                    session.flush()
-                    resource.identifier = asset.identifier
-                    session.add(resource)
-                if isinstance(item, ResourceWithRelations):
-                    _link_resource_with_relations(item)
+                    resource_create_instance = item
+                if (
+                    _get_existing_resource(
+                        session, resource_create_instance, connector.resource_class
+                    )
+                    is None
+                ):
+                    try:
+                        router.create_resource(session, resource_create_instance)
+                    except IntegrityError as e:
+                        logging.warning(
+                            f"Error while creating resource. Continuing for now: " f" {e}"
+                        )
                 session.flush()
         session.commit()
 
 
-def _link_resource_with_relations(item: ResourceWithRelations):
-    """
-    Set the relationship from `item.resource` to the `item.related_resources`.
-    This should be performed after all resources have been inserted in the database.
-    """
-    for field_name, related_resource_or_list in item.related_resources.items():
-        if isinstance(related_resource_or_list, Resource):
-            resource: Resource = related_resource_or_list
-            item.resource.__setattr__(field_name, resource)
-        else:
-            resources: list[Resource] = related_resource_or_list
-            item.resource.__setattr__(field_name, resources)
-
-
-def _get_existing_resource(session: Session, resource: Resource) -> Resource | None:
+def _get_existing_resource(
+    session: Session, resource: Resource, clazz: type[SQLModel]
+) -> Resource | None:
     """Selecting a resource based on platform and platform_identifier"""
-    clazz = type(resource)
     query = select(clazz).where(
         and_(
             clazz.platform == resource.platform,
@@ -117,31 +119,44 @@ def _get_existing_resource(session: Session, resource: Resource) -> Resource | N
     return session.scalars(query).first()
 
 
-def _create_or_fetch_related_objects(
-    session: Session, related_resources: dict[str, Resource | List[Resource]]
-):
+def _create_or_fetch_related_objects(session: Session, item: ResourceWithRelations):
     """
-    For all resources in the `related_resources`, make sure they have an identifier, by either
-    inserting them in the database, or retrieving the existing values.
+    For all resources in the `related_resources`, get the identifier, by either
+    inserting them in the database, or retrieving the existing values, and put the identifiers
+    into the item.resource.[field_name]
     """
-    for related_resource_or_list in related_resources.values():
-        resources: list[Resource] = []
+    for field_name, related_resource_or_list in item.related_resources.items():
         if isinstance(related_resource_or_list, Resource):
             resources = [related_resource_or_list]
         else:
             resources = related_resource_or_list
+        identifiers = []
         for resource in resources:
             if (
                 resource.platform is not None
                 and resource.platform != PlatformName.aiod
                 and resource.platform_identifier is not None
             ):
-                existing = _get_existing_resource(session, resource)
+                # Get the router of this resource. The difficulty is, that the resource will be a
+                # ResourceRead (e.g. a DatasetRead). So we search for the router for which the
+                # resource name starts with the research-read-name
+
+                resource_read_str = type(resource).__name__  # E.g. DatasetRead
+                (router,) = [
+                    router
+                    for router in routers.routers
+                    if resource_read_str.startswith(router.resource_class.__name__)
+                    # E.g. "DatasetRead".startswith("Dataset")
+                ]
+                existing = _get_existing_resource(session, resource, router.resource_class)
                 if existing is None:
-                    asset = AIAssetTable(type=resource.__tablename__)
-                    session.add(asset)
-                    session.flush()
-                    resource.identifier = asset.identifier
-                    session.add(resource)
+                    created_resource = router.create_resource(session, resource)
+                    identifiers.append(created_resource.identifier)
                 else:
-                    resource.identifier = existing.identifier
+                    identifiers.append(existing.identifier)
+
+        if isinstance(related_resource_or_list, Resource):
+            (id_,) = identifiers
+            item.resource.__setattr__(field_name, id_)  # E.g. Dataset.license_identifier = 1
+        else:
+            item.resource.__setattr__(field_name, identifiers)  # E.g. Dataset.keywords = [1, 4]

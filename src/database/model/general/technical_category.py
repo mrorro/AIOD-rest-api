@@ -3,9 +3,15 @@ from typing import TYPE_CHECKING
 
 from sqlmodel import Relationship
 
+from database.model.educational_resource.technical_categories_link import (
+    EducationalResourceTechnicalCategoryLink,
+)
+
+
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
     from database.model.case_study.case_study import CaseStudy
     from database.model.organisation.organisation import Organisation
+    from database.model.educational_resource.educational_resource import EducationalResource
 
 from database.model.case_study.technical_category_link import CaseStudyTechnicalCategoryLink
 from database.model.organisation.technical_category_link import OrganisationTechnicalCategoryLink
@@ -23,7 +29,9 @@ class TechnicalCategory(NamedRelation, table=True):  # type: ignore [call-arg]
     case_studies: List["CaseStudy"] = Relationship(
         back_populates="technical_categories", link_model=CaseStudyTechnicalCategoryLink
     )
-
     organisations: List["Organisation"] = Relationship(
         back_populates="technical_categories", link_model=OrganisationTechnicalCategoryLink
+    )
+    educational_resources: List["EducationalResource"] = Relationship(
+        back_populates="technical_categories", link_model=EducationalResourceTechnicalCategoryLink
     )
