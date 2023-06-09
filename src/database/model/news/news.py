@@ -14,11 +14,10 @@ from serialization import (
     AttributeSerializer,
     FindByNameDeserializer,
 )
+from database.model.resource import Resource
 
-from database.model.ai_asset import AIAsset
 
-
-class NewsBase(AIAsset):
+class NewsBase(Resource):
     # Required fields
     title: str = Field(max_length=150, schema_extra={"example": "Example News"})
     date_modified: datetime | None = Field(
@@ -39,7 +38,7 @@ class NewsBase(AIAsset):
 
 class News(NewsBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "news"
-    identifier: int = Field(primary_key=True, foreign_key="ai_asset_table.identifier")
+    identifier: int = Field(default=None, primary_key=True)
     news_categories: List[NewsCategory] = Relationship(
         back_populates="news", link_model=NewsCategoryNewsLink
     )

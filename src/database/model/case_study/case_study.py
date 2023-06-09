@@ -8,7 +8,7 @@ from database.model.case_study.alternate_name import (
 )
 
 from database.model.relationships import ResourceRelationshipList
-from database.model.ai_asset import AIAsset
+from database.model.resource import Resource
 from serialization import (
     AttributeSerializer,
     FindByNameDeserializer,
@@ -24,7 +24,7 @@ from database.model.general.technical_category import TechnicalCategory
 from database.model.case_study.technical_category_link import CaseStudyTechnicalCategoryLink
 
 
-class CaseStudyBase(AIAsset):
+class CaseStudyBase(Resource):
     # Required fields
     description: str = Field(max_length=5000, schema_extra={"example": "A description."})
     name: str = Field(max_length=150, schema_extra={"example": "Example Case Study"})
@@ -52,7 +52,7 @@ class CaseStudyBase(AIAsset):
 class CaseStudy(CaseStudyBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "case_study"
 
-    identifier: int = Field(primary_key=True, foreign_key="ai_asset_table.identifier")
+    identifier: int = Field(default=None, primary_key=True)
     alternate_names: List[CaseStudyAlternateName] = Relationship(
         back_populates="case_studies", link_model=CaseStudyAlternateNameLink
     )
