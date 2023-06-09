@@ -22,6 +22,10 @@
             "application_area1",
             "application_area2"
         ],
+        "business_categories": [
+            "business category 1",
+            "business category 2"
+        ],
         "relevant_resources": [],
         "used_resources": []
     },
@@ -46,6 +50,10 @@
         "application_areas": [
             "application_area3"
         ],
+        "business_categories": [
+            "business category 1",
+            "business category 3"
+        ],
         "relevant_resources": [],
         "used_resources": []
     },
@@ -66,6 +74,7 @@
         "super_events": [],
         "research_areas": [],
         "application_areas": [],
+        "business_categories": [],
         "relevant_resources": [],
         "used_resources": []
     },
@@ -86,6 +95,7 @@
         "super_events": [],
         "research_areas": [],
         "application_areas": [],
+        "business_categories": [],
         "relevant_resources": [],
         "used_resources": []
     },
@@ -106,6 +116,7 @@
         "super_events": [],
         "research_areas": [],
         "application_areas": [],
+        "business_categories": [],
         "relevant_resources": [],
         "used_resources": []
     },
@@ -126,6 +137,7 @@
         "super_events": [],
         "research_areas": [],
         "application_areas": [],
+        "business_categories": [],
         "relevant_resources": [],
         "used_resources": []
     },
@@ -146,6 +158,7 @@
         "super_events": [],
         "research_areas": [],
         "application_areas": [],
+        "business_categories": [],
         "relevant_resources": [],
         "used_resources": []
     }

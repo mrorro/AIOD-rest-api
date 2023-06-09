@@ -30,6 +30,14 @@
     "language 1",
     "language 2"
   ],
+  "business_categories": [
+    "business category 1",
+    "business category 2"
+  ],
+  "technical_categories": [
+    "technical category 1",
+    "technical category 2"
+  ],
   "target_audience": [
     "target audience 1",
     "target audience 2"
