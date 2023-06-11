@@ -1,6 +1,5 @@
 import abc
 import datetime
-import logging
 import traceback
 from typing import Literal, Union, Any
 from typing import TypeVar, Type
@@ -15,6 +14,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import SQLModel, Session, select
 from starlette.responses import JSONResponse
 
+from authentication import get_current_user
 from converters.schema_converters.schema_converter import SchemaConverter
 from database.model import AIAsset
 from database.model.resource import (
@@ -22,9 +22,8 @@ from database.model.resource import (
     resource_create,
     resource_read,
 )
-from serialization import deserialize_resource_relationships
 from platform_names import PlatformName
-from authentication import get_current_user
+from serialization import deserialize_resource_relationships
 
 
 class Pagination(BaseModel):
@@ -300,7 +299,7 @@ class ResourceRouter(abc.ABC):
         clz_create = self.resource_class_create
 
         def register_resource(
-            resource_pydantic: clz_create,  # type: ignore
+            resource_create: clz_create,  # type: ignore
             user: dict = Depends(get_current_user),
         ):
             f"""Register a {self.resource_name} with AIoD."""
@@ -312,24 +311,52 @@ class ResourceRouter(abc.ABC):
             try:
                 with Session(engine) as session:
                     try:
-                        resource = self.create_resource(session, resource_pydantic)
+                        resource = self.create_resource(session, resource_create)
                         return self._wrap_with_headers({"identifier": resource.identifier})
                     except IntegrityError as e:
-                        logging.warning(e)
                         session.rollback()
-                        platform = resource_pydantic.platform  # type: ignore[attr-defined]
-                        id_ = resource_pydantic.platform_identifier  # type: ignore[attr-defined]
-                        query = select(self.resource_class).where(
-                            and_(
-                                self.resource_class.platform == platform,
-                                self.resource_class.platform_identifier == id_,
+                        if len(e.args) == 0:
+                            traceback.print_exc()
+                            raise HTTPException(
+                                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail="Unexpected exception while processing your request. Please "
+                                "contact the maintainers.",
                             )
-                        )
-                        existing_resource = session.scalars(query).first()
+                        error = e.args[0]
+                        if "UNIQUE constraint failed: " in error and ", " not in error:
+                            duplicate_field = error.split(".")[-1]
+                            query = select(self.resource_class).where(
+                                getattr(self.resource_class, duplicate_field)
+                                == getattr(resource_create, duplicate_field)
+                            )
+                            existing_resource = session.scalars(query).first()
+                            raise HTTPException(
+                                status_code=status.HTTP_409_CONFLICT,
+                                detail=f"There already exists a {self.resource_name} with the same "
+                                f"{duplicate_field}, with "
+                                f"identifier={existing_resource.identifier}.",
+                            )
+                        elif "UNIQUE constraint failed: " in error:
+                            fields = error.split("constraint failed: ")[-1]
+                            field1, field2 = [field.split(".")[-1] for field in fields.split(", ")]
+                            query = select(self.resource_class).where(
+                                and_(
+                                    getattr(self.resource_class, field1)
+                                    == getattr(resource_create, field1),
+                                    getattr(self.resource_class, field2)
+                                    == getattr(resource_create, field2),
+                                )
+                            )
+                            existing_resource = session.scalars(query).first()
+                            raise HTTPException(
+                                status_code=status.HTTP_409_CONFLICT,
+                                detail=f"There already exists a {self.resource_name} with the same "
+                                f"{field1} and {field2}, with "
+                                f"identifier={existing_resource.identifier}.",
+                            )
+                        error_msg = error.split("constraint failed: ")[-1]
                         raise HTTPException(
-                            status_code=status.HTTP_409_CONFLICT,
-                            detail=f"There already exists a {self.resource_name} with the same "
-                            f"platform and name, with identifier={existing_resource.identifier}.",
+                            status_code=status.HTTP_400_BAD_REQUEST, detail=error_msg
                         )
             except Exception as e:
                 raise _wrap_as_http_exception(e)

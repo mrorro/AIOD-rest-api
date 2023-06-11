@@ -31,7 +31,7 @@ class MeasuredValueORM(MeasuredValue, table=True):  # type: ignore [call-arg]
         UniqueConstraint(
             "variable",
             "technique",
-            name="measuredValue_variable_technique",
+            name="There already exists an item with the same variable and technique.",
         ),
     )
     identifier: int | None = Field(primary_key=True)

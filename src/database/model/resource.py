@@ -1,6 +1,7 @@
 from typing import Type, Tuple
 
 from pydantic import create_model
+from sqlalchemy import CheckConstraint
 from sqlmodel import SQLModel, Field, UniqueConstraint
 from sqlmodel.main import FieldInfo
 
@@ -13,14 +14,30 @@ class Resource(SQLModel):
     """Every top-level class in our API, meaning every class that can be directly accessed
     through a route, should inherit from `Resource`."""
 
-    platform: str = Field(default=None, schema_extra={"example": PlatformName.zenodo})
-    platform_identifier: str = Field(default=None, schema_extra={"example": "1"})
+    platform: str | None = Field(
+        default=None,
+        description="The external platform on which this item can be "
+        "found. Leave empty if this item originates from "
+        "AIoD. If platform is not None, "
+        "the platform_identifier should be set as well.",
+        schema_extra={"example": PlatformName.zenodo},
+    )
+    platform_identifier: str | None = Field(
+        description="A unique identifier issued by an external platform. Leave empty if this item "
+        "is not part of an external platform.",
+        default=None,
+        schema_extra={"example": "1"},
+    )
 
     __table_args__ = (
         UniqueConstraint(
             "platform",
             "platform_identifier",
-            name="resource_unique_platform_platform_identifier",
+            name="There already exists an item with the same platform and platform_identifier.",
+        ),
+        CheckConstraint(
+            "(platform IS NULL) <> (platform_identifier IS NOT NULL)",
+            name="If platform is NULL, platform_identifier should also be NULL, and vice versa.",
         ),
     )
 
