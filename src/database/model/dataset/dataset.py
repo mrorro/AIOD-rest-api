@@ -74,13 +74,14 @@ class DatasetBase(Resource):
 
 class Dataset(DatasetBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "dataset"
+
     __table_args__ = Resource.__table_args__ + (
         UniqueConstraint(
             "name",
             "version",
-            name="There already exists an item with the same name and version.",
+            name="same_name_and_version",
         ),
-    )  # type: ignore [assignment]
+    )
 
     identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
 

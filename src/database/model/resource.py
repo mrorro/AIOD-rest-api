@@ -2,6 +2,7 @@ from typing import Type, Tuple
 
 from pydantic import create_model
 from sqlalchemy import CheckConstraint
+from sqlalchemy.util import classproperty
 from sqlmodel import SQLModel, Field, UniqueConstraint
 from sqlmodel.main import FieldInfo
 
@@ -29,17 +30,19 @@ class Resource(SQLModel):
         schema_extra={"example": "1"},
     )
 
-    __table_args__ = (
-        UniqueConstraint(
-            "platform",
-            "platform_identifier",
-            name="There already exists an item with the same platform and platform_identifier.",
-        ),
-        CheckConstraint(
-            "(platform IS NULL) <> (platform_identifier IS NOT NULL)",
-            name="If platform is NULL, platform_identifier should also be NULL, and vice versa.",
-        ),
-    )
+    @classproperty
+    def __table_args__(cls) -> Tuple:
+        return (
+            UniqueConstraint(
+                "platform",
+                "platform_identifier",
+                name="same_platform_and_platform_identifier",
+            ),
+            CheckConstraint(
+                "(platform IS NULL) <> (platform_identifier IS NOT NULL)",
+                name=f"{cls.__name__}_platform_and_platform_identifier",
+            ),
+        )
 
 
 def _get_relationships(resource_class: Type[SQLModel]) -> dict[str, ResourceRelationshipInfo]:
