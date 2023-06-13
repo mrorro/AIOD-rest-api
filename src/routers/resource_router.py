@@ -329,7 +329,6 @@ class ResourceRouter(abc.ABC):
 
     def create_resource(self, clz, session: Session, resource_create_instance: SQLModel):
         """Store a resource in the database"""
-
         if issubclass(clz, AIAsset):
             """
             example - dataset, publications, etc.
