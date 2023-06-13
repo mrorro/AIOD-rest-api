@@ -31,16 +31,23 @@ class HuggingfaceUploader:
             dataset = self._get_resource(engine=engine, identifier=resource)
             repo_id = f"{username}/{dataset.name}"
 
-            huggingface_hub.create_repo(repo_id, repo_type="dataset", token=token)
-            result = huggingface_hub.upload_file(
-                path_or_fileobj=file.file.read(),
-                path_in_repo=f"/data/{file.filename}",
-                repo_id=repo_id,
-                repo_type="dataset",
-                token=token,
-            )
-
-            return result
+            try:
+                huggingface_hub.create_repo(repo_id, repo_type="dataset", token=token)
+            except Exception:
+                msg = f"Repository {repo_id} already created in hugging face"
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
+            try:
+                result = huggingface_hub.upload_file(
+                    path_or_fileobj=file.file.read(),
+                    path_in_repo=f"/data/{file.filename}",
+                    repo_id=repo_id,
+                    repo_type="dataset",
+                    token=token,
+                )
+                return result
+            except Exception:
+                msg = "Error uploading file"
+                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
 
         return handle_upload
 
