@@ -61,6 +61,8 @@ class HuggingfaceUploader:
                 huggingface_hub.delete_repo(repo_id, token=token, repo_type="dataset")
                 msg = "Error updating metadata in huggingface"
                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=e)
+
+            # TODO create and save  DataDownload within the dataset
             return url
 
         return handle_upload
