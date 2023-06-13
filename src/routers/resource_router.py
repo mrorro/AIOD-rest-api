@@ -237,7 +237,7 @@ class ResourceRouter(abc.ABC):
             return resources
 
         return get_resources
-    
+
     def get_resource_count_func(self, engine: Engine):
         """
         Gets the total number of resources from the database.
