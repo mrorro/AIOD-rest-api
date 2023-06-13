@@ -68,3 +68,25 @@ def test_too_long_name(
             "type": "value_error.any_str.max_length",
         }
     ]
+
+
+def test_no_platform_with_platform_identifier(
+    client_test_resource: TestClient,
+    engine_test_resource_filled: Engine,
+    mocked_privileged_token: Mock,
+):
+    """
+    The error handling should be the same as with the POST endpoints, so we're not testing all
+    the possible UNIQUE / CHECK constraints here, just this one.
+    """
+    keycloak_openid.decode_token = mocked_privileged_token
+    response = client_test_resource.put(
+        "/test_resources/v0/1",
+        json={"title": "title", "platform": "other", "platform_identifier": None},
+        headers={"Authorization": "Fake token"},
+    )
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"] == "If platform is NULL, platform_identifier should also be "
+        "NULL, and vice versa."
+    )

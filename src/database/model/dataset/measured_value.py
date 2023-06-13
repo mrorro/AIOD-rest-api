@@ -31,7 +31,7 @@ class MeasuredValueORM(MeasuredValue, table=True):  # type: ignore [call-arg]
         UniqueConstraint(
             "variable",
             "technique",
-            name="measuredValue_variable_technique",
+            name="same_variable_and_technique",
         ),
     )
     identifier: int | None = Field(primary_key=True)

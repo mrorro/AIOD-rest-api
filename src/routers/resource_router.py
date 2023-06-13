@@ -1,6 +1,5 @@
 import abc
 import datetime
-import logging
 import traceback
 from typing import Literal, Union, Any
 from typing import TypeVar, Type
@@ -15,6 +14,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import SQLModel, Session, select
 from starlette.responses import JSONResponse
 
+from authentication import get_current_user
 from converters.schema_converters.schema_converter import SchemaConverter
 from database.model import AIAsset
 from database.model.resource import (
@@ -22,9 +22,8 @@ from database.model.resource import (
     resource_create,
     resource_read,
 )
-from serialization import deserialize_resource_relationships
 from platform_names import PlatformName
-from authentication import get_current_user
+from serialization import deserialize_resource_relationships
 
 
 class Pagination(BaseModel):
@@ -300,7 +299,7 @@ class ResourceRouter(abc.ABC):
         clz_create = self.resource_class_create
 
         def register_resource(
-            resource_pydantic: clz_create,  # type: ignore
+            resource_create: clz_create,  # type: ignore
             user: dict = Depends(get_current_user),
         ):
             f"""Register a {self.resource_name} with AIoD."""
@@ -312,25 +311,10 @@ class ResourceRouter(abc.ABC):
             try:
                 with Session(engine) as session:
                     try:
-                        resource = self.create_resource(session, resource_pydantic)
+                        resource = self.create_resource(session, resource_create)
                         return self._wrap_with_headers({"identifier": resource.identifier})
                     except IntegrityError as e:
-                        logging.warning(e)
-                        session.rollback()
-                        platform = resource_pydantic.platform  # type: ignore[attr-defined]
-                        id_ = resource_pydantic.platform_identifier  # type: ignore[attr-defined]
-                        query = select(self.resource_class).where(
-                            and_(
-                                self.resource_class.platform == platform,
-                                self.resource_class.platform_identifier == id_,
-                            )
-                        )
-                        existing_resource = session.scalars(query).first()
-                        raise HTTPException(
-                            status_code=status.HTTP_409_CONFLICT,
-                            detail=f"There already exists a {self.resource_name} with the same "
-                            f"platform and name, with identifier={existing_resource.identifier}.",
-                        )
+                        self._raise_clean_http_exception(e, session, resource_create)
             except Exception as e:
                 raise _wrap_as_http_exception(e)
 
@@ -382,8 +366,11 @@ class ResourceRouter(abc.ABC):
                     deserialize_resource_relationships(
                         session, self.resource_class, resource, resource_create_instance
                     )
-                    session.merge(resource)
-                    session.commit()
+                    try:
+                        session.merge(resource)
+                        session.commit()
+                    except IntegrityError as e:
+                        self._raise_clean_http_exception(e, session, resource_create_instance)
                 return self._wrap_with_headers(None)
             except Exception as e:
                 raise _wrap_as_http_exception(e)
@@ -457,6 +444,56 @@ class ResourceRouter(abc.ABC):
         ).timestamp()
         headers = {"Deprecated": format_date_time(timestamp)}
         return JSONResponse(content=jsonable_encoder(resource, exclude_none=True), headers=headers)
+
+    def _raise_clean_http_exception(
+        self, e: IntegrityError, session: Session, resource_create: SQLModel
+    ):
+        """Raise an understandable exception based on this SQL IntegrityError."""
+        session.rollback()
+        if len(e.args) == 0:
+            traceback.print_exc()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Unexpected exception while processing your request. Please "
+                "contact the maintainers.",
+            ) from e
+        error = e.args[0]
+        if "UNIQUE constraint failed: " in error and ", " not in error:
+            duplicate_field = error.split(".")[-1]
+            query = select(self.resource_class).where(
+                getattr(self.resource_class, duplicate_field)
+                == getattr(resource_create, duplicate_field)
+            )
+            existing_resource = session.scalars(query).first()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"There already exists a {self.resource_name} with the same "
+                f"{duplicate_field}, with "
+                f"identifier={existing_resource.identifier}.",
+            ) from e
+        if "UNIQUE constraint failed: " in error:
+            fields = error.split("constraint failed: ")[-1]
+            field1, field2 = [field.split(".")[-1] for field in fields.split(", ")]
+            query = select(self.resource_class).where(
+                and_(
+                    getattr(self.resource_class, field1) == getattr(resource_create, field1),
+                    getattr(self.resource_class, field2) == getattr(resource_create, field2),
+                )
+            )
+            existing_resource = session.scalars(query).first()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"There already exists a {self.resource_name} with the same "
+                f"{field1} and {field2}, with "
+                f"identifier={existing_resource.identifier}.",
+            ) from e
+        if "platform_and_platform_identifier" in error:
+            error_msg = (
+                "If platform is NULL, platform_identifier should also be NULL, and vice " "versa."
+            )
+        else:
+            error_msg = error.split("constraint failed: ")[-1]
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_msg) from e
 
 
 def _wrap_as_http_exception(exception: Exception) -> HTTPException:

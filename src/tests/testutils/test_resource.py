@@ -11,7 +11,7 @@ from routers import ResourceRouter
 
 
 class TestResourceBase(Resource):
-    title: str = Field(max_length=250, nullable=False)
+    title: str = Field(max_length=250, nullable=False, unique=True)
 
 
 class TestResource(TestResourceBase, table=True):  # type: ignore [call-arg]
