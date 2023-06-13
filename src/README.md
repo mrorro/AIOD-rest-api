@@ -89,13 +89,6 @@ from serialization import (
 
 class Example(ExampleBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "example"
-    __table_args__ = (
-        UniqueConstraint(
-            "string_field",
-            "int_field",
-            name="example_string_int_unique",  # A unique constraint on multiple columns
-        ),
-    )
 
     identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
 

@@ -13,10 +13,11 @@ from database.model.dataset.measured_value import (
     MeasuredValue,
 )
 from database.model.dataset.publication_link import DatasetPublicationLink
-from database.model.general.license import License
 from database.model.general.keyword import Keyword
+from database.model.general.license import License
 from database.model.publication.publication import Publication
 from database.model.relationships import ResourceRelationshipList, ResourceRelationshipSingle
+from database.model.resource import Resource
 from serialization import (
     AttributeSerializer,
     FindByNameDeserializer,
@@ -76,11 +77,12 @@ class DatasetBase(AIAsset):
 
 class Dataset(DatasetBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "dataset"
-    __table_args__ = (
+
+    __table_args__ = Resource.__table_args__ + (
         UniqueConstraint(
             "name",
             "version",
-            name="dataset_name_version_unique",
+            name="same_name_and_version",
         ),
     )
 
