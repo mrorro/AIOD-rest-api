@@ -3,6 +3,7 @@ from sqlmodel import Session, select
 from sqlalchemy.engine import Engine
 from database.model.dataset.dataset import Dataset
 import huggingface_hub
+import datasets
 
 
 class HuggingfaceUploader:
@@ -31,11 +32,9 @@ class HuggingfaceUploader:
             dataset = self._get_resource(engine=engine, identifier=resource)
             repo_id = f"{username}/{dataset.name}"
 
-            try:
-                result = huggingface_hub.create_repo(repo_id, repo_type="dataset", token=token)
-            except Exception:
-                msg = f"Repository {repo_id} already created in hugging face"
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
+            url = self._check_repo_exists(repo_id)
+            if not url:
+                url = huggingface_hub.create_repo(repo_id, repo_type="dataset", token=token)
             try:
                 huggingface_hub.upload_file(
                     path_or_fileobj=file.file.read(),
@@ -44,6 +43,12 @@ class HuggingfaceUploader:
                     repo_type="dataset",
                     token=token,
                 )
+
+            except Exception:
+                huggingface_hub.delete_repo(repo_id, token=token, repo_type="dataset")
+                msg = "Error uploading the file"
+                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+            try:
                 huggingface_hub.upload_file(
                     path_or_fileobj=self._generate_metadata_file(dataset),
                     path_in_repo="README.md",
@@ -51,11 +56,12 @@ class HuggingfaceUploader:
                     repo_type="dataset",
                     token=token,
                 )
-                return result
-            except Exception:
+
+            except Exception as e:
                 huggingface_hub.delete_repo(repo_id, token=token, repo_type="dataset")
-                msg = "Error uploading file"
-                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+                msg = "Error updating metadata in huggingface"
+                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=e)
+            return url
 
         return handle_upload
 
@@ -71,6 +77,13 @@ class HuggingfaceUploader:
             msg = f"Dataset '{identifier} not found " "in the database."
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg)
         return resource
+
+    def _check_repo_exists(sef, repo_id):
+        try:
+            datasets.load_dataset_builder(repo_id)
+            return f"https://huggingface.co/datasets/{repo_id}"
+        except Exception:
+            return None
 
     def _generate_metadata_file(self, dataset: Dataset) -> bytes:
         tags = ["- " + tag.name for tag in dataset.keywords] if dataset.keywords else []
