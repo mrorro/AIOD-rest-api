@@ -26,7 +26,8 @@ dependencies = [
     "sqlmodel",
     "httpx",
     "sickle",
-    "xmltodict"
+    "xmltodict",
+    "python-multipart"
 ]
 readme = "README.md"
 
