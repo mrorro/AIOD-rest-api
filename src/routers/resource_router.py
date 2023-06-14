@@ -123,7 +123,7 @@ class ResourceRouter(abc.ABC):
             **default_kwargs,
         )
         router.add_api_route(
-            path=f"{url_prefix}/counts/{self.resource_name_plural}/{version}",
+            path=f"{url_prefix}/counts/{self.resource_name_plural}/v0",
             endpoint=self.get_resource_count_func(engine),
             response_model=int,  # type: ignore
             name=f"Count of {self.resource_name_plural}",
