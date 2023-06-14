@@ -2,6 +2,7 @@ from fastapi import APIRouter, Form, HTTPException, UploadFile, File, status
 from sqlmodel import Session
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import lazyload
+from database.model.dataset.data_download import DataDownloadORM
 
 from database.model.dataset.dataset import Dataset
 import huggingface_hub
@@ -66,6 +67,9 @@ class HuggingfaceUploader:
                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
 
             # TODO create and save  DataDownload within the dataset
+            if not any(data.name == repo_id for data in dataset.distributions):
+                self._store_resource_updated(engine, dataset, url, repo_id)
+
             return url
 
         return handle_upload
@@ -87,6 +91,13 @@ class HuggingfaceUploader:
             msg = f"Dataset '{identifier} not found " "in the database."
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg)
         return resource
+
+    def _store_resource_updated(self, engine: Engine, resource: Dataset, url: str, repo_id: str):
+        with Session(engine) as session:
+            data_download = DataDownloadORM(content_url=url, name=repo_id, dataset=resource)
+            resource.distributions.append(data_download)
+            session.merge(resource)
+            session.commit()
 
     def _check_repo_exists(sef, repo_id):
         try:
