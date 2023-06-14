@@ -66,7 +66,6 @@ class HuggingfaceUploader:
                 msg = "Error updating metadata in huggingface"
                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
 
-            # TODO create and save  DataDownload within the dataset
             if not any(data.name == repo_id for data in dataset.distributions):
                 self._store_resource_updated(engine, dataset, url, repo_id)
 
