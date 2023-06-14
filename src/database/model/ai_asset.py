@@ -2,11 +2,13 @@ from database.model.resource import Resource
 
 
 class AIAsset(Resource):
-    """
-    Every database, publication, etc has relationship to the AIAsset.
-    AIAsset inherets from Resource.
-    class AIAsset only defines an entity of type AIAsset, however the relationship
-    between ai_asset and an entity is defined in ai_asset_table.py.
-    """
+    """ "
+    Many resources, such as dataset and publication, are a type of AIAsset
+    and should therefore inherit from this AIAsset class.
+    Shared fields can be defined on this class.
 
-    pass
+    Notice the difference between AIAsset and AIAssetTable.
+    The latter enables defining a relationship to "any AI Asset",
+    by making sure that the identifiers of all resources that
+    are AIAssets, are unique over the AIAssets.
+    """

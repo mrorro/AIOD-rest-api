@@ -92,7 +92,7 @@ class EducationalResourceBase(AIAsset):
 
 class EducationalResource(EducationalResourceBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "educational_resource"
-    identifier: int = Field(primary_key=True, foreign_key="ai_asset_table.identifier")
+    identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
     languages: List[Language] = Relationship(
         back_populates="educational_resources", link_model=EducationalResourceLanguageLink
     )

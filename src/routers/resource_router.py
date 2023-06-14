@@ -302,7 +302,6 @@ class ResourceRouter(abc.ABC):
         This function returns a function (instead of being that function directly) because the
         docstring is dynamic and used in Swagger.
         """
-        clz = self.resource_class
         clz_create = self.resource_class_create
 
         def register_resource(
@@ -318,7 +317,7 @@ class ResourceRouter(abc.ABC):
             try:
                 with Session(engine) as session:
                     try:
-                        resource = self.create_resource(clz, session, resource_create)
+                        resource = self.create_resource(session, resource_create)
                         return self._wrap_with_headers({"identifier": resource.identifier})
                     except IntegrityError as e:
                         self._raise_clean_http_exception(e, session, resource_create)
@@ -327,24 +326,26 @@ class ResourceRouter(abc.ABC):
 
         return register_resource
 
-    def create_resource(self, clz, session: Session, resource_create_instance: SQLModel):
-        """Store a resource in the database"""
-        if issubclass(clz, AIAsset):
-            """
-            example - dataset, publications, etc.
-            """
-            asset = AIAssetTable(type=clz.__tablename__)
+    def create_resource(self, session: Session, resource_create_instance: SQLModel):
+
+        # Store a resource in the database
+
+        if issubclass(self.resource_class, AIAsset):
+
+            # example - datasets, publications, etc.
+
+            asset = AIAssetTable(type=self.resource_class.__tablename__)
             session.add(asset)
             session.flush()
             resource = self.resource_class.from_orm(
                 resource_create_instance, update={"identifier": asset.identifier}
             )
 
-        elif issubclass(clz, Agent):
-            """
-            example - organisaton
-            """
-            agent = AgentTable(type=clz.__tablename__)
+        elif issubclass(self.resource_class, Agent):
+
+            # example - organisations
+
+            agent = AgentTable(type=self.resource_class.__tablename__)
             session.add(agent)
             session.flush()
             resource = self.resource_class.from_orm(
@@ -352,9 +353,9 @@ class ResourceRouter(abc.ABC):
             )
 
         else:
-            """
-            example - event, case_study, news, etc.
-            """
+
+            # example - events, case_studies, news, etc.
+
             resource = self.resource_class.from_orm(resource_create_instance)
 
         deserialize_resource_relationships(

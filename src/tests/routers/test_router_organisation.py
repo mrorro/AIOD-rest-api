@@ -19,7 +19,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
                     identifier="1",
                     platform="example",
                     platform_identifier="2",
-                    type="Research Institute ",
+                    type="Research Institution ",
                 ),
             ]
         )
@@ -28,7 +28,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     body = {
         "platform": "zenodo",
         "platform_identifier": "2",
-        "type": "Example Research Insititution",
+        "type": "Research Insititution",
         "connection_to_ai": "Example positioning in European AI ecosystem.",
         "logo_url": "aiod.eu/project/0/logo",
         "same_as": "https://www.example.com/organisation/example",
@@ -53,9 +53,9 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert response.status_code == 200
 
     response_json = response.json()
-    # print(response_json)
     assert response_json["identifier"] == 2
     assert response_json["platform"] == "zenodo"
+    assert response_json["parent_organisation_id"] == 1
 
     assert set(response_json["business_categories"]) == {
         "business category 1",

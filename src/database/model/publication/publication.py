@@ -41,7 +41,7 @@ class PublicationBase(AIAsset):
 class Publication(PublicationBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "publication"
 
-    identifier: int = Field(primary_key=True, foreign_key="ai_asset_table.identifier")
+    identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
 
     license_identifier: int | None = Field(foreign_key="license.identifier")
     license: Optional[License] = Relationship(back_populates="publications")

@@ -19,7 +19,6 @@ from database.model.organisation.technical_category_link import OrganisationTech
 
 from database.model.relationships import ResourceRelationshipList
 
-# from database.model.resource import Resource
 
 from database.model.organisation.member_link import OrganisationMemberLink
 from database.model.organisation.department_link import OrganisationDepartmentLink
@@ -27,10 +26,9 @@ from database.model.organisation.department_link import OrganisationDepartmentLi
 from serialization import AttributeSerializer, FindByNameDeserializer, FindByIdentifierDeserializer
 
 
-# inheret from Agent.
 class OrganisationBase(Agent):
     # Required fields
-    type: str = Field(max_length=500, schema_extra={"example": "Example Research Insititution"})
+    type: str = Field(max_length=500, schema_extra={"example": "Research Institution"})
 
     # Recommended fields
     connection_to_ai: str | None = Field(
@@ -68,19 +66,17 @@ class OrganisationBase(Agent):
     parent_organisation_id: int | None = Field(
         foreign_key="organisation.identifier",
         default=None,
-        schema_extra={"example": 1},
+        schema_extra={"example": []},
     )
-    # subsidiary_organisation_id: int | None = Field(
-    #     foreign_key="organisation.identifier",
-    #     default=None,
-    #     schema_extra={"example": 2},
-    # )
+
+    # TODO subsidiary_organisation_id not currently added. This is because
+    # the relationship with organisation is nor clear, and is similar to departments.
 
 
 class Organisation(OrganisationBase, table=True):  # type: ignore
     __tablename__ = "organisation"
 
-    identifier: int = Field(primary_key=True, foreign_key="agent_table.identifier")
+    identifier: int = Field(primary_key=True, foreign_key="agent.identifier")
 
     business_categories: List[BusinessCategory] = Relationship(
         back_populates="organisations", link_model=OrganisationBusinessCategoryLink
@@ -116,17 +112,12 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
             deserializer=FindByNameDeserializer(OrganisationEmail),
         )
         members: List[int] = ResourceRelationshipList(
-            example=[1, 2],
+            example=[],
             serializer=AttributeSerializer("identifier"),
             deserializer=FindByIdentifierDeserializer(AgentTable),
         )
         departments: List[int] = ResourceRelationshipList(
-            example=[1, 2],
+            example=[],
             serializer=AttributeSerializer("identifier"),
             deserializer=FindByIdentifierDeserializer(AgentTable),
         )
-
-
-# # Defined separate because it references Organisation,
-# # and can therefor not be defined inside Organisation
-# deserializer = FindByIdentifierDeserializer(Organisation)

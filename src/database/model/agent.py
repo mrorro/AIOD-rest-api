@@ -2,11 +2,13 @@ from database.model.resource import Resource
 
 
 class Agent(Resource):
-    """
-    Every organisation, member, and department has relationship to the Agent.
-    Agent inherets from Resource.
-    class Agent only defines an entity of type Agent, however the relationship
-    between agent and an entity is defined in agent_table.py.
-    """
+    """ "
+    Many resources, such as organisation and member, are a type of Agent
+    and should therefore inherit from this Agent class.
+    Shared fields can be defined on this class.
 
-    pass
+    Notice the difference between Agent and AgentTable.
+    The latter enables defining a relationship to "any Agent",
+    by making sure that the identifiers of all resources that
+    are Agents, are unique over the Agents.
+    """

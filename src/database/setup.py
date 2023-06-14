@@ -87,7 +87,7 @@ def populate_database(
             for item in connector.fetch_all(limit=limit):
                 if isinstance(item, ResourceWithRelations):
                     resource_create_instance = item.resource
-                    _create_or_fetch_related_objects(router.resource_class, session, item)
+                    _create_or_fetch_related_objects(session, item)
                 else:
                     resource_create_instance = item
                 if (
@@ -97,9 +97,7 @@ def populate_database(
                     is None
                 ):
                     try:
-                        router.create_resource(
-                            router.resource_class, session, resource_create_instance
-                        )
+                        router.create_resource(session, resource_create_instance)
                     except IntegrityError as e:
                         logging.warning(
                             f"Error while creating resource. Continuing for now: " f" {e}"
@@ -121,7 +119,7 @@ def _get_existing_resource(
     return session.scalars(query).first()
 
 
-def _create_or_fetch_related_objects(resource_class, session: Session, item: ResourceWithRelations):
+def _create_or_fetch_related_objects(session: Session, item: ResourceWithRelations):
     """
     For all resources in the `related_resources`, get the identifier, by either
     inserting them in the database, or retrieving the existing values, and put the identifiers
@@ -152,7 +150,7 @@ def _create_or_fetch_related_objects(resource_class, session: Session, item: Res
                 ]
                 existing = _get_existing_resource(session, resource, router.resource_class)
                 if existing is None:
-                    created_resource = router.create_resource(resource_class, session, resource)
+                    created_resource = router.create_resource(session, resource)
                     identifiers.append(created_resource.identifier)
                 else:
                     identifiers.append(existing.identifier)

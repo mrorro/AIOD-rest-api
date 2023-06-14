@@ -50,9 +50,7 @@ class EventBase(Resource):
 
 class Event(EventBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "event"
-    identifier: int = Field(default=None, primary_key=True)  # remove identifier
-    # This entity is implemented in the pr 52, it atributes will be implemented after merging it
-    # TODO add business_categories
+    identifier: int = Field(default=None, primary_key=True)
 
     business_categories: List["BusinessCategory"] = Relationship(
         back_populates="events", link_model=EventBusinessCategoriesLink
