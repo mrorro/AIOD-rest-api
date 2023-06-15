@@ -13,6 +13,7 @@ import connectors
         "presentations",
         "projects",
         "educational_resources",
+        "organisations",
     ],
 )
 def test_fetch_all_happy_path(datatype: str):

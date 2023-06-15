@@ -12,7 +12,7 @@ docker run \
 	-v $SRC_PATH:/app \
 	ai4eu_server_demo \
 	--rebuild-db always \
-	--fill-with-examples datasets publications news events case_studies presentations projects educational_resources \
+	--fill-with-examples datasets publications news events case_studies presentations projects educational_resources organisations\
 	--limit 10 \
 	--url-prefix "" \
 	--reload

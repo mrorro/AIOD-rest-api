@@ -1,26 +1,20 @@
 from datetime import datetime
-
 from typing import List, Optional
+
 from sqlmodel import Field, Relationship
 
-from database.model.agent_table import AgentTable
 from database.model.agent import Agent
-
+from database.model.agent_table import AgentTable
+from database.model.general.business_category import BusinessCategory
+from database.model.general.technical_category import TechnicalCategory
+from database.model.organisation.business_category_link import OrganisationBusinessCategoryLink
 from database.model.organisation.email import (
     OrganisationEmail,
     OrganisationEmailLink,
 )
-
-from database.model.general.business_category import BusinessCategory
-from database.model.organisation.business_category_link import OrganisationBusinessCategoryLink
-
-from database.model.general.technical_category import TechnicalCategory
-from database.model.organisation.technical_category_link import OrganisationTechnicalCategoryLink
-
-from database.model.relationships import ResourceRelationshipList, ResourceRelationshipSingle
-
 from database.model.organisation.member_link import OrganisationMemberLink
-
+from database.model.organisation.technical_category_link import OrganisationTechnicalCategoryLink
+from database.model.relationships import ResourceRelationshipList, ResourceRelationshipSingle
 from serialization import AttributeSerializer, FindByNameDeserializer, FindByIdentifierDeserializer
 
 
@@ -121,7 +115,8 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
             deserializer=FindByIdentifierDeserializer(AgentTable),
         )
         departments: List[int] = ResourceRelationshipList(
-            example=[], serializer=AttributeSerializer("identifier")
+            example=[],
+            serializer=AttributeSerializer("identifier"),
         )
         parent_organisation: int | None = ResourceRelationshipSingle(
             identifier_name="parent_organisation_id",
