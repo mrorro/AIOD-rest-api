@@ -15,12 +15,12 @@ class HuggingfaceUploader:
 
     def handle_upload(
         self,
-        resource: int,
+        identifier: int,
         file: UploadFile,
         token: str,
         username: str,
     ):
-        dataset = self._get_resource(engine=self.engine, identifier=resource)
+        dataset = self._get_resource(engine=self.engine, identifier=identifier)
         repo_id = f"{username}/{dataset.name}"
 
         url = self._check_repo_exists(repo_id)
