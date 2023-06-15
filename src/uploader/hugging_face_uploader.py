@@ -3,7 +3,7 @@ import datasets
 import huggingface_hub
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import lazyload
+from sqlalchemy.orm import joinedload
 from sqlmodel import Session
 
 from database.model.dataset.data_download import DataDownloadORM
@@ -66,7 +66,7 @@ class HuggingfaceUploader:
         with Session(engine) as session:
             query = (
                 session.query(Dataset)
-                .options(lazyload("*"))
+                .options(joinedload("*"))
                 .filter(Dataset.identifier == identifier)
             )
 
