@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from typing import List
+from typing import List, Optional
 from sqlmodel import Field, Relationship
 
 from database.model.agent_table import AgentTable
@@ -17,11 +17,9 @@ from database.model.organisation.business_category_link import OrganisationBusin
 from database.model.general.technical_category import TechnicalCategory
 from database.model.organisation.technical_category_link import OrganisationTechnicalCategoryLink
 
-from database.model.relationships import ResourceRelationshipList
-
+from database.model.relationships import ResourceRelationshipList, ResourceRelationshipSingle
 
 from database.model.organisation.member_link import OrganisationMemberLink
-from database.model.organisation.department_link import OrganisationDepartmentLink
 
 from serialization import AttributeSerializer, FindByNameDeserializer, FindByIdentifierDeserializer
 
@@ -63,6 +61,7 @@ class OrganisationBase(Agent):
     telephone: str | None = Field(
         max_length=500, default=None, schema_extra={"example": "Example telephone number"}
     )
+
     parent_organisation_id: int | None = Field(
         foreign_key="organisation.identifier",
         default=None,
@@ -78,6 +77,11 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
 
     identifier: int = Field(primary_key=True, foreign_key="agent.identifier")
 
+    parent_organisation: Optional["Organisation"] = Relationship(
+        back_populates="departments",
+        sa_relationship_kwargs=dict(remote_side="Organisation.identifier"),
+    )
+
     business_categories: List[BusinessCategory] = Relationship(
         back_populates="organisations", link_model=OrganisationBusinessCategoryLink
     )
@@ -90,8 +94,8 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
     members: List["AgentTable"] = Relationship(
         link_model=OrganisationMemberLink,
     )
-    departments: List[AgentTable] = Relationship(
-        link_model=OrganisationDepartmentLink,
+    departments: List["Organisation"] = Relationship(
+        back_populates="parent_organisation",
     )
 
     class RelationshipConfig:
@@ -117,7 +121,15 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
             deserializer=FindByIdentifierDeserializer(AgentTable),
         )
         departments: List[int] = ResourceRelationshipList(
-            example=[],
-            serializer=AttributeSerializer("identifier"),
-            deserializer=FindByIdentifierDeserializer(AgentTable),
+            example=[], serializer=AttributeSerializer("identifier")
         )
+        parent_organisation: int | None = ResourceRelationshipSingle(
+            identifier_name="parent_organisation_id",
+            serializer=AttributeSerializer("identifier"),
+            example=[],
+        )
+
+
+deserializer = FindByIdentifierDeserializer(Organisation)  # type: ignore
+Organisation.RelationshipConfig.departments.deserializer = deserializer  # type: ignore
+Organisation.RelationshipConfig.parent_organisation.deserializer = deserializer  # type: ignore
