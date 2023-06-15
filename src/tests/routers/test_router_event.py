@@ -14,7 +14,6 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     with Session(engine) as session:
         session.add_all(
             [
-                AIAssetTable(type="event"),
                 Event(
                     identifier="1",
                     name="Parent",
@@ -26,7 +25,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
                 ),
                 AIAssetTable(type="dataset"),
                 Dataset(
-                    identifier="2",
+                    identifier="1",
                     name="Parent",
                     platform="example",
                     platform_identifier="1",
@@ -53,7 +52,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "sub_events": [1],
         "research_areas": ["research_area1", "research_area2"],
         "application_areas": ["application_area1", "application_area2"],
-        "relevant_resources": [2],
+        "relevant_resources": [1],
         "used_resources": [1],
         "business_categories": ["business category 1", "business category 2"],
     }
@@ -81,7 +80,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert set(response_json["sub_events"]) == {1}
     assert set(response_json["research_areas"]) == {"research_area1", "research_area2"}
     assert set(response_json["application_areas"]) == {"application_area1", "application_area2"}
-    assert set(response_json["relevant_resources"]) == {2}
+    assert set(response_json["relevant_resources"]) == {1}
     assert set(response_json["used_resources"]) == {1}
     assert set(response_json["business_categories"]) == {
         "business category 1",
