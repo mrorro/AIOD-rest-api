@@ -66,7 +66,7 @@ class HuggingfaceUploader:
         with Session(engine) as session:
             query = (
                 session.query(Dataset)
-                .options(joinedload("*"))
+                .options(joinedload(Dataset.keywords), joinedload(Dataset.distributions))
                 .filter(Dataset.identifier == identifier)
             )
 
