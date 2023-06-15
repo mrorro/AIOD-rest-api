@@ -1,3 +1,4 @@
+import io
 import datasets
 import huggingface_hub
 from fastapi import HTTPException, UploadFile, status
@@ -27,7 +28,7 @@ class HuggingfaceUploader:
 
         try:
             huggingface_hub.upload_file(
-                path_or_fileobj=file.file.read(),
+                path_or_fileobj=io.BufferedReader(file.file),
                 path_in_repo=f"/data/{file.filename}",
                 repo_id=repo_id,
                 repo_type="dataset",
