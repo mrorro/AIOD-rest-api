@@ -151,7 +151,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
     for router in routers.routers:
         app.include_router(router.create(engine, url_prefix))
 
-    @app.post("/upload/datasets/{identifier}/huggingface")
+    @app.post(url_prefix + "/upload/datasets/{identifier}/huggingface")
     def hugginffaceUpload(
         identifier: int,
         file: UploadFile,
