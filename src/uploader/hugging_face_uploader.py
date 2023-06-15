@@ -55,7 +55,7 @@ class HuggingfaceUploader:
         if not any(data.name == repo_id for data in dataset.distributions):
             self._store_resource_updated(self.engine, dataset, url, repo_id)
 
-        return url
+        return dataset.identifier
 
     def _get_resource(self, engine: Engine, identifier: int) -> Dataset:
         """

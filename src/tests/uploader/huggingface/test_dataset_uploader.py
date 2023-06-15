@@ -57,6 +57,8 @@ def test_happy_path_new_repository(
             files=files,
         )
     assert response.status_code == 200
+    id_response = response.json()
+    assert id_response == dataset_id
 
 
 # TODO: add test for when respository exists already, but is empty (I don't think the current

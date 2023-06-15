@@ -157,8 +157,8 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         file: UploadFile,
         token: str,
         username: str,
-    ):
-        HuggingfaceUploader(engine).handle_upload(identifier, file, token, username)
+    ) -> int:
+        return HuggingfaceUploader(engine).handle_upload(identifier, file, token, username)
 
 
 def create_app() -> FastAPI:
