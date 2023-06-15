@@ -23,9 +23,8 @@ class HuggingfaceUploader:
         dataset = self._get_resource(engine=self.engine, identifier=identifier)
         repo_id = f"{username}/{dataset.name}"
 
-        url = self._check_repo_exists(repo_id)
-        if not url:
-            url = huggingface_hub.create_repo(repo_id, repo_type="dataset", token=token)
+        url = self._create_or_get_repo_url(repo_id, token)
+
         try:
             huggingface_hub.upload_file(
                 path_or_fileobj=file.file.read(),
@@ -88,12 +87,13 @@ class HuggingfaceUploader:
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="TODO: describe"
                 ) from e
 
-    def _check_repo_exists(sef, repo_id):
+    def _create_or_get_repo_url(sef, repo_id, token):
         try:
             datasets.load_dataset_builder(repo_id)
             return f"https://huggingface.co/datasets/{repo_id}"
         except Exception:
-            return None
+            url = huggingface_hub.create_repo(repo_id, repo_type="dataset", token=token)
+            return url
 
     def _generate_metadata_file(self, dataset: Dataset) -> bytes:
         tags = ["- " + tag.name for tag in dataset.keywords] if dataset.keywords else []
