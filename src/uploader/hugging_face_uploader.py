@@ -1,6 +1,6 @@
 import datasets
 import huggingface_hub
-from fastapi import APIRouter, HTTPException, UploadFile, status
+from fastapi import HTTPException, UploadFile, status
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import lazyload
 from sqlmodel import Session
@@ -10,67 +10,53 @@ from database.model.dataset.dataset import Dataset
 
 
 class HuggingfaceUploader:
-    def create(
-        self,
-        engine: Engine,
-    ) -> APIRouter:
-        router = APIRouter()
-        router.add_api_route(
-            path="/upload/datasets/{resource}/huggingface",
-            endpoint=self._handle_upload_func(engine),
-            methods=["POST"],
-        )
-        return router
+    def __init__(self, engine: Engine):
+        self.engine = engine
 
-    def _handle_upload_func(
+    def handle_upload(
         self,
-        engine: Engine,
+        resource: int,
+        file: UploadFile,
+        token: str,
+        username: str,
     ):
-        def handle_upload(
-            resource: int,
-            file: UploadFile,
-            token: str,
-            username: str,
-        ):
-            dataset = self._get_resource(engine=engine, identifier=resource)
-            repo_id = f"{username}/{dataset.name}"
+        dataset = self._get_resource(engine=self.engine, identifier=resource)
+        repo_id = f"{username}/{dataset.name}"
 
-            url = self._check_repo_exists(repo_id)
-            if not url:
-                url = huggingface_hub.create_repo(repo_id, repo_type="dataset", token=token)
-            try:
-                huggingface_hub.upload_file(
-                    path_or_fileobj=file.file.read(),
-                    path_in_repo=f"/data/{file.filename}",
-                    repo_id=repo_id,
-                    repo_type="dataset",
-                    token=token,
-                )
-            except Exception:
-                huggingface_hub.delete_repo(repo_id, token=token, repo_type="dataset")
-                msg = "Error uploading the file"
-                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+        url = self._check_repo_exists(repo_id)
+        if not url:
+            url = huggingface_hub.create_repo(repo_id, repo_type="dataset", token=token)
+        try:
+            huggingface_hub.upload_file(
+                path_or_fileobj=file.file.read(),
+                path_in_repo=f"/data/{file.filename}",
+                repo_id=repo_id,
+                repo_type="dataset",
+                token=token,
+            )
+        except Exception:
+            huggingface_hub.delete_repo(repo_id, token=token, repo_type="dataset")
+            msg = "Error uploading the file"
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
 
-            metadata_file = self._generate_metadata_file(dataset)
-            try:
-                huggingface_hub.upload_file(
-                    path_or_fileobj=metadata_file,
-                    path_in_repo="README.md",
-                    repo_id=repo_id,
-                    repo_type="dataset",
-                    token=token,
-                )
-            except Exception:
-                huggingface_hub.delete_repo(repo_id, token=token, repo_type="dataset")
-                msg = "Error updating metadata in huggingface"
-                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+        metadata_file = self._generate_metadata_file(dataset)
+        try:
+            huggingface_hub.upload_file(
+                path_or_fileobj=metadata_file,
+                path_in_repo="README.md",
+                repo_id=repo_id,
+                repo_type="dataset",
+                token=token,
+            )
+        except Exception:
+            huggingface_hub.delete_repo(repo_id, token=token, repo_type="dataset")
+            msg = "Error updating metadata in huggingface"
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
 
-            if not any(data.name == repo_id for data in dataset.distributions):
-                self._store_resource_updated(engine, dataset, url, repo_id)
+        if not any(data.name == repo_id for data in dataset.distributions):
+            self._store_resource_updated(self.engine, dataset, url, repo_id)
 
-            return url
-
-        return handle_upload
+        return url
 
     def _get_resource(self, engine: Engine, identifier: int) -> Dataset:
         """

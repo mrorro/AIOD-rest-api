@@ -12,7 +12,7 @@ from typing import Dict
 
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, UploadFile
 from fastapi.responses import HTMLResponse
 from pydantic import Json
 from sqlalchemy.engine import Engine
@@ -151,7 +151,14 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
     for router in routers.routers:
         app.include_router(router.create(engine, url_prefix))
 
-    app.include_router(HuggingfaceUploader().create(engine))
+    @app.post("/upload/datasets/{resource}/huggingface")
+    def hugginffaceUpload(
+        resource: int,
+        file: UploadFile,
+        token: str,
+        username: str,
+    ):
+        HuggingfaceUploader(engine).handle_upload(resource, file, token, username)
 
 
 def create_app() -> FastAPI:
