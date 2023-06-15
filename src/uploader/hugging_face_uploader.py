@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Form, HTTPException, UploadFile, File, status
-from sqlmodel import Session
+import datasets
+import huggingface_hub
+from fastapi import APIRouter, HTTPException, UploadFile, status
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import lazyload
-from database.model.dataset.data_download import DataDownloadORM
+from sqlmodel import Session
 
+from database.model.dataset.data_download import DataDownloadORM
 from database.model.dataset.dataset import Dataset
-import huggingface_hub
-import datasets
 
 
 class HuggingfaceUploader:
@@ -28,9 +28,9 @@ class HuggingfaceUploader:
     ):
         def handle_upload(
             resource: int,
-            file: UploadFile = File(...),
-            token: str = Form(...),
-            username: str = Form(...),
+            file: UploadFile,
+            token: str,
+            username: str,
         ):
             dataset = self._get_resource(engine=engine, identifier=resource)
             repo_id = f"{username}/{dataset.name}"
@@ -46,21 +46,20 @@ class HuggingfaceUploader:
                     repo_type="dataset",
                     token=token,
                 )
-
             except Exception:
                 huggingface_hub.delete_repo(repo_id, token=token, repo_type="dataset")
-
                 msg = "Error uploading the file"
                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+
+            metadata_file = self._generate_metadata_file(dataset)
             try:
                 huggingface_hub.upload_file(
-                    path_or_fileobj=self._generate_metadata_file(dataset),
+                    path_or_fileobj=metadata_file,
                     path_in_repo="README.md",
                     repo_id=repo_id,
                     repo_type="dataset",
                     token=token,
                 )
-
             except Exception:
                 huggingface_hub.delete_repo(repo_id, token=token, repo_type="dataset")
                 msg = "Error updating metadata in huggingface"
@@ -93,10 +92,15 @@ class HuggingfaceUploader:
 
     def _store_resource_updated(self, engine: Engine, resource: Dataset, url: str, repo_id: str):
         with Session(engine) as session:
-            data_download = DataDownloadORM(content_url=url, name=repo_id, dataset=resource)
-            resource.distributions.append(data_download)
-            session.merge(resource)
-            session.commit()
+            try:
+                data_download = DataDownloadORM(content_url=url, name=repo_id, dataset=resource)
+                resource.distributions.append(data_download)
+                session.merge(resource)
+                session.commit()
+            except Exception as e:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="TODO: describe"
+                ) from e
 
     def _check_repo_exists(sef, repo_id):
         try:
