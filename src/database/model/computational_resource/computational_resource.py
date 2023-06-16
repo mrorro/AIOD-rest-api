@@ -75,26 +75,27 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
     identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
 
     # otherInfo: list[str] = Relationship(
-    #     back_populates="examples", link_model=ComputationalResourceOtherInfoEnumLink
+    #     back_populates="computational_resources",
+    #     link_model=ComputationalResourceOtherInfoEnumLink
     # )
     alternateName: list[str] = Relationship(
-        back_populates="examples", link_model=ComputationalResourceAlternateNameLink
+        back_populates="computational_resources", link_model=ComputationalResourceAlternateNameLink
     )
     distribution: list[str] = Relationship(
-        back_populates="examples", link_model=ComputationalResourceAlternateNameLink
+        back_populates="computational_resources", link_model=ComputationalResourceAlternateNameLink
     )
     keyword: list[str] = Relationship(
-        back_populates="examples", link_model=ComputationalResourceKeywordLink
+        back_populates="computational_resources", link_model=ComputationalResourceKeywordLink
     )
     citation: list[str] = Relationship(
-        back_populates="examples", link_model=ComputationalResourceCitationLink
+        back_populates="computational_resources", link_model=ComputationalResourceCitationLink
     )
 
-    otherInfo: list[str] | None = Relationship(
-        back_populates="examples", link_model=ComputationalResourceOtherInfoLink
+    otherInfo: list[str] = Relationship(
+        back_populates="computational_resources", link_model=ComputationalResourceOtherInfoLink
     )
-    capability: list[str] | None = Relationship(
-        back_populates="examples", link_model=ComputationalResourceCapabilityLink
+    capability: list[str] = Relationship(
+        back_populates="computational_resources", link_model=ComputationalResourceCapabilityLink
     )
     # #type: list[str] = Relationship(
     #     back_populates="examples", link_model=ComputationalResourceTypeEnumLink
