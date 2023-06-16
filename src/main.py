@@ -12,7 +12,7 @@ from typing import Dict
 
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.responses import HTMLResponse
 from pydantic import Json
 from sqlalchemy.engine import Engine
@@ -23,6 +23,7 @@ import routers
 from authentication import get_current_user
 from database.setup import connect_to_database, populate_database
 from platform_names import PlatformName
+from uploader.hugging_face_uploader import HuggingfaceUploader
 
 
 def _parse_args() -> argparse.Namespace:
@@ -149,6 +150,21 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
 
     for router in routers.routers:
         app.include_router(router.create(engine, url_prefix))
+
+    @app.post(url_prefix + "/upload/datasets/{identifier}/huggingface")
+    def huggingFaceUpload(
+        identifier: int,
+        file: UploadFile = File(
+            ..., title="File", description="This file will be upload to huggingface"
+        ),
+        token: str = Query(
+            ..., title="Huggingface Token", description=" access token from Huggingface"
+        ),
+        username: str = Query(
+            ..., title="Huggingface username", description=" username from Huggingface"
+        ),
+    ) -> int:
+        return HuggingfaceUploader(engine).handle_upload(identifier, file, token, username)
 
 
 def create_app() -> FastAPI:
