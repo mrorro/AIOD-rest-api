@@ -1,6 +1,5 @@
 import io
 import huggingface_hub
-from huggingface_hub.utils import RepositoryNotFoundError, RevisionNotFoundError
 from fastapi import HTTPException, UploadFile, status
 from requests import HTTPError
 from sqlalchemy.engine import Engine
@@ -42,12 +41,6 @@ class HuggingfaceUploader:
         except ValueError:
             msg = "Error updating the metadata, bad format"
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
-        except RepositoryNotFoundError:
-            msg = "Error updating the metadata, the repository does not exist"
-            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
-        except RevisionNotFoundError:
-            msg = "Error updating the metadata, the revision does not exist"
-            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
         except Exception:
             msg = "Error updating the metadata, unexpected error"
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
@@ -66,12 +59,6 @@ class HuggingfaceUploader:
 
         except ValueError:
             msg = "Error uploading the file, bad format"
-            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
-        except RepositoryNotFoundError:
-            msg = "Error uploading the file, the repository does not exist"
-            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
-        except RevisionNotFoundError:
-            msg = "Error uploading the file, the revision does not exist"
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
         except Exception as e:
             msg = f"Error uploading the file, unexpected error: {e.with_traceback}"
