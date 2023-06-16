@@ -12,7 +12,7 @@ from typing import Dict
 
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.responses import HTMLResponse
 from pydantic import Json
 from sqlalchemy.engine import Engine
@@ -154,9 +154,15 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
     @app.post(url_prefix + "/upload/datasets/{identifier}/huggingface")
     def huggingFaceUpload(
         identifier: int,
-        file: UploadFile,
-        token: str,
-        username: str,
+        file: UploadFile = File(
+            ..., title="File", description="This file will be upload to huggingface"
+        ),
+        token: str = Query(
+            ..., title="Huggingface Token", description=" access token from Huggingface"
+        ),
+        username: str = Query(
+            ..., title="Huggingface username", description=" username from Huggingface"
+        ),
     ) -> int:
         return HuggingfaceUploader(engine).handle_upload(identifier, file, token, username)
 
