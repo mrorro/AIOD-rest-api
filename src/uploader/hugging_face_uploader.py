@@ -38,20 +38,20 @@ class HuggingfaceUploader:
             )
         except HTTPError as e:
             msg = f"Error uploading the file, huggingface api returned a http error: {e.strerror}"
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
 
         except ValueError:
             msg = "Error uploading the file, bad format"
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
         except RepositoryNotFoundError:
             msg = "Error uploading the file, the repository does not exist"
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
         except RevisionNotFoundError:
             msg = "Error uploading the file, the revision does not exist"
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
         except Exception as e:
             msg = f"Error uploading the file, unexpected error: {e.with_traceback}"
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
 
         metadata_file = self._generate_metadata_file(dataset)
         try:
@@ -64,20 +64,20 @@ class HuggingfaceUploader:
             )
         except HTTPError as e:
             msg = f"Error uploading the file, huggingface api returned a http error: {e.strerror}"
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
 
         except ValueError:
             msg = "Error uploading the file, bad format"
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
         except RepositoryNotFoundError:
             msg = "Error uploading the file, the repository does not exist"
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
         except RevisionNotFoundError:
             msg = "Error uploading the file, the revision does not exist"
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
         except Exception:
             msg = "Error uploading the file, unexpected error"
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
 
         if not any(data.name == repo_id for data in dataset.distributions):
             self._store_resource_updated(self.engine, dataset, url, repo_id)
