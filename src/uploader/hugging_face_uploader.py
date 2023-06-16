@@ -38,8 +38,8 @@ class HuggingfaceUploader:
             msg = "Error updating the metadata, huggingface api returned a http error: {e.strerror}"
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
 
-        except ValueError:
-            msg = "Error updating the metadata, bad format"
+        except ValueError as e:
+            msg = f"Error updating the metadata, bad format: {e}"
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
         except Exception:
             msg = "Error updating the metadata, unexpected error"
