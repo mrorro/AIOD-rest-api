@@ -1,5 +1,4 @@
 import io
-import datasets
 import huggingface_hub
 from huggingface_hub.utils import RepositoryNotFoundError, RevisionNotFoundError
 from fastapi import HTTPException, UploadFile, status
@@ -111,17 +110,20 @@ class HuggingfaceUploader:
                 session.commit()
             except Exception as e:
                 raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    status_code=status.HTTP_502_BAD_GATEWAY,
                     detail="Dataset metdata could not be upload",
                 ) from e
 
     def _create_or_get_repo_url(sef, repo_id, token):
         try:
-            datasets.load_dataset_builder(repo_id)
-            return f"https://huggingface.co/datasets/{repo_id}"
-        except Exception:
             url = huggingface_hub.create_repo(repo_id, repo_type="dataset", token=token)
             return url
+        except Exception as e:
+            if "You already created this dataset repo" in e.args[0]:
+                return f"https://huggingface.co/datasets/{repo_id}"
+            else:
+                msg = "Error uploading the file, unexpected error"
+                raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
 
     def _generate_metadata_file(self, dataset: Dataset) -> bytes:
         tags = ["- " + tag.name for tag in dataset.keywords] if dataset.keywords else []
