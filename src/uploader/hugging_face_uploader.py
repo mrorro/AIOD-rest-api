@@ -5,6 +5,7 @@ from requests import HTTPError
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import joinedload
 from sqlmodel import Session
+from .utils import huggingface_license_identifiers
 
 from database.model.dataset.data_download import DataDownloadORM
 from database.model.dataset.dataset import Dataset
@@ -121,10 +122,10 @@ class HuggingfaceUploader:
             content += "\n".join(tags) + "\n"
         # TODO the license must be in the hugginface format:
         #  https://huggingface.co/docs/hub/repositories-licenses
-        """
-        if dataset.license:
+
+        if dataset.license in huggingface_license_identifiers:
             content += f"license: {dataset.license.name if dataset.license else ''}"
-        """
+
         content += "---\n"
         content += f"# {dataset.name}\n"
         content += "Created from AIOD platform"  # TODO add url
