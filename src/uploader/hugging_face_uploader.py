@@ -26,6 +26,31 @@ class HuggingfaceUploader:
         repo_id = f"{username}/{dataset.name}"
 
         url = self._create_or_get_repo_url(repo_id, token)
+        metadata_file = self._generate_metadata_file(dataset)
+        try:
+            huggingface_hub.upload_file(
+                path_or_fileobj=metadata_file,
+                path_in_repo="README.md",
+                repo_id=repo_id,
+                repo_type="dataset",
+                token=token,
+            )
+        except HTTPError:
+            msg = "Error updating the metadata, huggingface api returned a http error: {e.strerror}"
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
+
+        except ValueError:
+            msg = "Error updating the metadata, bad format"
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
+        except RepositoryNotFoundError:
+            msg = "Error updating the metadata, the repository does not exist"
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
+        except RevisionNotFoundError:
+            msg = "Error updating the metadata, the revision does not exist"
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
+        except Exception:
+            msg = "Error updating the metadata, unexpected error"
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
 
         try:
             huggingface_hub.upload_file(
@@ -50,32 +75,6 @@ class HuggingfaceUploader:
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
         except Exception as e:
             msg = f"Error uploading the file, unexpected error: {e.with_traceback}"
-            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
-
-        metadata_file = self._generate_metadata_file(dataset)
-        try:
-            huggingface_hub.upload_file(
-                path_or_fileobj=metadata_file,
-                path_in_repo="README.md",
-                repo_id=repo_id,
-                repo_type="dataset",
-                token=token,
-            )
-        except HTTPError as e:
-            msg = f"Error uploading the file, huggingface api returned a http error: {e.strerror}"
-            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
-
-        except ValueError:
-            msg = "Error uploading the file, bad format"
-            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
-        except RepositoryNotFoundError:
-            msg = "Error uploading the file, the repository does not exist"
-            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
-        except RevisionNotFoundError:
-            msg = "Error uploading the file, the revision does not exist"
-            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
-        except Exception:
-            msg = "Error uploading the file, unexpected error"
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=msg)
 
         if not any(data.name == repo_id for data in dataset.distributions):
