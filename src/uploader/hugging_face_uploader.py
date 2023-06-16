@@ -2,6 +2,7 @@ import io
 import datasets
 import huggingface_hub
 from fastapi import HTTPException, UploadFile, status
+from requests import HTTPError
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import joinedload
 from sqlmodel import Session
@@ -34,9 +35,16 @@ class HuggingfaceUploader:
                 repo_type="dataset",
                 token=token,
             )
-        except Exception:
-            huggingface_hub.delete_repo(repo_id, token=token, repo_type="dataset")
-            msg = "Error uploading the file"
+        except HTTPError as e:
+            msg = f"Error uploading the file, huggingface api returned a http error: {e.strerror}"
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+
+        except ValueError:
+            msg = "Error uploading the file, bad format"
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+        # RepositoryNotFoundError and RevisionNotFoundError can not be imported
+        except Exception as e:
+            msg = f"Error uploading the file, unexpected error: {e.with_traceback}"
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
 
         metadata_file = self._generate_metadata_file(dataset)
@@ -48,9 +56,16 @@ class HuggingfaceUploader:
                 repo_type="dataset",
                 token=token,
             )
+        except HTTPError as e:
+            msg = f"Error uploading the file, huggingface api returned a http error: {e.strerror}"
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+
+        except ValueError:
+            msg = "Error uploading the file, bad format"
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+        # RepositoryNotFoundError and RevisionNotFoundError can not be imported
         except Exception:
-            huggingface_hub.delete_repo(repo_id, token=token, repo_type="dataset")
-            msg = "Error updating metadata in huggingface"
+            msg = "Error uploading the file, unexpected error"
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
 
         if not any(data.name == repo_id for data in dataset.distributions):
