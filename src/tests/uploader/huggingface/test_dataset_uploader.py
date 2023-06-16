@@ -61,10 +61,6 @@ def test_happy_path_new_repository(
     assert id_response == dataset_id
 
 
-# TODO: add test for when respository exists already, but is empty (I don't think the current
-#  code works)
-
-
 def test_repo_already_exists(client: TestClient, engine: Engine, mocked_privileged_token: Mock):
     keycloak_openid.decode_token = mocked_privileged_token
     dataset_id = 1
