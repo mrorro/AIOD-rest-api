@@ -17,14 +17,22 @@ class ComputationalResourceBase(Resource):
     # Recommended fields
     validity: int | None = Field(default=None, schema_extra={"example": 22})
     name: str = Field(max_length=150, schema_extra={"example": "Human-readable name"})
+    description: str = Field(max_length=1500, schema_extra={"example": "description"})
+    platform: str = Field(max_length=1500, schema_extra={"example": "The platform from which "
+    "this AI Asset originates"})
+    platformIdentifier: str = Field(max_length=150, schema_extra={"example": "The identifier "
+    "used to denote this AI asset in its originating platform"})
 
     creationTime: datetime | None = Field(
         default=None, schema_extra={"example": "2022-01-01T15:15:00.000Z"}
     )
 
     qualityLevel: str = Field(
-        max_length=150,
-        schema_extra={"example": "TODO"},
+       max_length=150,
+       description="example": "The type of service according to a namespace-based "
+       "classification (the namespace MAY be related to a middleware name, an organization "
+       "or other concepts; org.ogf.glue is reserved for the OGF GLUE Working Group)",
+       schema_extra={"example": ""}
     )
 
     complexity: str = Field(
@@ -44,7 +52,23 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
     # otherInfo: list[str] = Relationship(
     #     back_populates="examples", link_model=ComputationalResourceOtherInfoEnumLink
     # )
-    capability: list[str] = Relationship(
+    alternateName: list[str] | None = Relationship(
+        back_populates="examples", link_model=ComputationalResourceAlternateNameLink
+    )
+    distribution: list[str] | None = Relationship(
+        back_populates="examples", link_model=ComputationalResourceAlternateNameLink
+    )
+    keyword: list[str] | None = Relationship(
+        back_populates="examples", link_model=ComputationalResourceKeywordLink
+    )
+    citation: list[str] | None = Relationship(
+        back_populates="examples", link_model=ComputationalResourceCitationLink
+    )
+
+    otherInfo: list[str] | None = Relationship(
+        back_populates="examples", link_model=ComputationalResourceOtherInfoLink
+    )
+    capability: list[str] | None = Relationship(
         back_populates="examples", link_model=ComputationalResourceCapabilityLink
     )
     # #type: list[str] = Relationship(
@@ -64,13 +88,44 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         #     example="string: tag",
         # )
 
+        alternateName: list[str] = ResourceRelationshipList(
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(ComputationalResourceAlternateName),
+            description="",
+        )
+
+#here there's a type distribution set as string for now
+        distribution: list[str] = ResourceRelationshipList(
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(ComputationalResourceDistribution),
+            description="A Distribution of the AI Asset",
+        )
+        keyword: list[str] = ResourceRelationshipList(
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(ComputationalResourceKeyword),
+            description="terms or phrases providing additional context for the AI asset.",
+        )
+#Is there a URI type that we can reuse here instead of string?
+        citation: list[str] = ResourceRelationshipList(
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(ComputationalResourceCitation),
+            description="A bibliographic reference for the AI asset.",
+        )
+
+
+        otherInfo: list[str] = ResourceRelationshipList(
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(ComputationalResourceOtherInfo),
+            description="laceholder to publish info that does not fit in any other attribute. "
+            "Free-form string, comma-separated tags, (name, value ) pair are all examples of "
+            "valid syntax ",
+        )
         capability: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ComputationalResourceCapability),
             description="The provided capability according to the Open Grid Service Architecture ("
             "OGSA) architecture [OGF-GFD80]",
         )
-
         # type_enum: str | None = ResourceRelationshipSingle(
         #     identifier_name="type_identifier",
         #     serializer=AttributeSerializer("type"),  # code to serialize ORM to Pydantic

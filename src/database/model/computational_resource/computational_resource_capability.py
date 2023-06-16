@@ -19,5 +19,5 @@ class ComputationalResourceCapabilityLink(SQLModel, table=True):  # type: ignore
 class ComputationalResourceCapability(NamedRelation, table=True):  # type: ignore [call-arg]
     __tablename__ = "computational_resource_capability"
     computational_resources: List["ComputationalResource"] = Relationship(
-        back_populates="capabilities", link_model=ComputationalResourceCapabilityLink
+        back_populates="capability", link_model=ComputationalResourceCapabilityLink
     )

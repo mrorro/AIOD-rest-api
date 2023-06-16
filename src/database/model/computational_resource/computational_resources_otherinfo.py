@@ -1,24 +1,23 @@
-# from typing import TYPE_CHECKING
-#
-# from sqlmodel import SQLModel, Field
-#
-# if TYPE_CHECKING:  # avoid circular imports; only import while type checking
-#     from database.model.example import ComputationalResource
-#
-#
-# class ComputationalResourceOtherInfoEnumLink(SQLModel, table=True):  # type: ignore [call-arg]
-#     __tablename__ = "otherInfo_enum_link"
-#
-#     otherInfo: str = Field(
-#         max_length=150,
-#         schema_extra={
-#             "example": "Placeholder to publish info that does not fit in any other attribute. "
-#                        "Free-form string, comma-separated tags, (name, value ) pair are all "
-#                        "examples of valid syntax"
-#         },
-#     )
-#
-#     otherInfo_identifier: int = Field(foreign_key="otherInfo.identifier", primary_key=True)
-#     otherInfo_enum_identifier: int = Field(
-#         foreign_key="otherInfo_enum.identifier", primary_key=True
-#     )
+from typing import TYPE_CHECKING, List
+
+from sqlmodel import SQLModel, Field, Relationship
+
+from database.model.named_relation import NamedRelation
+
+if TYPE_CHECKING:  # avoid circular imports; only import while type checking
+    from database.model.computational_resource.computational_resource import ComputationalResource
+
+
+class ComputationalResourceOtherInfoLink(SQLModel, table=True):  # type: ignore [call-arg]
+    __tablename__ = "computational_resource_other_info_link"
+    other_info_identifier: int = Field(foreign_key="other_info.identifier", primary_key=True)
+    other_info_enum_identifier: int = Field(
+        foreign_key="computational_resource_other_info.identifier", primary_key=True
+    )
+
+
+class ComputationalResourceOtherInfo(NamedRelation, table=True):  # type: ignore [call-arg]
+    __tablename__ = "computational_resource_other_info"
+    computational_resources: List["ComputationalResource"] = Relationship(
+        back_populates="other_info", link_model=ComputationalResourceOtherInfoLink
+    )
