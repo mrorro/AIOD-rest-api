@@ -16,15 +16,16 @@ from database.model.computational_resource.computational_resource_citation impor
 )
 from database.model.computational_resource.computational_resource_distribution import (
     ComputationalResourceDistribution,
+    ComputationalResourceDistributionLink,
 )
-from database.model.computational_resource.computational_resource_keyword import (
+from database.model.computational_resource.computational_resource_keyword_link import (
     ComputationalResourceKeywordLink,
-    ComputationalResourceKeyword,
 )
 from database.model.computational_resource.computational_resources_otherinfo import (
     ComputationalResourceOtherInfoLink,
     ComputationalResourceOtherInfo,
 )
+from database.model.general.keyword import Keyword
 from database.model.relationships import ResourceRelationshipList
 from database.model.resource import Resource
 from serialization import FindByNameDeserializer, AttributeSerializer
@@ -35,24 +36,14 @@ class ComputationalResourceBase(Resource):
 
     # Recommended fields
     validity: int | None = Field(default=None, schema_extra={"example": 22})
-    name: str = Field(max_length=150, schema_extra={"example": "Human-readable name"})
-    description: str = Field(max_length=1500, schema_extra={"example": "description"})
-    platform: str = Field(
-        max_length=1500,
-        schema_extra={"example": "The platform from which " "this AI Asset originates"},
-    )
-    platformIdentifier: str = Field(
-        max_length=150,
-        schema_extra={
-            "example": "The identifier " "used to denote this AI asset in its originating platform"
-        },
-    )
+    name: str | None = Field(max_length=150, schema_extra={"example": "Human-readable name"})
+    description: str | None = Field(max_length=1500, schema_extra={"example": "description"})
 
     creationTime: datetime | None = Field(
         default=None, schema_extra={"example": "2022-01-01T15:15:00.000Z"}
     )
 
-    qualityLevel: str = Field(
+    qualityLevel: str | None = Field(
         max_length=150,
         description="The type of service according to a namespace-based "
         "classification (the namespace MAY be related to a middleware name, an organization "
@@ -60,7 +51,7 @@ class ComputationalResourceBase(Resource):
         schema_extra={"example": ""},
     )
 
-    complexity: str = Field(
+    complexity: str | None = Field(
         max_length=150,
         description="Human-readable summary description of the complexity in terms of the number "
         "of endpoint types, shares and resources. The syntax should be: "
@@ -78,24 +69,23 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
     #     back_populates="computational_resources",
     #     link_model=ComputationalResourceOtherInfoEnumLink
     # )
-    alternateName: list[str] = Relationship(
+    alternate_name: list[ComputationalResourceAlternateName] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceAlternateNameLink
     )
-    distribution: list[str] = Relationship(
-        back_populates="computational_resources", link_model=ComputationalResourceAlternateNameLink
+    capability: list[ComputationalResourceCapability] = Relationship(
+        back_populates="computational_resources", link_model=ComputationalResourceCapabilityLink
     )
-    keyword: list[str] = Relationship(
-        back_populates="computational_resources", link_model=ComputationalResourceKeywordLink
-    )
-    citation: list[str] = Relationship(
+    citation: list[ComputationalResourceCitation] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceCitationLink
     )
-
-    otherInfo: list[str] = Relationship(
-        back_populates="computational_resources", link_model=ComputationalResourceOtherInfoLink
+    distribution: list[ComputationalResourceDistribution] = Relationship(
+        back_populates="computational_resources", link_model=ComputationalResourceDistributionLink
     )
-    capability: list[str] = Relationship(
-        back_populates="computational_resources", link_model=ComputationalResourceCapabilityLink
+    keyword: list[Keyword] = Relationship(
+        back_populates="computational_resources", link_model=ComputationalResourceKeywordLink
+    )
+    other_info: list[ComputationalResourceOtherInfo] = Relationship(
+        back_populates="computational_resources", link_model=ComputationalResourceOtherInfoLink
     )
     # #type: list[str] = Relationship(
     #     back_populates="examples", link_model=ComputationalResourceTypeEnumLink
@@ -114,12 +104,23 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         #     example="string: tag",
         # )
 
-        alternateName: list[str] = ResourceRelationshipList(
+        alternate_name: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ComputationalResourceAlternateName),
             description="",
         )
-
+        capability: list[str] = ResourceRelationshipList(
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(ComputationalResourceCapability),
+            description="The provided capability according to the Open Grid Service Architecture ("
+            "OGSA) architecture [OGF-GFD80]",
+        )
+        # Is there a URI type that we can reuse here instead of string?
+        citation: list[str] = ResourceRelationshipList(
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(ComputationalResourceCitation),
+            description="A bibliographic reference for the AI asset.",
+        )
         # here there's a type distribution set as string for now
         distribution: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
@@ -128,28 +129,15 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         )
         keyword: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
-            deserializer=FindByNameDeserializer(ComputationalResourceKeyword),
+            deserializer=FindByNameDeserializer(Keyword),
             description="terms or phrases providing additional context for the AI asset.",
         )
-        # Is there a URI type that we can reuse here instead of string?
-        citation: list[str] = ResourceRelationshipList(
-            serializer=AttributeSerializer("name"),
-            deserializer=FindByNameDeserializer(ComputationalResourceCitation),
-            description="A bibliographic reference for the AI asset.",
-        )
-
-        otherInfo: list[str] = ResourceRelationshipList(
+        other_info: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ComputationalResourceOtherInfo),
             description="laceholder to publish info that does not fit in any other attribute. "
-            "Free-form string, comma-separated tags, (name, value ) pair are all examples of "
-            "valid syntax ",
-        )
-        capability: list[str] = ResourceRelationshipList(
-            serializer=AttributeSerializer("name"),
-            deserializer=FindByNameDeserializer(ComputationalResourceCapability),
-            description="The provided capability according to the Open Grid Service Architecture ("
-            "OGSA) architecture [OGF-GFD80]",
+            "Free-form string, comma-separated tags, (name, value ) pair are all "
+            "examples of valid syntax ",
         )
         # type_enum: str | None = ResourceRelationshipSingle(
         #     identifier_name="type_identifier",

@@ -10,8 +10,10 @@ if TYPE_CHECKING:  # avoid circular imports; only import while type checking
 
 class ComputationalResourceCitationLink(SQLModel, table=True):  # type: ignore [call-arg]
     __tablename__ = "computational_resource_citation_link"
-    citation_identifier: int = Field(foreign_key="citation.identifier", primary_key=True)
-    citation_enum_identifier: int = Field(
+    computational_resource_identifier: int = Field(
+        foreign_key="computational_resource.identifier", primary_key=True
+    )
+    citation_identifier: int = Field(
         foreign_key="computational_resource_citation.identifier", primary_key=True
     )
 

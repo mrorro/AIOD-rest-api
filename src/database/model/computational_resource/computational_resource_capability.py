@@ -10,8 +10,10 @@ if TYPE_CHECKING:  # avoid circular imports; only import while type checking
 
 class ComputationalResourceCapabilityLink(SQLModel, table=True):  # type: ignore [call-arg]
     __tablename__ = "computational_resource_capability_link"
-    capability_identifier: int = Field(foreign_key="capability.identifier", primary_key=True)
-    capability_enum_identifier: int = Field(
+    computational_resource_identifier: int = Field(
+        foreign_key="computational_resource.identifier", primary_key=True
+    )
+    capability_identifier: int = Field(
         foreign_key="computational_resource_capability.identifier", primary_key=True
     )
 
