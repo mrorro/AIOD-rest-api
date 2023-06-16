@@ -4,7 +4,7 @@ from sqlmodel import SQLModel, Field
 class AgentTable(SQLModel, table=True):  # type: ignore [call-arg]
     __tablename__ = "agent"
 
-    """ "
+    """
     Many resources, such as organisation and member, are a type of Agent
     and should therefore inherit from this Agent class.
     Shared fields can be defined on this class.

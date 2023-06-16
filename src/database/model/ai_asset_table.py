@@ -4,7 +4,7 @@ from sqlmodel import SQLModel, Field
 class AIAssetTable(SQLModel, table=True):  # type: ignore [call-arg]
     __tablename__ = "ai_asset"
 
-    """ "
+    """
     Many resources, such as dataset and publication, are a type of AIAsset
     and should therefore inherit from this AIAsset class.
     Shared fields can be defined on this class.

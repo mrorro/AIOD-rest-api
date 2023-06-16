@@ -2,7 +2,7 @@ from database.model.resource import Resource
 
 
 class Agent(Resource):
-    """ "
+    """
     Many resources, such as organisation and member, are a type of Agent
     and should therefore inherit from this Agent class.
     Shared fields can be defined on this class.

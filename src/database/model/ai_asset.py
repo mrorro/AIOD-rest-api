@@ -2,7 +2,7 @@ from database.model.resource import Resource
 
 
 class AIAsset(Resource):
-    """ "
+    """
     Many resources, such as dataset and publication, are a type of AIAsset
     and should therefore inherit from this AIAsset class.
     Shared fields can be defined on this class.
