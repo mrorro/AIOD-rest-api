@@ -100,7 +100,8 @@ class HuggingfaceUploader:
                 session.commit()
             except Exception as e:
                 raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="TODO: describe"
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Dataset metdata could not be upload",
                 ) from e
 
     def _create_or_get_repo_url(sef, repo_id, token):
