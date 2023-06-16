@@ -1,6 +1,7 @@
 import io
 import datasets
 import huggingface_hub
+from huggingface_hub.utils import RepositoryNotFoundError, RevisionNotFoundError
 from fastapi import HTTPException, UploadFile, status
 from requests import HTTPError
 from sqlalchemy.engine import Engine
@@ -42,7 +43,12 @@ class HuggingfaceUploader:
         except ValueError:
             msg = "Error uploading the file, bad format"
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
-        # RepositoryNotFoundError and RevisionNotFoundError can not be imported
+        except RepositoryNotFoundError:
+            msg = "Error uploading the file, the repository does not exist"
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+        except RevisionNotFoundError:
+            msg = "Error uploading the file, the revision does not exist"
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
         except Exception as e:
             msg = f"Error uploading the file, unexpected error: {e.with_traceback}"
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
@@ -63,7 +69,12 @@ class HuggingfaceUploader:
         except ValueError:
             msg = "Error uploading the file, bad format"
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
-        # RepositoryNotFoundError and RevisionNotFoundError can not be imported
+        except RepositoryNotFoundError:
+            msg = "Error uploading the file, the repository does not exist"
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
+        except RevisionNotFoundError:
+            msg = "Error uploading the file, the revision does not exist"
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
         except Exception:
             msg = "Error uploading the file, unexpected error"
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=msg)
