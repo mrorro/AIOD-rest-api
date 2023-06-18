@@ -513,7 +513,7 @@ class ResourceRouter(abc.ABC):
             ) from e
         if "platform_and_platform_identifier" in error:
             error_msg = (
-                "If platform is NULL, platform_identifier should also be NULL, and vice " "versa."
+                "If platform is NULL, platform_identifier should also be NULL, and vice versa."
             )
         else:
             error_msg = error.split("constraint failed: ")[-1]
@@ -523,15 +523,11 @@ class ResourceRouter(abc.ABC):
 def _wrap_as_http_exception(exception: Exception) -> HTTPException:
     if isinstance(exception, HTTPException):
         return exception
-
-    # This is an unexpected error. A mistake on our part. End users should not be informed about
-    # details of problems they are not expected to fix, so we give a generic response and log the
-    # error.
-    traceback.print_exc()
     return HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail=(
-            "Unexpected exception while processing your request. Please contact the maintainers."
+            "Unexpected exception while processing your request. Please contact the maintainers: "
+            f"{exception}"
         ),
     )
 

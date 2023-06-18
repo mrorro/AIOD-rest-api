@@ -10,8 +10,8 @@ class AIAsset(SQLModel, table=True):  # type: ignore [call-arg]
     identifier: int = Field(
         default=None,
         primary_key=True,
-        description="The identifier of each asset should be the same as this " "identifier",
+        description="The identifier of each asset should be the same as this identifier",
     )
     type: str = Field(
-        description="The name of the table of the asset. E.g. 'dataset' or " "'publication'"
+        description="The name of the table of the asset. E.g. 'dataset' or 'publication'"
     )

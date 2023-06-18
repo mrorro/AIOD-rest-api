@@ -84,7 +84,7 @@ class HuggingfaceUploader:
 
         resource = query.first()
         if not resource:
-            msg = f"Dataset '{identifier} not found " "in the database."
+            msg = f"Dataset '{identifier} not found in the database."
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg)
         return resource
 

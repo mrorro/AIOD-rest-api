@@ -135,11 +135,6 @@ def client_with_testobject(engine_test_resource) -> TestClient:
                 AIAsset(type="test_object"),
                 AIAsset(type="test_object"),
                 AIAsset(type="test_object"),
-                named1,
-                named2,
-                enum1,
-                enum2,
-                enum3,
                 TestObject(
                     identifier=1,
                     title="object 1",

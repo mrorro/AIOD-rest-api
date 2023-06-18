@@ -1,8 +1,9 @@
 from unittest.mock import Mock
 
-from starlette.testclient import TestClient
-from sqlalchemy.orm import Session
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+from starlette.testclient import TestClient
+
 from authentication import keycloak_openid
 from database.model.ai_asset import AIAsset
 from database.model.dataset.dataset import Dataset
@@ -14,24 +15,35 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     with Session(engine) as session:
         session.add_all(
             [
+                AIAsset(type="dataset"),
+                Dataset(
+                    identifier=1,
+                    name="Parent",
+                    platform="example",
+                    platform_identifier="2",
+                    description="description text",
+                    same_as="",
+                ),
+            ]
+        )
+        session.commit()
+    with Session(engine) as session:
+        # It should be possible to add the event and dataset in the same session, but it leads to
+        # a weird IntegrityError. This problem is avoided by removing the foreign key constraint
+        # dataset.identfier to ai_asset.identifier, or by removing the event.relevant_resources
+        # and event.used_resources. After some debugging the cause of this error was still
+        # unclear.
+        session.add_all(
+            [
                 AIAsset(type="event"),
                 Event(
-                    identifier="1",
+                    identifier=2,
                     name="Parent",
                     platform="example",
                     platform_identifier="1",
                     description="description text",
                     registration_url="https://example.com/event/example/registration",
                     location="Example location Event",
-                ),
-                AIAsset(type="dataset"),
-                Dataset(
-                    identifier="2",
-                    name="Parent",
-                    platform="example",
-                    platform_identifier="1",
-                    description="description text",
-                    same_as="",
                 ),
             ]
         )
@@ -49,12 +61,12 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "status": "Example status Event",
         "attendance_mode": "Example attendance mode Event",
         "type": "Example type Event",
-        "super_events": [1],
-        "sub_events": [1],
+        "super_events": [2],
+        "sub_events": [2],
         "research_areas": ["research_area1", "research_area2"],
         "application_areas": ["application_area1", "application_area2"],
-        "relevant_resources": [2],
-        "used_resources": [1],
+        "relevant_resources": [1],
+        "used_resources": [2],
         "business_categories": ["business category 1", "business category 2"],
     }
     response = client.post("/events/v0", json=body, headers={"Authorization": "Fake token"})
@@ -77,12 +89,12 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert response_json["status"] == "Example status Event"
     assert response_json["attendance_mode"] == "Example attendance mode Event"
     assert response_json["type"] == "Example type Event"
-    assert set(response_json["super_events"]) == {1}
-    assert set(response_json["sub_events"]) == {1}
+    assert set(response_json["super_events"]) == {2}
+    assert set(response_json["sub_events"]) == {2}
     assert set(response_json["research_areas"]) == {"research_area1", "research_area2"}
     assert set(response_json["application_areas"]) == {"application_area1", "application_area2"}
-    assert set(response_json["relevant_resources"]) == {2}
-    assert set(response_json["used_resources"]) == {1}
+    assert set(response_json["relevant_resources"]) == {1}
+    assert set(response_json["used_resources"]) == {2}
     assert set(response_json["business_categories"]) == {
         "business category 1",
         "business category 2",
