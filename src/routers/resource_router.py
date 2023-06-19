@@ -425,6 +425,12 @@ class ResourceRouter(abc.ABC):
                     session.commit()
                 return self._wrap_with_headers(None)
             except Exception as e:
+                if "foreign key" in str(e).lower():  # Should work regardless of db technology
+                    return HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="This resource cannot be deleted, because other resources are "
+                        "related to it.",
+                    )
                 raise _wrap_as_http_exception(e)
 
         return delete_resource

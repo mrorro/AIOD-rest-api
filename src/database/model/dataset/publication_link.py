@@ -9,4 +9,8 @@ class DatasetPublicationLink(SQLModel, table=True):  # type: ignore [call-arg]
             Integer, ForeignKey("dataset.identifier", ondelete="CASCADE"), primary_key=True
         )
     )
-    publication_identifier: int = Field(foreign_key="publication.identifier", primary_key=True)
+    publication_identifier: int = Field(
+        sa_column=Column(
+            Integer, ForeignKey("publication.identifier", ondelete="CASCADE"), primary_key=True
+        )
+    )

@@ -49,3 +49,5 @@ def test_happy_path(client: TestClient, mocked_privileged_token: Mock):
         "business category 1",
         "business category 2",
     }
+    response = client.delete("/news/v0/1", headers={"Authorization": "Fake token"})
+    assert response.status_code == 200

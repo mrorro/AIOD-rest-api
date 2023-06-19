@@ -111,6 +111,7 @@ class Dataset(DatasetBase, table=True):  # type: ignore [call-arg]
         sa_relationship_kwargs=dict(
             primaryjoin="Dataset.identifier==DatasetParentChildLink.parent_identifier",
             secondaryjoin="Dataset.identifier==DatasetParentChildLink.child_identifier",
+            cascade="all, delete",
         ),
     )
     is_part: List["Dataset"] = Relationship(
@@ -119,6 +120,7 @@ class Dataset(DatasetBase, table=True):  # type: ignore [call-arg]
         sa_relationship_kwargs=dict(
             primaryjoin="Dataset.identifier==DatasetParentChildLink.child_identifier",
             secondaryjoin="Dataset.identifier==DatasetParentChildLink.parent_identifier",
+            cascade="all, delete",
         ),
     )
     keywords: List[Keyword] = Relationship(back_populates="datasets", link_model=DatasetKeywordLink)

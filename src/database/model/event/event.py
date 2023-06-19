@@ -69,6 +69,7 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
         sa_relationship_kwargs=dict(
             primaryjoin="Event.identifier==EventParentChildLink.parent_identifier",
             secondaryjoin="Event.identifier==EventParentChildLink.child_identifier",
+            cascade="all, delete",
         ),
     )
     super_events: List["Event"] = Relationship(
@@ -77,6 +78,7 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
         sa_relationship_kwargs=dict(
             primaryjoin="Event.identifier==EventParentChildLink.child_identifier",
             secondaryjoin="Event.identifier==EventParentChildLink.parent_identifier",
+            cascade="all, delete",
         ),
     )
     relevant_resources: List["AIAsset"] = Relationship(link_model=EventRelevantResourcesLink)
