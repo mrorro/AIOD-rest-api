@@ -175,9 +175,10 @@ def test_delete(client: TestClient, engine: Engine, mocked_privileged_token: Moc
     assert response.status_code == 200
 
     with Session(engine) as session:
+        # TODOs will be fixed in https://github.com/aiondemand/AIOD-rest-api/issues/72
         for n_expected, clz in [
             (1, Dataset),
-            (2, AIAsset),  # TODO: fix deletion of AIAsset, after merge with Taniyas PR
+            (2, AIAsset),  # TODO: delete AIAsset. This should be 1
             (1, DataDownloadORM),
             (1, ChecksumORM),
             (2, ChecksumAlgorithm),
