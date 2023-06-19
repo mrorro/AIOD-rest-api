@@ -1,5 +1,4 @@
 from typing import List
-from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlmodel import SQLModel, Field, Relationship
@@ -7,9 +6,6 @@ from sqlmodel import SQLModel, Field, Relationship
 from database.model.dataset.checksum import ChecksumORM, Checksum
 from database.model.relationships import ResourceRelationshipList
 from serialization import CastDeserializer
-
-if TYPE_CHECKING:  # avoid circular imports; only import while type checking
-    pass
 
 
 class DataDownloadBase(SQLModel):
