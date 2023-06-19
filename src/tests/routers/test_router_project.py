@@ -44,3 +44,6 @@ def test_happy_path(client: TestClient, mocked_privileged_token: Mock):
     assert response_json["url"] == "aiod.eu/project/0"
 
     assert set(response_json["keywords"]) == {"keyword1", "keyword2"}
+
+    response = client.delete("/projects/v0/1", headers={"Authorization": "Fake token"})
+    assert response.status_code == 200

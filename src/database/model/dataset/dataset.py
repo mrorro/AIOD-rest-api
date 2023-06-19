@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
 
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import UniqueConstraint, Column, Integer, ForeignKey
 from sqlmodel import Field, Relationship, SQLModel
 
 from database.model.dataset.alternate_name import DatasetAlternateNameLink, DatasetAlternateName
@@ -28,8 +28,16 @@ from serialization import (
 
 class DatasetParentChildLink(SQLModel, table=True):  # type: ignore [call-arg]
     __tablename__ = "dataset_parent_child_link"
-    parent_identifier: int = Field(foreign_key="dataset.identifier", primary_key=True)
-    child_identifier: int = Field(foreign_key="dataset.identifier", primary_key=True)
+    parent_identifier: int = Field(
+        sa_column=Column(
+            Integer, ForeignKey("dataset.identifier", ondelete="CASCADE"), primary_key=True
+        )
+    )
+    child_identifier: int = Field(
+        sa_column=Column(
+            Integer, ForeignKey("dataset.identifier", ondelete="CASCADE"), primary_key=True
+        )
+    )
 
 
 class DatasetBase(Resource):
@@ -95,7 +103,7 @@ class Dataset(DatasetBase, table=True):  # type: ignore [call-arg]
         link_model=DatasetPublicationLink,
     )
     distributions: List[DataDownloadORM] = Relationship(
-        back_populates="dataset",
+        sa_relationship_kwargs={"cascade": "all, delete"}
     )
     has_parts: List["Dataset"] = Relationship(
         back_populates="is_part",
@@ -103,6 +111,7 @@ class Dataset(DatasetBase, table=True):  # type: ignore [call-arg]
         sa_relationship_kwargs=dict(
             primaryjoin="Dataset.identifier==DatasetParentChildLink.parent_identifier",
             secondaryjoin="Dataset.identifier==DatasetParentChildLink.child_identifier",
+            cascade="all, delete",
         ),
     )
     is_part: List["Dataset"] = Relationship(
@@ -111,6 +120,7 @@ class Dataset(DatasetBase, table=True):  # type: ignore [call-arg]
         sa_relationship_kwargs=dict(
             primaryjoin="Dataset.identifier==DatasetParentChildLink.child_identifier",
             secondaryjoin="Dataset.identifier==DatasetParentChildLink.parent_identifier",
+            cascade="all, delete",
         ),
     )
     keywords: List[Keyword] = Relationship(back_populates="datasets", link_model=DatasetKeywordLink)
@@ -125,7 +135,7 @@ class Dataset(DatasetBase, table=True):  # type: ignore [call-arg]
             deserializer=FindByNameDeserializer(DatasetAlternateName),
         )
         citations: List[int] = ResourceRelationshipList(
-            example=[1, 2],
+            example=[],
             deserializer=FindByIdentifierDeserializer(Publication),
             serializer=AttributeSerializer("identifier"),
         )
@@ -133,11 +143,11 @@ class Dataset(DatasetBase, table=True):  # type: ignore [call-arg]
             deserializer=CastDeserializer(DataDownloadORM)
         )
         is_part: List[int] = ResourceRelationshipList(
-            example=[1, 2],
+            example=[],
             serializer=AttributeSerializer("identifier"),
         )
         has_parts: List[int] = ResourceRelationshipList(
-            example=[3, 4],
+            example=[],
             serializer=AttributeSerializer("identifier"),
         )
         license: Optional[str] = ResourceRelationshipSingle(

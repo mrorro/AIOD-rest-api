@@ -1,7 +1,7 @@
 from typing import List
 from typing import TYPE_CHECKING
 
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import UniqueConstraint, Column, ForeignKey, Integer
 from sqlmodel import SQLModel, Field, Relationship
 
 if TYPE_CHECKING:  # avoid circular imports; only import while type checking
@@ -11,7 +11,11 @@ if TYPE_CHECKING:  # avoid circular imports; only import while type checking
 class DatasetMeasuredValueNameLink(SQLModel, table=True):  # type: ignore [call-arg]
     __tablename__ = "dataset_measured_value_link"
 
-    dataset_identifier: int = Field(foreign_key="dataset.identifier", primary_key=True)
+    dataset_identifier: int = Field(
+        sa_column=Column(
+            Integer, ForeignKey("dataset.identifier", ondelete="CASCADE"), primary_key=True
+        )
+    )
     measured_value_identifier: int = Field(
         foreign_key="measured_value.identifier", primary_key=True
     )

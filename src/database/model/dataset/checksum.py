@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from sqlalchemy import Column, Integer, ForeignKey
 from sqlmodel import Relationship, SQLModel, Field
 
 from database.model.dataset.checksum_algorithm import ChecksumAlgorithm
@@ -24,7 +25,9 @@ class ChecksumORM(ChecksumBase, table=True):  # type: ignore [call-arg]
     identifier: int | None = Field(primary_key=True)
     algorithm_identifier: int | None = Field(foreign_key="checksum_algorithm.identifier")
     algorithm: ChecksumAlgorithm | None = Relationship(back_populates="checksums")
-    distribution_identifier: int | None = Field(foreign_key="data_download.identifier")
+    distribution_identifier: int | None = Field(
+        sa_column=Column(Integer, ForeignKey("data_download.identifier", ondelete="CASCADE"))
+    )
     distribution: "DataDownloadORM" = Relationship(back_populates="checksum")
 
     class RelationshipConfig:

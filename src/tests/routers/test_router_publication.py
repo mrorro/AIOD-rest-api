@@ -53,3 +53,6 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert response_json["resource_type"] == "journal article"
     assert len(response_json["datasets"]) == 1
     assert response_json["datasets"] == [1]
+
+    response = client.delete("/publications/v0/2", headers={"Authorization": "Fake token"})
+    assert response.status_code == 200

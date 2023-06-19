@@ -50,6 +50,7 @@ class EventBase(Resource):
 
 class Event(EventBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "event"
+
     identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
 
     business_categories: List["BusinessCategory"] = Relationship(
@@ -68,6 +69,7 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
         sa_relationship_kwargs=dict(
             primaryjoin="Event.identifier==EventParentChildLink.parent_identifier",
             secondaryjoin="Event.identifier==EventParentChildLink.child_identifier",
+            cascade="all, delete",
         ),
     )
     super_events: List["Event"] = Relationship(
@@ -76,6 +78,7 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
         sa_relationship_kwargs=dict(
             primaryjoin="Event.identifier==EventParentChildLink.child_identifier",
             secondaryjoin="Event.identifier==EventParentChildLink.parent_identifier",
+            cascade="all, delete",
         ),
     )
     relevant_resources: List["AIAsset"] = Relationship(link_model=EventRelevantResourcesLink)
@@ -88,11 +91,11 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
             deserializer=FindByNameDeserializer(BusinessCategory),
         )
         sub_events: List[int] = ResourceRelationshipList(
-            example=[3, 4],
+            example=[],
             serializer=AttributeSerializer("identifier"),
         )
         super_events: List[int] = ResourceRelationshipList(
-            example=[1, 2],
+            example=[],
             serializer=AttributeSerializer("identifier"),
         )
         research_areas: List[str] = ResourceRelationshipList(
@@ -106,12 +109,12 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
             example=["application_area1", "application_area2"],
         )
         relevant_resources: List[int] = ResourceRelationshipList(
-            example=[1, 2],
+            example=[],
             serializer=AttributeSerializer("identifier"),
             deserializer=FindByIdentifierDeserializer(AIAsset),
         )
         used_resources: List[int] = ResourceRelationshipList(
-            example=[1, 2],
+            example=[],
             serializer=AttributeSerializer("identifier"),
             deserializer=FindByIdentifierDeserializer(AIAsset),
         )
