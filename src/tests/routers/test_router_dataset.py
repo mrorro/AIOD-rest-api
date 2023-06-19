@@ -6,11 +6,17 @@ from unittest.mock import Mock
 
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
+from sqlmodel import select
 from starlette.testclient import TestClient
 
 from authentication import keycloak_openid
 from database.model.ai_asset_table import AIAssetTable
+from database.model.dataset.alternate_name import DatasetAlternateName
+from database.model.dataset.checksum import ChecksumORM
+from database.model.dataset.checksum_algorithm import ChecksumAlgorithm
+from database.model.dataset.data_download import DataDownloadORM
 from database.model.dataset.dataset import Dataset
+from database.model.dataset.measured_value import MeasuredValueORM
 from database.model.publication.publication import Publication
 
 
@@ -22,7 +28,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
                 AIAssetTable(type="dataset"),
                 AIAssetTable(type="publication"),
                 Dataset(
-                    identifier="1",
+                    identifier=1,
                     name="Parent",
                     platform="example",
                     platform_identifier="1",
@@ -30,7 +36,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
                     same_as="",
                 ),
                 Publication(
-                    identifier="2",
+                    identifier=2,
                     title="A publication",
                     platform="example",
                     platform_identifier="1",
@@ -110,3 +116,76 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert "identifier" not in response_json["measured_values"][0]
     assert response_json["measured_values"][0]["variable"] == "molecule concentration"
     assert response_json["measured_values"][0]["technique"] == "mass spectrometry"
+
+
+def test_delete(client: TestClient, engine: Engine, mocked_privileged_token: Mock):
+    """Tested separately because of the nested objects such as dataset.distributions"""
+    keycloak_openid.decode_token = mocked_privileged_token
+
+    with Session(engine) as session:
+        md5 = ChecksumAlgorithm(name="md5")
+        alias1 = DatasetAlternateName(name="alias1")
+        session.add_all(
+            [
+                AIAssetTable(type="dataset"),
+                AIAssetTable(type="dataset"),
+                Dataset(
+                    identifier="1",
+                    name="1",
+                    platform="example",
+                    platform_identifier="1",
+                    description="description text",
+                    same_as="1",
+                    alternate_names=[alias1, DatasetAlternateName(name="alias2")],
+                    distributions=[
+                        DataDownloadORM(
+                            content_url="url",
+                            checksum=[
+                                ChecksumORM(algorithm=md5, value="checksum"),
+                                ChecksumORM(
+                                    algorithm=ChecksumAlgorithm(name="sha256"), value="checksum"
+                                ),
+                            ],
+                        )
+                    ],
+                    measured_values=[MeasuredValueORM(variable="variable", technique="technique")],
+                ),
+                Dataset(
+                    identifier="2",
+                    name="2",
+                    platform="example",
+                    platform_identifier="2",
+                    description="description text",
+                    same_as="2",
+                    alternate_names=[
+                        # alias1,
+                        DatasetAlternateName(name="alias3")
+                    ],
+                    distributions=[
+                        DataDownloadORM(
+                            content_url="url",
+                            checksum=[ChecksumORM(algorithm=md5, value="other checksum")],
+                        )
+                    ],
+                ),
+            ]
+        )
+        session.commit()
+    response = client.delete("/datasets/v0/1", headers={"Authorization": "Fake token"})
+    assert response.status_code == 200
+
+    with Session(engine) as session:
+        # TODOs will be fixed in https://github.com/aiondemand/AIOD-rest-api/issues/72
+        for n_expected, clz in [
+            (1, Dataset),
+            (2, AIAssetTable),  # TODO: delete AIAsset. This should be 1
+            (1, DataDownloadORM),
+            (1, ChecksumORM),
+            (2, ChecksumAlgorithm),
+            (3, DatasetAlternateName),  # TODO: fix many-to-many orphans. This should be 2
+            (1, MeasuredValueORM),  # TODO: fix many-to-many orphans. This should be 0
+        ]:
+            instances = session.scalars(select(clz)).all()
+            assert len(instances) == n_expected, (
+                f"Number of {clz.__name__} should have been " f"{n_expected}"
+            )

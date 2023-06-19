@@ -128,6 +128,13 @@ class ResourceRouter(abc.ABC):
             **default_kwargs,
         )
         router.add_api_route(
+            path=f"{url_prefix}/counts/{self.resource_name_plural}/v0",
+            endpoint=self.get_resource_count_func(engine),
+            response_model=int,  # type: ignore
+            name=f"Count of {self.resource_name_plural}",
+            **default_kwargs,
+        )
+        router.add_api_route(
             path=f"{url_prefix}/{self.resource_name_plural}/{version}",
             methods={"POST"},
             endpoint=self.register_resource_func(engine),
@@ -235,6 +242,23 @@ class ResourceRouter(abc.ABC):
             return resources
 
         return get_resources
+
+    def get_resource_count_func(self, engine: Engine):
+        """
+        Gets the total number of resources from the database.
+        This function returns a function (instead of being that function directly) because the
+        docstring and the variables are dynamic, and used in Swagger.
+        """
+
+        def get_resource_count():
+            f"""Retrieve the number of {self.resource_name_plural}."""
+            try:
+                with Session(engine) as session:
+                    return session.query(self.resource_class).count()
+            except Exception as e:
+                raise _wrap_as_http_exception(e)
+
+        return get_resource_count
 
     def get_platform_resources_func(self, engine: Engine):
         """
@@ -430,6 +454,12 @@ class ResourceRouter(abc.ABC):
                     session.commit()
                 return self._wrap_with_headers(None)
             except Exception as e:
+                if "foreign key" in str(e).lower():  # Should work regardless of db technology
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="This resource cannot be deleted, because other resources are "
+                        "related to it.",
+                    )
                 raise _wrap_as_http_exception(e)
 
         return delete_resource
@@ -518,7 +548,7 @@ class ResourceRouter(abc.ABC):
             ) from e
         if "platform_and_platform_identifier" in error:
             error_msg = (
-                "If platform is NULL, platform_identifier should also be NULL, and vice " "versa."
+                "If platform is NULL, platform_identifier should also be NULL, and vice versa."
             )
         else:
             error_msg = error.split("constraint failed: ")[-1]
@@ -528,15 +558,11 @@ class ResourceRouter(abc.ABC):
 def _wrap_as_http_exception(exception: Exception) -> HTTPException:
     if isinstance(exception, HTTPException):
         return exception
-
-    # This is an unexpected error. A mistake on our part. End users should not be informed about
-    # details of problems they are not expected to fix, so we give a generic response and log the
-    # error.
-    traceback.print_exc()
     return HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail=(
-            "Unexpected exception while processing your request. Please contact the maintainers."
+            "Unexpected exception while processing your request. Please contact the maintainers: "
+            f"{exception}"
         ),
     )
 

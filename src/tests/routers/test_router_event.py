@@ -1,8 +1,9 @@
 from unittest.mock import Mock
 
-from starlette.testclient import TestClient
-from sqlalchemy.orm import Session
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+from starlette.testclient import TestClient
+
 from authentication import keycloak_openid
 from database.model.ai_asset_table import AIAssetTable
 from database.model.dataset.dataset import Dataset
@@ -14,23 +15,33 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     with Session(engine) as session:
         session.add_all(
             [
+                AIAssetTable(type="dataset"),
+                Dataset(
+                    identifier=1,
+                    name="Parent",
+                    platform="example",
+                    platform_identifier="2",
+                    description="description text",
+                    same_as="",
+                ),
+            ]
+        )
+        session.commit()
+    with Session(engine) as session:
+        # It should be possible to add the event and dataset in the same session, but it leads to
+        # a weird IntegrityError. This problem is avoided by removing the foreign key constraint
+        # dataset.identfier to ai_asset.identifier, or by removing the event.relevant_resources
+        # and event.used_resources. After some debugging the cause of this error was still
+        # unclear.
+        session.add_all(
+            [
                 Event(
-                    identifier="1",
                     name="Parent",
                     platform="example",
                     platform_identifier="1",
                     description="description text",
                     registration_url="https://example.com/event/example/registration",
                     location="Example location Event",
-                ),
-                AIAssetTable(type="dataset"),
-                Dataset(
-                    identifier="1",
-                    name="Parent",
-                    platform="example",
-                    platform_identifier="1",
-                    description="description text",
-                    same_as="",
                 ),
             ]
         )
@@ -86,3 +97,10 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "business category 1",
         "business category 2",
     }
+
+    response = client.delete("/events/v0/2", headers={"Authorization": "Fake token"})
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"] == "This resource cannot be deleted, because other resources "
+        "are related to it."
+    )
