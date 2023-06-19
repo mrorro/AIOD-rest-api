@@ -56,12 +56,6 @@ class OrganisationBase(Agent):
         max_length=500, default=None, schema_extra={"example": "Example telephone number"}
     )
 
-    parent_organisation_id: int | None = Field(
-        foreign_key="organisation.identifier",
-        default=None,
-        schema_extra={"example": []},
-    )
-
     # TODO subsidiary_organisation_id not currently added. This is because
     # the relationship with organisation is nor clear, and is similar to departments.
 
@@ -71,6 +65,11 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
 
     identifier: int = Field(primary_key=True, foreign_key="agent.identifier")
 
+    parent_organisation_id: int | None = Field(
+        foreign_key="organisation.identifier",
+        default=None,
+        schema_extra={"example": []},
+    )
     parent_organisation: Optional["Organisation"] = Relationship(
         back_populates="departments",
         sa_relationship_kwargs=dict(remote_side="Organisation.identifier"),
@@ -121,10 +120,9 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
         parent_organisation: int | None = ResourceRelationshipSingle(
             identifier_name="parent_organisation_id",
             serializer=AttributeSerializer("identifier"),
-            example=[],
+            example=1,  # Empty would be better, but using "None" results in example=0
         )
 
 
 deserializer = FindByIdentifierDeserializer(Organisation)  # type: ignore
 Organisation.RelationshipConfig.departments.deserializer = deserializer  # type: ignore
-Organisation.RelationshipConfig.parent_organisation.deserializer = deserializer  # type: ignore

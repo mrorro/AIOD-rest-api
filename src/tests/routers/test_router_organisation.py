@@ -38,7 +38,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "alternate_name": "Example alternate name",
         "address": "Example address",
         "telephone": "Example telephone number",
-        "parent_organisation_id": 1,
+        "parent_organisation": 1,
         "business_categories": ["business category 1", "business category 2"],
         "technical_categories": ["technical category 1", "technical category 2"],
         "emails": ["email@org.com", "ceo@org.com"],
@@ -55,8 +55,8 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     response_json = response.json()
     assert response_json["identifier"] == 2
     assert response_json["platform"] == "zenodo"
-    assert response_json["parent_organisation_id"] == 1
-
+    assert "parent_organisation_id" not in response_json
+    assert response_json["parent_organisation"] == 1
     assert set(response_json["business_categories"]) == {
         "business category 1",
         "business category 2",
