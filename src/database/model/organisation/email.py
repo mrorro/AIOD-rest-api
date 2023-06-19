@@ -1,6 +1,7 @@
 from typing import List
 from typing import TYPE_CHECKING
 
+from sqlalchemy import Column, ForeignKey, Integer
 from sqlmodel import SQLModel, Field, Relationship
 
 from database.model.named_relation import NamedRelation
@@ -12,7 +13,11 @@ if TYPE_CHECKING:  # avoid circular imports; only import while type checking
 class OrganisationEmailLink(SQLModel, table=True):  # type: ignore [call-arg]
     __tablename__ = "organisation_email_link"
 
-    organisation_identifier: int = Field(foreign_key="organisation.identifier", primary_key=True)
+    organisation_identifier: int = Field(
+        sa_column=Column(
+            Integer, ForeignKey("organisation.identifier", ondelete="CASCADE"), primary_key=True
+        )
+    )
     email_identifier: int = Field(foreign_key="organisation_email.identifier", primary_key=True)
 
 

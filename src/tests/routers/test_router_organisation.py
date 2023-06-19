@@ -68,3 +68,11 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert set(response_json["emails"]) == {"email@org.com", "ceo@org.com"}
     assert set(response_json["members"]) == {1}
     assert set(response_json["departments"]) == {1}
+
+    response = client.delete("/organisations/v0/2", headers={"Authorization": "Fake token"})
+    assert response.status_code == 400  # you cannot delete the parent of other resources
+    body["departments"] = []
+    response = client.put("organisations/v0/2", json=body, headers={"Authorization": "Fake token"})
+    assert response.status_code == 200
+    response = client.delete("/organisations/v0/2", headers={"Authorization": "Fake token"})
+    assert response.status_code == 200

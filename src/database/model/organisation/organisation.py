@@ -72,7 +72,10 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
     )
     parent_organisation: Optional["Organisation"] = Relationship(
         back_populates="departments",
-        sa_relationship_kwargs=dict(remote_side="Organisation.identifier"),
+        sa_relationship_kwargs=dict(
+            remote_side="Organisation.identifier",
+            cascade="all, delete",
+        ),
     )
 
     business_categories: List[BusinessCategory] = Relationship(
