@@ -5,17 +5,42 @@ Dataset is a complex resource, so they are tested separately.
 from unittest.mock import Mock
 
 from sqlalchemy.engine import Engine
+from sqlmodel import Session
 from starlette.testclient import TestClient
 
 from authentication import keycloak_openid
+from database.model.ai_asset import AIAsset
+from database.model.computational_resource.computational_resource import ComputationalResource
 
 
 def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token: Mock):
     keycloak_openid.decode_token = mocked_privileged_token
+    with Session(engine) as session:
+        session.add_all(
+            [
+                AIAsset(type="computational_resource"),
+                ComputationalResource(
+                    identifier="1",
+                    name="Parent",
+                    platform="example",
+                    platform_identifier="1",
+                    description="description text",
+                ),
+                AIAsset(type="computational_resource"),
+                ComputationalResource(
+                    identifier="2",
+                    name="Child",
+                    platform="example",
+                    platform_identifier="2",
+                    description="description text",
+                ),
+            ]
+        )
+        session.commit()
 
     body = {
         "platform": "example",
-        "platform_identifier": "1",
+        "platform_identifier": "3",
         "description": "A description.",
         "name": "Example Computational resource",
         "keyword": ["keyword1", "keyword2"],
@@ -33,19 +58,21 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "distribution": [],
         "research_area": ["research_area1", "research_area2"],
         "application_area": ["application_area1", "application_area2"],
+        "hasPart": [2],
+        "isPartOf": [1],
     }
     response = client.post(
         "/computational_resources/v0", json=body, headers={"Authorization": "Fake token"}
     )
     assert response.status_code == 200
 
-    response = client.get("/computational_resources/v0/1")
+    response = client.get("/computational_resources/v0/3")
     assert response.status_code == 200
 
     response_json = response.json()
-    assert response_json["identifier"] == 1
+    assert response_json["identifier"] == 3
     assert response_json["platform"] == "example"
-    assert response_json["platform_identifier"] == "1"
+    assert response_json["platform_identifier"] == "3"
     assert response_json["description"] == "A description."
     assert response_json["name"] == "Example Computational resource"
     assert set(response_json["keyword"]) == {"keyword1", "keyword2"}
@@ -62,3 +89,5 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert set(response_json["alternate_name"]) == {"name1", "name2"}
     assert set(response_json["research_area"]) == {"research_area1", "research_area2"}
     assert set(response_json["application_area"]) == {"application_area1", "application_area2"}
+    assert set(response_json["isPartOf"]) == {1}
+    assert set(response_json["hasPart"]) == {2}

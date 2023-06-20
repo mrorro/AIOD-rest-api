@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlmodel import Field, Relationship
+from sqlmodel import Field, Relationship, SQLModel
 from database.model.computational_resource.application_area_link import (
     ComputationalResourceApplicationAreaLink,
 )
@@ -36,7 +36,15 @@ from database.model.general.keyword import Keyword
 from database.model.general.research_areas import ResearchArea
 from database.model.relationships import ResourceRelationshipList
 from database.model.resource import Resource
-from serialization import FindByNameDeserializer, AttributeSerializer
+from serialization import FindByIdentifierDeserializer, FindByNameDeserializer, AttributeSerializer
+
+
+class ComputationalResourceParentChildLink(SQLModel, table=True):  # type: ignore [call-arg]
+    __tablename__ = "computational_resource_parent_child_link"
+    parent_identifier: int = Field(
+        foreign_key="computational_resource.identifier", primary_key=True
+    )
+    child_identifier: int = Field(foreign_key="computational_resource.identifier", primary_key=True)
 
 
 class ComputationalResourceBase(Resource):
@@ -57,14 +65,14 @@ class ComputationalResourceBase(Resource):
         max_length=250,
         schema_extra={"example": "complexity example"},
     )
-    location: str = Field(
+    location: str | None = Field(
         max_length=500, schema_extra={"example": "Example location Computational resource"}
     )
-    type: str = Field(
+    type: str | None = Field(
         max_length=500, schema_extra={"example": "Example type Computational resource"}
     )
 
-    qualityLevel: str = Field(
+    qualityLevel: str | None = Field(
         max_length=500, schema_extra={"example": "Example quality level Computational resource"}
     )
 
@@ -102,6 +110,23 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
     # statusInfo: list[str] = Relationship(
     #     back_populates="examples", link_model=ComputationalResourceStatusInfoEnumLink
     # )
+
+    hasPart: list["ComputationalResource"] = Relationship(
+        back_populates="isPartOf",
+        link_model=ComputationalResourceParentChildLink,
+        sa_relationship_kwargs=dict(
+            primaryjoin="ComputationalResource.identifier==ComputationalResourceParentChildLink.parent_identifier",  # noqa E501
+            secondaryjoin="ComputationalResource.identifier==ComputationalResourceParentChildLink.child_identifier",  # noqa E501
+        ),
+    )
+    isPartOf: list["ComputationalResource"] = Relationship(
+        back_populates="hasPart",
+        link_model=ComputationalResourceParentChildLink,
+        sa_relationship_kwargs=dict(
+            primaryjoin="ComputationalResource.identifier==ComputationalResourceParentChildLink.child_identifier",  # noqa E501
+            secondaryjoin="ComputationalResource.identifier==ComputationalResourceParentChildLink.parent_identifier",  # noqa E501
+        ),
+    )
 
     class RelationshipConfig:  # This is AIoD-specific code, used to go from Pydantic to SqlAlchemy
         # otherInfo_enum: str | None = ResourceRelationshipSingle(
@@ -158,7 +183,14 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
             deserializer=FindByNameDeserializer(ApplicationArea),
             example=["application_area1", "application_area2"],
         )
-
+        isPartOf: list[int] = ResourceRelationshipList(
+            example=[],
+            serializer=AttributeSerializer("identifier"),
+        )
+        hasPart: list[int] = ResourceRelationshipList(
+            example=[],
+            serializer=AttributeSerializer("identifier"),
+        )
         #
         # statusInfo_enum: str | None = ResourceRelationshipSingle(
         #     identifier_name="statusInfo_identifier",
@@ -168,3 +200,10 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         #     ),  # deserialize Pydantic to ORM
         #     example="",
         # )
+
+
+# Defined separate because it references ComputationalResource,
+# and can therefor not be defined inside ComputationalResource
+deserializer = FindByIdentifierDeserializer(ComputationalResource)
+ComputationalResource.RelationshipConfig.isPartOf.deserializer = deserializer  # type: ignore[attr-defined] # noqa E501
+ComputationalResource.RelationshipConfig.hasPart.deserializer = deserializer  # type: ignore[attr-defined]  # noqa E501
