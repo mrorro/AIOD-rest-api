@@ -35,15 +35,25 @@ class ComputationalResourceBase(Resource):
     # Required fields
 
     # Recommended fields
-    validity: int | None = Field(default=None, schema_extra={"example": 22})
     name: str | None = Field(max_length=150, schema_extra={"example": "Human-readable name"})
-    description: str | None = Field(max_length=1500, schema_extra={"example": "description"})
-
+    description: str | None = Field(max_length=5000, schema_extra={"example": "description"})
+    logo: str | None = Field(
+        max_length=250,
+        schema_extra={"example": "https://www.example.com/computational_resource/example"},
+    )
     creationTime: datetime | None = Field(
         default=None, schema_extra={"example": "2022-01-01T15:15:00.000Z"}
     )
+    validity: int | None = Field(default=None, schema_extra={"example": 22})
+    complexity: str | None = Field(
+        max_length=250,
+        schema_extra={"example": "complexity example"},
+    )
+    location: str = Field(
+        max_length=500, schema_extra={"example": "Example location Computational resource"}
+    )
 
-    qualityLevel: str | None = Field(
+    """qualityLevel: str | None = Field(
         max_length=150,
         description="The type of service according to a namespace-based "
         "classification (the namespace MAY be related to a middleware name, an organization "
@@ -57,7 +67,7 @@ class ComputationalResourceBase(Resource):
         "of endpoint types, shares and resources. The syntax should be: "
         "endpointType=X, share=Y, resource=Z.",
         schema_extra={"example": "endpointType=X, share=Y, resource=Z."},
-    )
+    )"""
 
 
 class ComputationalResource(ComputationalResourceBase, table=True):  # type: ignore [call-arg]
