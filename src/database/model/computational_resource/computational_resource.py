@@ -60,22 +60,13 @@ class ComputationalResourceBase(Resource):
     location: str = Field(
         max_length=500, schema_extra={"example": "Example location Computational resource"}
     )
-
-    """qualityLevel: str | None = Field(
-        max_length=150,
-        description="The type of service according to a namespace-based "
-        "classification (the namespace MAY be related to a middleware name, an organization "
-        "or other concepts; org.ogf.glue is reserved for the OGF GLUE Working Group)",
-        schema_extra={"example": ""},
+    type: str = Field(
+        max_length=500, schema_extra={"example": "Example type Computational resource"}
     )
 
-    complexity: str | None = Field(
-        max_length=150,
-        description="Human-readable summary description of the complexity in terms of the number "
-        "of endpoint types, shares and resources. The syntax should be: "
-        "endpointType=X, share=Y, resource=Z.",
-        schema_extra={"example": "endpointType=X, share=Y, resource=Z."},
-    )"""
+    qualityLevel: str = Field(
+        max_length=500, schema_extra={"example": "Example quality level Computational resource"}
+    )
 
 
 class ComputationalResource(ComputationalResourceBase, table=True):  # type: ignore [call-arg]
@@ -108,9 +99,6 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         back_populates="computational_resources",
         link_model=ComputationalResourceApplicationAreaLink,
     )
-    # #type: list[str] = Relationship(
-    #     back_populates="examples", link_model=ComputationalResourceTypeEnumLink
-    # )
     # statusInfo: list[str] = Relationship(
     #     back_populates="examples", link_model=ComputationalResourceStatusInfoEnumLink
     # )
@@ -170,14 +158,7 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
             deserializer=FindByNameDeserializer(ApplicationArea),
             example=["application_area1", "application_area2"],
         )
-        # type_enum: str | None = ResourceRelationshipSingle(
-        #     identifier_name="type_identifier",
-        #     serializer=AttributeSerializer("type"),  # code to serialize ORM to Pydantic
-        #     deserializer=FindByNameDeserializer(
-        #         ComputationalResourceTypeEnum
-        #     ),  # deserialize Pydantic to ORM
-        #     example="Maturity of the service in terms of quality of the software components",
-        # )
+
         #
         # statusInfo_enum: str | None = ResourceRelationshipSingle(
         #     identifier_name="statusInfo_identifier",

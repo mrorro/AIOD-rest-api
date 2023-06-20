@@ -23,6 +23,8 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "logo": "https://www.example.com/computational_resource/logo.png",
         "creationTime": "2023-01-01T15:15:00.000Z",
         "validity": 5,
+        "type": "example type",
+        "qualityLevel": "example qualityLevel",
         "other_info": ["info1", "info2"],
         "capability": ["capability 1", "capability 2"],
         "complexity": "complexity example",
@@ -55,6 +57,8 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert set(response_json["capability"]) == {"capability 1", "capability 2"}
     assert response_json["complexity"] == "complexity example"
     assert response_json["location"] == "Example location"
+    assert response_json["type"] == "example type"
+    assert response_json["qualityLevel"] == "example qualityLevel"
     assert set(response_json["alternate_name"]) == {"name1", "name2"}
     assert set(response_json["research_area"]) == {"research_area1", "research_area2"}
     assert set(response_json["application_area"]) == {"application_area1", "application_area2"}
