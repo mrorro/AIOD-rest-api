@@ -83,10 +83,6 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
 
     identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
 
-    # otherInfo: list[str] = Relationship(
-    #     back_populates="computational_resources",
-    #     link_model=ComputationalResourceOtherInfoEnumLink
-    # )
     alternate_name: list[ComputationalResourceAlternateName] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceAlternateNameLink
     )
