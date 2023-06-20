@@ -9,7 +9,7 @@ from sqlalchemy.engine import Engine
 from sqlmodel import create_engine, SQLModel, Session
 from starlette.testclient import TestClient
 
-from database.model import AIAsset
+from database.model import AIAssetTable
 from main import add_routes
 from tests.testutils.test_resource import RouterTestResource, TestResource
 from unittest.mock import Mock
@@ -48,7 +48,7 @@ def clear_db(request):
                 with Session(engine) as session:
                     session.add_all(
                         [
-                            AIAsset(type="test_resource"),
+                            AIAssetTable(type="test_resource"),
                             TestResource(
                                 title="A title",
                                 platform="example",

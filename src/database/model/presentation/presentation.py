@@ -1,9 +1,10 @@
-from database.model.resource import Resource
 from sqlmodel import Field
 from datetime import datetime
 
+from database.model.ai_asset import AIAsset
 
-class PresentationBase(Resource):
+
+class PresentationBase(AIAsset):
     # Required fields
     name: str = Field(max_length=150, schema_extra={"example": "Example Presentation"})
 

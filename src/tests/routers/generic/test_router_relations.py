@@ -7,12 +7,12 @@ from sqlmodel import Session, Field, Relationship, SQLModel
 from starlette.testclient import TestClient
 
 from authentication import keycloak_openid
-from database.model import AIAsset
-from database.model.relationships import ResourceRelationshipSingle, ResourceRelationshipList
+from database.model.ai_asset import AIAsset
+from database.model.ai_asset_table import AIAssetTable
 from database.model.named_relation import NamedRelation
-from database.model.resource import Resource
-from serialization import AttributeSerializer, FindByNameDeserializer, CastDeserializer
+from database.model.relationships import ResourceRelationshipSingle, ResourceRelationshipList
 from routers import ResourceRouter
+from serialization import AttributeSerializer, FindByNameDeserializer, CastDeserializer
 
 
 class TestEnum(NamedRelation, table=True):  # type: ignore [call-arg]
@@ -69,7 +69,7 @@ class TestRelatedObjectOrm(TestRelatedObject, table=True):  # type: ignore [call
     )
 
 
-class TestObjectBase(Resource):
+class TestObjectBase(AIAsset):
     title: str = Field(max_length=100, description="title description")
 
 
@@ -131,10 +131,10 @@ def client_with_testobject(engine_test_resource) -> TestClient:
         enum1, enum2, enum3 = TestEnum2(name="1"), TestEnum2(name="2"), TestEnum2(name="3")
         session.add_all(
             [
-                AIAsset(type="test_object"),
-                AIAsset(type="test_object"),
-                AIAsset(type="test_object"),
-                AIAsset(type="test_object"),
+                AIAssetTable(type="test_object"),
+                AIAssetTable(type="test_object"),
+                AIAssetTable(type="test_object"),
+                AIAssetTable(type="test_object"),
                 TestObject(
                     identifier=1,
                     title="object 1",

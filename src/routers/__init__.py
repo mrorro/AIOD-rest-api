@@ -11,7 +11,7 @@ from .educational_resource_router import EducationalResourceRouter
 
 from .event_router import EventRouter
 
-# from .organisation_router import OrganisationRouter
+from .organisation_router import OrganisationRouter
 
 from .project_router import ProjectRouter
 from .presentation_router import PresentationRouter
@@ -22,7 +22,7 @@ routers = [
     EducationalResourceRouter(),
     EventRouter(),
     NewsRouter(),
-    # OrganisationRouter(),
+    OrganisationRouter(),
     PublicationRouter(),
     ProjectRouter(),
     PresentationRouter(),

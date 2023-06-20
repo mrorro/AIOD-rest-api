@@ -26,6 +26,9 @@ from serialization import (
 )
 
 
+from database.model.ai_asset import AIAsset
+
+
 class DatasetParentChildLink(SQLModel, table=True):  # type: ignore [call-arg]
     __tablename__ = "dataset_parent_child_link"
     parent_identifier: int = Field(
@@ -40,7 +43,7 @@ class DatasetParentChildLink(SQLModel, table=True):  # type: ignore [call-arg]
     )
 
 
-class DatasetBase(Resource):
+class DatasetBase(AIAsset):
     # Required fields
     description: str = Field(max_length=5000, schema_extra={"example": "A description."})
     name: str = Field(max_length=150, schema_extra={"example": "Example Dataset"})
