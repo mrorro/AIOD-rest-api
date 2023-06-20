@@ -1,6 +1,9 @@
 from datetime import datetime
 
 from sqlmodel import Field, Relationship
+from database.model.computational_resource.application_area_link import (
+    ComputationalResourceApplicationAreaLink,
+)
 
 from database.model.computational_resource.computational_resource_alternate_name import (
     ComputationalResourceAlternateNameLink,
@@ -25,7 +28,12 @@ from database.model.computational_resource.computational_resources_otherinfo imp
     ComputationalResourceOtherInfoLink,
     ComputationalResourceOtherInfo,
 )
+from database.model.computational_resource.research_area_link import (
+    ComputationalResourceResearchAreaLink,
+)
+from database.model.general.application_areas import ApplicationArea
 from database.model.general.keyword import Keyword
+from database.model.general.research_areas import ResearchArea
 from database.model.relationships import ResourceRelationshipList
 from database.model.resource import Resource
 from serialization import FindByNameDeserializer, AttributeSerializer
@@ -97,6 +105,13 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
     other_info: list[ComputationalResourceOtherInfo] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceOtherInfoLink
     )
+    research_area: list["ResearchArea"] = Relationship(
+        back_populates="computational_resources", link_model=ComputationalResourceResearchAreaLink
+    )
+    application_area: list["ApplicationArea"] = Relationship(
+        back_populates="computational_resources",
+        link_model=ComputationalResourceApplicationAreaLink,
+    )
     # #type: list[str] = Relationship(
     #     back_populates="examples", link_model=ComputationalResourceTypeEnumLink
     # )
@@ -148,6 +163,16 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
             description="laceholder to publish info that does not fit in any other attribute. "
             "Free-form string, comma-separated tags, (name, value ) pair are all "
             "examples of valid syntax ",
+        )
+        research_area: list[str] = ResourceRelationshipList(
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(ResearchArea),
+            example=["research_area1", "research_area2"],
+        )
+        application_area: list[str] = ResourceRelationshipList(
+            serializer=AttributeSerializer("name"),
+            deserializer=FindByNameDeserializer(ApplicationArea),
+            example=["application_area1", "application_area2"],
         )
         # type_enum: str | None = ResourceRelationshipSingle(
         #     identifier_name="type_identifier",
