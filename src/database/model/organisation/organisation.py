@@ -65,11 +65,7 @@ class Organisation(OrganisationBase, table=True):  # type: ignore
 
     identifier: int = Field(primary_key=True, foreign_key="agent.identifier")
 
-    parent_organisation_id: int | None = Field(
-        foreign_key="organisation.identifier",
-        default=None,
-        schema_extra={"example": []},
-    )
+    parent_organisation_id: int | None = Field(foreign_key="organisation.identifier", default=None)
     parent_organisation: Optional["Organisation"] = Relationship(
         back_populates="departments",
         sa_relationship_kwargs=dict(
