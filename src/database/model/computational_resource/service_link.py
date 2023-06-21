@@ -6,6 +6,6 @@ class ComputationalResourceServiceLink(SQLModel, table=True):  # type: ignore [c
     computational_resource_identifier: int = Field(
         foreign_key="computational_resource.identifier", primary_key=True
     )
-    agent_identifier: int = Field(
+    uri_identifier: int = Field(
         foreign_key="computational_resource_uri.identifier", primary_key=True
     )
