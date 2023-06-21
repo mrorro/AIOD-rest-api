@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlmodel import Field, Relationship, SQLModel
+from database.model.agent_table import AgentTable
 from database.model.ai_asset import AIAsset
 from database.model.computational_resource.application_area_link import (
     ComputationalResourceApplicationAreaLink,
@@ -29,6 +30,7 @@ from database.model.computational_resource.computational_resources_otherinfo imp
     ComputationalResourceOtherInfoLink,
     ComputationalResourceOtherInfo,
 )
+from database.model.computational_resource.creator_link import ComputationalResourceCreatorLink
 from database.model.computational_resource.research_area_link import (
     ComputationalResourceResearchAreaLink,
 )
@@ -107,9 +109,8 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         back_populates="computational_resources",
         link_model=ComputationalResourceApplicationAreaLink,
     )
-    # statusInfo: list[str] = Relationship(
-    #     back_populates="examples", link_model=ComputationalResourceStatusInfoEnumLink
-    # )
+
+    creator: list["AgentTable"] = Relationship(link_model=ComputationalResourceCreatorLink)
 
     hasPart: list["ComputationalResource"] = Relationship(
         back_populates="isPartOf",
@@ -191,15 +192,11 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
             example=[],
             serializer=AttributeSerializer("identifier"),
         )
-        #
-        # statusInfo_enum: str | None = ResourceRelationshipSingle(
-        #     identifier_name="statusInfo_identifier",
-        #     serializer=AttributeSerializer("statusInfo"),  # code to serialize ORM to Pydantic
-        #     deserializer=FindByNameDeserializer(
-        #         ComputationalResourceStatusInfoEnum
-        #     ),  # deserialize Pydantic to ORM
-        #     example="",
-        # )
+        creator: list[int] = ResourceRelationshipList(
+            example=[],
+            serializer=AttributeSerializer("identifier"),
+            deserializer=FindByIdentifierDeserializer(AgentTable),
+        )
 
 
 # Defined separate because it references ComputationalResource,

@@ -9,6 +9,7 @@ from sqlmodel import Session
 from starlette.testclient import TestClient
 
 from authentication import keycloak_openid
+from database.model.agent_table import AgentTable
 from database.model.ai_asset_table import AIAssetTable
 
 
@@ -36,6 +37,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
                     platform_identifier="2",
                     description="description text",
                 ),
+                AgentTable(identifier=1, type="organization"),
             ]
         )
         session.commit()
@@ -62,6 +64,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "application_area": ["application_area1", "application_area2"],
         "hasPart": [2],
         "isPartOf": [1],
+        "creator": [1],
     }
     response = client.post(
         "/computational_resources/v0", json=body, headers={"Authorization": "Fake token"}
