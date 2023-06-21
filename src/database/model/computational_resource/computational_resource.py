@@ -37,6 +37,7 @@ from database.model.computational_resource.managed_by_link import ComputationalR
 from database.model.computational_resource.research_area_link import (
     ComputationalResourceResearchAreaLink,
 )
+from database.model.computational_resource.service_link import ComputationalResourceServiceLink
 from database.model.computational_resource.status_info_link import (
     ComputationalResourceStatusInfoLink,
 )
@@ -118,6 +119,10 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
     hasShare: list[ComputationalResourceUriOrm] = Relationship(
         sa_relationship_kwargs={"cascade": "all, delete"},
         link_model=ComputationalResourceHasShareLink,
+    )
+    service: list[ComputationalResourceUriOrm] = Relationship(
+        sa_relationship_kwargs={"cascade": "all, delete"},
+        link_model=ComputationalResourceServiceLink,
     )
 
     keyword: list[Keyword] = Relationship(
@@ -233,6 +238,9 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
             deserializer=CastDeserializer(ComputationalResourceUriOrm),
         )
         hasShare: list[ComputationalResourceUri] = ResourceRelationshipList(
+            deserializer=CastDeserializer(ComputationalResourceUriOrm),
+        )
+        service: list[ComputationalResourceUri] = ResourceRelationshipList(
             deserializer=CastDeserializer(ComputationalResourceUriOrm),
         )
 
