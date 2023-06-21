@@ -32,6 +32,7 @@ from database.model.computational_resource.computational_resources_otherinfo imp
 )
 from database.model.computational_resource.contact_link import ComputationalResourceContactLink
 from database.model.computational_resource.creator_link import ComputationalResourceCreatorLink
+from database.model.computational_resource.managed_by_link import ComputationalResourceManagedByLink
 from database.model.computational_resource.research_area_link import (
     ComputationalResourceResearchAreaLink,
 )
@@ -113,7 +114,7 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
 
     creator: list["AgentTable"] = Relationship(link_model=ComputationalResourceCreatorLink)
     contact: list["AgentTable"] = Relationship(link_model=ComputationalResourceContactLink)
-
+    managedBy: list["AgentTable"] = Relationship(link_model=ComputationalResourceManagedByLink)
     hasPart: list["ComputationalResource"] = Relationship(
         back_populates="isPartOf",
         link_model=ComputationalResourceParentChildLink,
@@ -200,6 +201,11 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
             deserializer=FindByIdentifierDeserializer(AgentTable),
         )
         contact: list[int] = ResourceRelationshipList(
+            example=[],
+            serializer=AttributeSerializer("identifier"),
+            deserializer=FindByIdentifierDeserializer(AgentTable),
+        )
+        managedBy: list[int] = ResourceRelationshipList(
             example=[],
             serializer=AttributeSerializer("identifier"),
             deserializer=FindByIdentifierDeserializer(AgentTable),
