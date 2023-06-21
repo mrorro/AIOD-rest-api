@@ -32,6 +32,7 @@ from database.model.computational_resource.computational_resources_otherinfo imp
 )
 from database.model.computational_resource.contact_link import ComputationalResourceContactLink
 from database.model.computational_resource.creator_link import ComputationalResourceCreatorLink
+from database.model.computational_resource.has_share_link import ComputationalResourceHasShareLink
 from database.model.computational_resource.managed_by_link import ComputationalResourceManagedByLink
 from database.model.computational_resource.research_area_link import (
     ComputationalResourceResearchAreaLink,
@@ -113,6 +114,10 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
     statusInfo: list[ComputationalResourceUriOrm] = Relationship(
         sa_relationship_kwargs={"cascade": "all, delete"},
         link_model=ComputationalResourceStatusInfoLink,
+    )
+    hasShare: list[ComputationalResourceUriOrm] = Relationship(
+        sa_relationship_kwargs={"cascade": "all, delete"},
+        link_model=ComputationalResourceHasShareLink,
     )
 
     keyword: list[Keyword] = Relationship(
@@ -225,6 +230,9 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
             deserializer=CastDeserializer(ComputationalResourceDistributionOrm)
         )
         statusInfo: list[ComputationalResourceUri] = ResourceRelationshipList(
+            deserializer=CastDeserializer(ComputationalResourceUriOrm),
+        )
+        hasShare: list[ComputationalResourceUri] = ResourceRelationshipList(
             deserializer=CastDeserializer(ComputationalResourceUriOrm),
         )
 
