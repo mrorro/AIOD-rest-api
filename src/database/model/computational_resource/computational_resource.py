@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlmodel import Field, Relationship, SQLModel
+from database.model.ai_asset import AIAsset
 from database.model.computational_resource.application_area_link import (
     ComputationalResourceApplicationAreaLink,
 )
@@ -35,7 +36,6 @@ from database.model.general.application_areas import ApplicationArea
 from database.model.general.keyword import Keyword
 from database.model.general.research_areas import ResearchArea
 from database.model.relationships import ResourceRelationshipList
-from database.model.resource import Resource
 from serialization import FindByIdentifierDeserializer, FindByNameDeserializer, AttributeSerializer
 
 
@@ -47,7 +47,7 @@ class ComputationalResourceParentChildLink(SQLModel, table=True):  # type: ignor
     child_identifier: int = Field(foreign_key="computational_resource.identifier", primary_key=True)
 
 
-class ComputationalResourceBase(Resource):
+class ComputationalResourceBase(AIAsset):
     # Required fields
 
     # Recommended fields
@@ -80,7 +80,7 @@ class ComputationalResourceBase(Resource):
 class ComputationalResource(ComputationalResourceBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "computational_resource"
 
-    identifier: int = Field(default=None, primary_key=True)
+    identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
 
     alternate_name: list[ComputationalResourceAlternateName] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceAlternateNameLink
