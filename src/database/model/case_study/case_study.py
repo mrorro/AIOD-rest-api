@@ -52,7 +52,7 @@ class CaseStudyBase(Resource):
 class CaseStudy(CaseStudyBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "case_study"
 
-    identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
+    identifier: int = Field(default=None, primary_key=True)
     alternate_names: List[CaseStudyAlternateName] = Relationship(
         back_populates="case_studies", link_model=CaseStudyAlternateNameLink
     )

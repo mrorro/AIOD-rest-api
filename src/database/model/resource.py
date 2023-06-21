@@ -32,6 +32,11 @@ class Resource(SQLModel):
 
     @classproperty
     def __table_args__(cls) -> Tuple:
+        # Note to developer: this won't work if we'll add another resource, similar to
+        # Dataset, which has extra constraints, because for each such case, we now use
+        # "__table_args__ = Resource.__table_args__", which will set the
+        # cls.__name__ to "Resource", leading to a duplicate check constraint name.
+        # TODO: solve it when this becomes a problem.
         return (
             UniqueConstraint(
                 "platform",

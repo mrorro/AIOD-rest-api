@@ -1,13 +1,15 @@
+import sqlite3
 import tempfile
 from typing import Iterator
 
 import pytest
 from fastapi import FastAPI
+from sqlalchemy import event, text
 from sqlalchemy.engine import Engine
 from sqlmodel import create_engine, SQLModel, Session
 from starlette.testclient import TestClient
 
-from database.model import AIAsset
+from database.model import AIAssetTable
 from main import add_routes
 from tests.testutils.test_resource import RouterTestResource, TestResource
 from unittest.mock import Mock
@@ -37,14 +39,16 @@ def clear_db(request):
             engine = request.getfixturevalue(engine_name)
             with engine.connect() as connection:
                 transaction = connection.begin()
+                connection.execute(text("PRAGMA foreign_keys=OFF"))
                 for table in SQLModel.metadata.tables.values():
                     connection.execute(table.delete())
+                connection.execute(text("PRAGMA foreign_keys=ON"))
                 transaction.commit()
             if "filled" in engine_name:
                 with Session(engine) as session:
                     session.add_all(
                         [
-                            AIAsset(type="test_resource"),
+                            AIAssetTable(type="test_resource"),
                             TestResource(
                                 title="A title",
                                 platform="example",
@@ -54,6 +58,17 @@ def clear_db(request):
                         ]
                     )
                     session.commit()
+
+
+@event.listens_for(Engine, "connect")
+def sqlite_enable_foreign_key_constraints(dbapi_connection, connection_record):
+    """
+    On default, sqlite disables foreign key constraints
+    """
+    if isinstance(dbapi_connection, sqlite3.Connection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
 
 
 @pytest.fixture(scope="session")

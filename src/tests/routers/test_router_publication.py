@@ -5,13 +5,13 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from authentication import keycloak_openid
-from database.model import AIAsset
+from database.model.ai_asset_table import AIAssetTable
 from database.model.dataset.dataset import Dataset
 
 
 def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token: Mock):
     keycloak_openid.decode_token = mocked_privileged_token
-    asset = AIAsset(type="dataset")
+    asset = AIAssetTable(type="dataset")
     dataset_description = Dataset(
         identifier="1",
         name="Parent",
@@ -53,3 +53,6 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert response_json["resource_type"] == "journal article"
     assert len(response_json["datasets"]) == 1
     assert response_json["datasets"] == [1]
+
+    response = client.delete("/publications/v0/2", headers={"Authorization": "Fake token"})
+    assert response.status_code == 200

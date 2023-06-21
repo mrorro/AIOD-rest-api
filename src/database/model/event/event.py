@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlmodel import Field, Relationship, SQLModel
 from typing import List
-from database.model.ai_asset import AIAsset
+from database.model.ai_asset_table import AIAssetTable
 from database.model.event.application_area_link import EventApplicationAreaLink
 from database.model.event.business_category_link import EventBusinessCategoriesLink
 from database.model.event.relevant_resources_link import EventRelevantResourcesLink
@@ -50,12 +50,12 @@ class EventBase(Resource):
 
 class Event(EventBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "event"
-    identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
+
+    identifier: int = Field(default=None, primary_key=True)
 
     business_categories: List["BusinessCategory"] = Relationship(
         back_populates="events", link_model=EventBusinessCategoriesLink
     )
-
     research_areas: List["ResearchArea"] = Relationship(
         back_populates="events", link_model=EventResearchAreaLink
     )
@@ -68,6 +68,7 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
         sa_relationship_kwargs=dict(
             primaryjoin="Event.identifier==EventParentChildLink.parent_identifier",
             secondaryjoin="Event.identifier==EventParentChildLink.child_identifier",
+            cascade="all, delete",
         ),
     )
     super_events: List["Event"] = Relationship(
@@ -76,10 +77,11 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
         sa_relationship_kwargs=dict(
             primaryjoin="Event.identifier==EventParentChildLink.child_identifier",
             secondaryjoin="Event.identifier==EventParentChildLink.parent_identifier",
+            cascade="all, delete",
         ),
     )
-    relevant_resources: List["AIAsset"] = Relationship(link_model=EventRelevantResourcesLink)
-    used_resources: List["AIAsset"] = Relationship(link_model=EventUsedResourcesLink)
+    relevant_resources: List["AIAssetTable"] = Relationship(link_model=EventRelevantResourcesLink)
+    used_resources: List["AIAssetTable"] = Relationship(link_model=EventUsedResourcesLink)
 
     class RelationshipConfig:
         business_categories: List[str] = ResourceRelationshipList(
@@ -88,11 +90,11 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
             deserializer=FindByNameDeserializer(BusinessCategory),
         )
         sub_events: List[int] = ResourceRelationshipList(
-            example=[3, 4],
+            example=[],
             serializer=AttributeSerializer("identifier"),
         )
         super_events: List[int] = ResourceRelationshipList(
-            example=[1, 2],
+            example=[],
             serializer=AttributeSerializer("identifier"),
         )
         research_areas: List[str] = ResourceRelationshipList(
@@ -106,14 +108,14 @@ class Event(EventBase, table=True):  # type: ignore [call-arg]
             example=["application_area1", "application_area2"],
         )
         relevant_resources: List[int] = ResourceRelationshipList(
-            example=[1, 2],
+            example=[],
             serializer=AttributeSerializer("identifier"),
-            deserializer=FindByIdentifierDeserializer(AIAsset),
+            deserializer=FindByIdentifierDeserializer(AIAssetTable),
         )
         used_resources: List[int] = ResourceRelationshipList(
-            example=[1, 2],
+            example=[],
             serializer=AttributeSerializer("identifier"),
-            deserializer=FindByIdentifierDeserializer(AIAsset),
+            deserializer=FindByIdentifierDeserializer(AIAssetTable),
         )
 
 

@@ -10,11 +10,11 @@ from database.model.news.media_link import NewsMediaLink
 from database.model.news.news_category_link import NewsCategoryNewsLink
 from database.model.news.business_category_link import NewsBusinessCategoryLink
 from database.model.relationships import ResourceRelationshipList
-from database.model.resource import Resource
 from serialization import (
     AttributeSerializer,
     FindByNameDeserializer,
 )
+from database.model.resource import Resource
 
 
 class NewsBase(Resource):
@@ -38,7 +38,7 @@ class NewsBase(Resource):
 
 class News(NewsBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "news"
-    identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
+    identifier: int = Field(default=None, primary_key=True)
     news_categories: List[NewsCategory] = Relationship(
         back_populates="news", link_model=NewsCategoryNewsLink
     )

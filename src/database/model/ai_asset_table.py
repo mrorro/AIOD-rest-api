@@ -1,7 +1,9 @@
-from database.model.resource import Resource
+from sqlmodel import SQLModel, Field
 
 
-class AIAsset(Resource):
+class AIAssetTable(SQLModel, table=True):  # type: ignore [call-arg]
+    __tablename__ = "ai_asset"
+
     """
     Many resources, such as dataset and publication, are a type of AIAsset
     and should therefore inherit from this AIAsset class.
@@ -12,3 +14,11 @@ class AIAsset(Resource):
     by making sure that the identifiers of all resources that
     are AIAssets, are unique over the AIAssets.
     """
+    identifier: int = Field(
+        default=None,
+        primary_key=True,
+        description="The identifier of each asset should be the same as this identifier",
+    )
+    type: str = Field(
+        description="The name of the table of the asset. E.g. 'dataset' or 'publication'"
+    )

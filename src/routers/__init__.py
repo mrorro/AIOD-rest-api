@@ -11,7 +11,7 @@ from .project_router import ProjectRouter
 from .publication_router import PublicationRouter
 from .resource_router import ResourceRouter  # noqa:F401
 
-# from .organisation_router import OrganisationRouter
+from .organisation_router import OrganisationRouter
 
 routers = [
     CaseStudyRouter(),
@@ -20,7 +20,7 @@ routers = [
     EducationalResourceRouter(),
     EventRouter(),
     NewsRouter(),
-    # OrganisationRouter(),
+    OrganisationRouter(),
     PublicationRouter(),
     ProjectRouter(),
     PresentationRouter(),

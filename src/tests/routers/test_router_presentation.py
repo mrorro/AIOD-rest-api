@@ -42,3 +42,6 @@ def test_happy_path(client: TestClient, mocked_privileged_token: Mock):
     assert response_json["author"] == "John Doe"
     assert response_json["image"] == "https://example.com/presentation/example/image"
     assert response_json["is_accessible_for_free"]
+
+    response = client.delete("/presentations/v0/1", headers={"Authorization": "Fake token"})
+    assert response.status_code == 200

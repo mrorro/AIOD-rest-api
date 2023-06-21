@@ -16,13 +16,19 @@ from starlette.responses import JSONResponse
 
 from authentication import get_current_user
 from converters.schema_converters.schema_converter import SchemaConverter
-from database.model import AIAsset
+
 from database.model.resource import (
     Resource,
     resource_create,
     resource_read,
 )
 from platform_names import PlatformName
+
+from database.model.agent_table import AgentTable
+from database.model.agent import Agent
+
+from database.model.ai_asset_table import AIAssetTable
+from database.model.ai_asset import AIAsset
 from serialization import deserialize_resource_relationships
 
 
@@ -345,13 +351,36 @@ class ResourceRouter(abc.ABC):
         return register_resource
 
     def create_resource(self, session: Session, resource_create_instance: SQLModel):
-        """Store a resource in the database"""
-        asset = AIAsset(type=self.resource_class.__tablename__)
-        session.add(asset)
-        session.flush()
-        resource = self.resource_class.from_orm(
-            resource_create_instance, update={"identifier": asset.identifier}
-        )
+
+        # Store a resource in the database
+
+        if issubclass(self.resource_class, AIAsset):
+
+            # example - datasets, publications, etc.
+
+            asset = AIAssetTable(type=self.resource_class.__tablename__)
+            session.add(asset)
+            session.flush()
+            resource = self.resource_class.from_orm(
+                resource_create_instance, update={"identifier": asset.identifier}
+            )
+
+        elif issubclass(self.resource_class, Agent):
+
+            # example - organisations
+
+            agent = AgentTable(type=self.resource_class.__tablename__)
+            session.add(agent)
+            session.flush()
+            resource = self.resource_class.from_orm(
+                resource_create_instance, update={"identifier": agent.identifier}
+            )
+
+        else:
+
+            # example - events, case_studies, news, etc.
+
+            resource = self.resource_class.from_orm(resource_create_instance)
 
         deserialize_resource_relationships(
             session, self.resource_class, resource, resource_create_instance
@@ -425,6 +454,12 @@ class ResourceRouter(abc.ABC):
                     session.commit()
                 return self._wrap_with_headers(None)
             except Exception as e:
+                if "foreign key" in str(e).lower():  # Should work regardless of db technology
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="This resource cannot be deleted, because other resources are "
+                        "related to it.",
+                    )
                 raise _wrap_as_http_exception(e)
 
         return delete_resource
@@ -513,7 +548,7 @@ class ResourceRouter(abc.ABC):
             ) from e
         if "platform_and_platform_identifier" in error:
             error_msg = (
-                "If platform is NULL, platform_identifier should also be NULL, and vice " "versa."
+                "If platform is NULL, platform_identifier should also be NULL, and vice versa."
             )
         else:
             error_msg = error.split("constraint failed: ")[-1]
@@ -523,15 +558,11 @@ class ResourceRouter(abc.ABC):
 def _wrap_as_http_exception(exception: Exception) -> HTTPException:
     if isinstance(exception, HTTPException):
         return exception
-
-    # This is an unexpected error. A mistake on our part. End users should not be informed about
-    # details of problems they are not expected to fix, so we give a generic response and log the
-    # error.
-    traceback.print_exc()
     return HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail=(
-            "Unexpected exception while processing your request. Please contact the maintainers."
+            "Unexpected exception while processing your request. Please contact the maintainers: "
+            f"{exception}"
         ),
     )
 
