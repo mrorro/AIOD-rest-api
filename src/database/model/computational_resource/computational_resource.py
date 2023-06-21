@@ -21,7 +21,7 @@ from database.model.computational_resource.computational_resource_citation impor
 )
 from database.model.computational_resource.computational_resource_distribution import (
     ComputationalResourceDistribution,
-    ComputationalResourceDistributionLink,
+    ComputationalResourceDistributionOrm,
 )
 from database.model.computational_resource.computational_resource_keyword_link import (
     ComputationalResourceKeywordLink,
@@ -40,7 +40,12 @@ from database.model.general.application_areas import ApplicationArea
 from database.model.general.keyword import Keyword
 from database.model.general.research_areas import ResearchArea
 from database.model.relationships import ResourceRelationshipList
-from serialization import FindByIdentifierDeserializer, FindByNameDeserializer, AttributeSerializer
+from serialization import (
+    CastDeserializer,
+    FindByIdentifierDeserializer,
+    FindByNameDeserializer,
+    AttributeSerializer,
+)
 
 
 class ComputationalResourceParentChildLink(SQLModel, table=True):  # type: ignore [call-arg]
@@ -95,8 +100,8 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
     citation: list[ComputationalResourceCitation] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceCitationLink
     )
-    distribution: list[ComputationalResourceDistribution] = Relationship(
-        back_populates="computational_resources", link_model=ComputationalResourceDistributionLink
+    distribution: list[ComputationalResourceDistributionOrm] = Relationship(
+        sa_relationship_kwargs={"cascade": "all, delete"}
     )
     keyword: list[Keyword] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceKeywordLink
@@ -159,12 +164,6 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
             deserializer=FindByNameDeserializer(ComputationalResourceCitation),
             description="A bibliographic reference for the AI asset.",
         )
-        # here there's a type distribution set as string for now
-        distribution: list[str] = ResourceRelationshipList(
-            serializer=AttributeSerializer("name"),
-            deserializer=FindByNameDeserializer(ComputationalResourceDistribution),
-            description="A Distribution of the AI Asset",
-        )
         keyword: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(Keyword),
@@ -209,6 +208,9 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
             example=[],
             serializer=AttributeSerializer("identifier"),
             deserializer=FindByIdentifierDeserializer(AgentTable),
+        )
+        distribution: list[ComputationalResourceDistribution] = ResourceRelationshipList(
+            deserializer=CastDeserializer(ComputationalResourceDistributionOrm)
         )
 
 

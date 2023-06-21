@@ -59,7 +59,6 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "complexity": "complexity example",
         "location": "Example location",
         "alternate_name": ["name1", "name2"],
-        "distribution": [],
         "research_area": ["research_area1", "research_area2"],
         "application_area": ["application_area1", "application_area2"],
         "hasPart": [2],
@@ -67,6 +66,15 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "creator": [1],
         "contact": [1],
         "managedBy": [1],
+        "distribution": [
+            {
+                "content_url": "https://www.example.com/dataset/file.csv",
+                "content_size_kb": 10000,
+                "description": "Description of this file.",
+                "encoding_format": "text/csv",
+                "name": "Name of this file.",
+            }
+        ],
     }
     response = client.post(
         "/computational_resources/v0", json=body, headers={"Authorization": "Fake token"}
@@ -98,3 +106,4 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert set(response_json["application_area"]) == {"application_area1", "application_area2"}
     assert set(response_json["isPartOf"]) == {1}
     assert set(response_json["hasPart"]) == {2}
+    assert len(response_json["distribution"]) == 1

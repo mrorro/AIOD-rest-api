@@ -1,25 +1,30 @@
-from typing import TYPE_CHECKING, List
-
-from sqlmodel import SQLModel, Field, Relationship
-
-from database.model.named_relation import NamedRelation
-
-if TYPE_CHECKING:  # avoid circular imports; only import while type checking
-    from database.model.computational_resource.computational_resource import ComputationalResource
+from sqlmodel import SQLModel, Field
+from sqlalchemy import Column, Integer, ForeignKey
 
 
-class ComputationalResourceDistributionLink(SQLModel, table=True):  # type: ignore [call-arg]
-    __tablename__ = "computational_resource_distribution_link"
-    computational_resource_identifier: int = Field(
-        foreign_key="computational_resource.identifier", primary_key=True
+class ComputationalResourceDistributionBase(SQLModel):
+    content_url: str = Field(
+        max_length=250,
+        schema_extra={"example": "https://www.example.com/computational_resource/file.csv"},
     )
-    distribution_identifier: int = Field(
-        foreign_key="computational_resource_distribution.identifier", primary_key=True
+    content_size_kb: int | None = Field(schema_extra={"example": 10000})
+    description: str | None = Field(
+        max_length=5000, schema_extra={"example": "Description of this file."}
     )
+    encoding_format: str | None = Field(max_length=255, schema_extra={"example": "text/csv"})
+    name: str | None = Field(max_length=150, schema_extra={"example": "Name of this file."})
 
 
-class ComputationalResourceDistribution(NamedRelation, table=True):  # type: ignore [call-arg]
+class ComputationalResourceDistributionOrm(ComputationalResourceDistributionBase, table=True):  # type: ignore [call-arg]  # noqa E501
     __tablename__ = "computational_resource_distribution"
-    computational_resources: List["ComputationalResource"] = Relationship(
-        back_populates="distribution", link_model=ComputationalResourceDistributionLink
+    identifier: int | None = Field(primary_key=True)
+
+    computational_resource_identifier: int | None = Field(
+        sa_column=Column(
+            Integer, ForeignKey("computational_resource.identifier", ondelete="CASCADE")
+        )
     )
+
+
+class ComputationalResourceDistribution(ComputationalResourceDistributionBase):
+    """All or part of a Dataset in downloadable form"""
