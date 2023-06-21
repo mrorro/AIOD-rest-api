@@ -80,7 +80,7 @@ class ComputationalResourceBase(Resource):
 class ComputationalResource(ComputationalResourceBase, table=True):  # type: ignore [call-arg]
     __tablename__ = "computational_resource"
 
-    identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
+    identifier: int = Field(default=None, primary_key=True)
 
     alternate_name: list[ComputationalResourceAlternateName] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceAlternateNameLink
