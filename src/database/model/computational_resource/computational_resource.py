@@ -39,6 +39,10 @@ from database.model.computational_resource.research_area_link import (
 from database.model.general.application_areas import ApplicationArea
 from database.model.general.keyword import Keyword
 from database.model.general.research_areas import ResearchArea
+from database.model.computational_resource.uri import (
+    ComputationalResourceUri,
+    ComputationalResourceUriOrm,
+)
 from database.model.relationships import ResourceRelationshipList
 from serialization import (
     CastDeserializer,
@@ -101,6 +105,9 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         back_populates="computational_resources", link_model=ComputationalResourceCitationLink
     )
     distribution: list[ComputationalResourceDistributionOrm] = Relationship(
+        sa_relationship_kwargs={"cascade": "all, delete"}
+    )
+    statusInfo: list[ComputationalResourceUriOrm] = Relationship(
         sa_relationship_kwargs={"cascade": "all, delete"}
     )
     keyword: list[Keyword] = Relationship(
@@ -211,6 +218,9 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         )
         distribution: list[ComputationalResourceDistribution] = ResourceRelationshipList(
             deserializer=CastDeserializer(ComputationalResourceDistributionOrm)
+        )
+        statusInfo: list[ComputationalResourceUri] = ResourceRelationshipList(
+            deserializer=CastDeserializer(ComputationalResourceUriOrm)
         )
 
 
