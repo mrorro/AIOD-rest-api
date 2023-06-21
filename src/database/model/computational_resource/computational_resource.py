@@ -36,6 +36,9 @@ from database.model.computational_resource.managed_by_link import ComputationalR
 from database.model.computational_resource.research_area_link import (
     ComputationalResourceResearchAreaLink,
 )
+from database.model.computational_resource.status_info_link import (
+    ComputationalResourceStatusInfoLink,
+)
 from database.model.general.application_areas import ApplicationArea
 from database.model.general.keyword import Keyword
 from database.model.general.research_areas import ResearchArea
@@ -108,8 +111,10 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         sa_relationship_kwargs={"cascade": "all, delete"}
     )
     statusInfo: list[ComputationalResourceUriOrm] = Relationship(
-        sa_relationship_kwargs={"cascade": "all, delete"}
+        sa_relationship_kwargs={"cascade": "all, delete"},
+        link_model=ComputationalResourceStatusInfoLink,
     )
+
     keyword: list[Keyword] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceKeywordLink
     )
@@ -220,7 +225,7 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
             deserializer=CastDeserializer(ComputationalResourceDistributionOrm)
         )
         statusInfo: list[ComputationalResourceUri] = ResourceRelationshipList(
-            deserializer=CastDeserializer(ComputationalResourceUriOrm)
+            deserializer=CastDeserializer(ComputationalResourceUriOrm),
         )
 
 
