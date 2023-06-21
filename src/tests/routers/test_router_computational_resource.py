@@ -65,6 +65,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "hasPart": [2],
         "isPartOf": [1],
         "creator": [1],
+        "contact": [1],
     }
     response = client.post(
         "/computational_resources/v0", json=body, headers={"Authorization": "Fake token"}
