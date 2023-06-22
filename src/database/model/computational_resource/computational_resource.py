@@ -85,13 +85,21 @@ class ComputationalResourceBase(AIAsset):
     creationTime: datetime | None = Field(
         default=None, schema_extra={"example": "2022-01-01T15:15:00.000Z"}
     )
-    validity: int | None = Field(default=None, schema_extra={"example": 22})
+    validity: int | None = Field(
+        schema_extra={"example": 22},
+        description="The duration (in seconds) after CreationTime that the information presented "
+        "in the Entity SHOULD be considered relevant. After that period has elapsed, "
+        "the information SHOULD NOT be considered relevant.",
+    )
     complexity: str | None = Field(
         max_length=250,
-        schema_extra={"example": "complexity example"},
+        schema_extra={"example": "endpointType=X, share=Y, resource=Z."},
+        description="Human-readable summary description of the complexity in terms of the number "
+        "of endpoint types, shares and resources. The syntax should be: "
+        "endpointType=X, share=Y, resource=Z.",
     )
     location: str | None = Field(
-        max_length=500, schema_extra={"example": "Example location Computational resource"}
+        max_length=500, schema_extra={"example": "http://www.example.com/endpoint"}
     )
     type: str | None = Field(max_length=500, schema_extra={"example": "AWS::ECS::Cluster"})
 
@@ -170,24 +178,28 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         alternateName: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ComputationalResourceAlternateName),
-            description="",
+            example=["alias1", "alias2"],
         )
         capability: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ComputationalResourceCapability),
             description="The provided capability according to the Open Grid Service Architecture ("
             "OGSA) architecture [OGF-GFD80]",
+            example=["monitoring_and_analytics", "resource_management", "security_framework"],
         )
         # Is there a URI type that we can reuse here instead of string?
         citation: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ComputationalResourceCitation),
             description="A bibliographic reference for the AI asset.",
+            example=[]  # No examples added, I think we should change it to a relationship to
+            # Publication later (added a comment on the spreadsheet)
         )
         keyword: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(Keyword),
             description="terms or phrases providing additional context for the AI asset.",
+            example=["keyword1", "keyword2"],
         )
         otherInfo: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
@@ -195,16 +207,17 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
             description="Placeholder to publish info that does not fit in any other attribute. "
             "Free-form string, comma-separated tags, (name, value ) pair are all "
             "examples of valid syntax ",
+            example=["Free-format text"],
         )
         researchArea: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ResearchArea),
-            example=["research_area1", "research_area2"],
+            example=["Fraud Prevention", "Voice Assistance", "Disease Classification"],
         )
         applicationArea: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ApplicationArea),
-            example=["application_area1", "application_area2"],
+            example=["Anomaly Detection", "Voice Recognition", "Computer Vision"],
         )
         isPartOf: list[int] = ResourceRelationshipList(
             example=[],
@@ -234,17 +247,20 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         )
         statusInfo: list[ComputationalResourceUri] = ResourceRelationshipList(
             deserializer=CastDeserializer(ComputationalResourceUriOrm),
+            example=["www.example.com/resource/status-page"],
         )
         hasShare: list[ComputationalResourceUri] = ResourceRelationshipList(
             deserializer=CastDeserializer(ComputationalResourceUriOrm),
         )
         service: list[ComputationalResourceUri] = ResourceRelationshipList(
             deserializer=CastDeserializer(ComputationalResourceUriOrm),
+            example=["www.example.com/resource/other_service"],
         )
         hasEndpoint: list[ComputationalResourceEndpoint] = ResourceRelationshipList(
             deserializer=CastDeserializer(ComputationalResourceEndpointOrm),
+            example=["http://www.example.com/endpoint"],
         )
-        # TODO add documentIn, it is needed to implement knowledge asset
+        # TODO add documentIn, KnowledgeAsset should be implemented first.
 
 
 # Defined separate because it references ComputationalResource,
