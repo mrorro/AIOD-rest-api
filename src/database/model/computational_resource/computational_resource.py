@@ -244,6 +244,7 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         hasEndpoint: list[ComputationalResourceEndpoint] = ResourceRelationshipList(
             deserializer=CastDeserializer(ComputationalResourceEndpointOrm),
         )
+        # TODO add documentIn, it is needed to implement knowledge asset
 
 
 # Defined separate because it references ComputationalResource,
