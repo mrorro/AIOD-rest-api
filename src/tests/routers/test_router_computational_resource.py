@@ -1,7 +1,3 @@
-"""
-Dataset is a complex resource, so they are tested separately.
-"""
-
 from unittest.mock import Mock
 
 from sqlalchemy.engine import Engine
