@@ -74,9 +74,9 @@ class ComputationalResourceParentChildLink(SQLModel, table=True):  # type: ignor
 
 class ComputationalResourceBase(AIAsset):
     # Required fields
-
+    name: str = Field(max_length=150, schema_extra={"example": "Human-readable name"})
     # Recommended fields
-    name: str | None = Field(max_length=150, schema_extra={"example": "Human-readable name"})
+
     description: str | None = Field(max_length=5000, schema_extra={"example": "description"})
     logo: str | None = Field(
         max_length=250,
