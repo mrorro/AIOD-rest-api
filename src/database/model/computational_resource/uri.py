@@ -5,7 +5,7 @@ from sqlalchemy import Column, Integer, ForeignKey
 class ComputationalResourceUri(SQLModel):
     uri: str | None = Field(
         max_length=250,
-        schema_extra={"example": "uri examplexs"},
+        schema_extra={"example": "uri examples"},
     )
     name: str | None = Field(max_length=150, schema_extra={"example": "Name of this file."})
 
