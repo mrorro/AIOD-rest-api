@@ -192,7 +192,7 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         otherInfo: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ComputationalResourceOtherInfo),
-            description="laceholder to publish info that does not fit in any other attribute. "
+            description="Placeholder to publish info that does not fit in any other attribute. "
             "Free-form string, comma-separated tags, (name, value ) pair are all "
             "examples of valid syntax ",
         )
