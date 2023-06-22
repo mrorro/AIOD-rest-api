@@ -13,9 +13,10 @@ import routers
 from connectors import ResourceConnector
 from connectors.resource_with_relations import ResourceWithRelations
 from database.model.dataset.dataset import Dataset
+from database.model.platform.platform import Platform
 from database.model.publication.publication import Publication
 from database.model.resource import Resource
-from platform_names import PlatformName
+from database.model.platform.platform_names import PlatformName
 
 
 def connect_to_database(
@@ -68,6 +69,7 @@ def populate_database(
     """Add some data to the Dataset and Publication tables."""
 
     with Session(engine) as session:
+        session.add_all([Platform(name=name) for name in PlatformName])
         data_exists = (
             session.scalars(select(Publication)).first() or session.scalars(select(Dataset)).first()
         )
@@ -77,7 +79,7 @@ def populate_database(
         for connector in connectors:
             (router,) = [
                 router
-                for router in routers.routers
+                for router in routers.resource_routers
                 if router.resource_class == connector.resource_class
             ]
             # We use the create_resource function for this router.
@@ -144,7 +146,7 @@ def _create_or_fetch_related_objects(session: Session, item: ResourceWithRelatio
                 resource_read_str = type(resource).__name__  # E.g. DatasetRead
                 (router,) = [
                     router
-                    for router in routers.routers
+                    for router in routers.resource_routers
                     if resource_read_str.startswith(router.resource_class.__name__)
                     # E.g. "DatasetRead".startswith("Dataset")
                 ]

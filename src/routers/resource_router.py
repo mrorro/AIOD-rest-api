@@ -10,25 +10,22 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy import and_, delete
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import IntegrityError
 from sqlmodel import SQLModel, Session, select
 from starlette.responses import JSONResponse
 
 from authentication import get_current_user
 from converters.schema_converters.schema_converter import SchemaConverter
-
+from database.model.agent import Agent
+from database.model.agent_table import AgentTable
+from database.model.ai_asset import AIAsset
+from database.model.ai_asset_table import AIAssetTable
+from database.model.platform.platform import Platform
+from database.model.platform.platform_names import PlatformName
 from database.model.resource import (
     Resource,
     resource_create,
     resource_read,
 )
-from platform_names import PlatformName
-
-from database.model.agent_table import AgentTable
-from database.model.agent import Agent
-
-from database.model.ai_asset_table import AIAssetTable
-from database.model.ai_asset import AIAsset
 from serialization import deserialize_resource_relationships
 
 
@@ -113,6 +110,7 @@ class ResourceRouter(abc.ABC):
         default_kwargs = {
             "response_model_exclude_none": True,
             "deprecated": self.deprecated_from is not None,
+            "tags": [self.resource_name_plural],
         }
         available_schemas: list[Type] = [c.to_class for c in self.schema_converters.values()]
         response_model = Union[self.resource_class_read, *available_schemas]  # type:ignore
@@ -162,21 +160,22 @@ class ResourceRouter(abc.ABC):
             name=self.resource_name,
             **default_kwargs,
         )
-        router.add_api_route(
-            path=f"{url_prefix}/platforms/{{platform}}/{self.resource_name_plural}/{version}",
-            endpoint=self.get_platform_resources_func(engine),
-            response_model=response_model_plural,  # type: ignore
-            name=f"List {self.resource_name_plural}",
-            **default_kwargs,
-        )
-        router.add_api_route(
-            path=f"{url_prefix}/platforms/{{platform}}/{self.resource_name_plural}/{version}"
-            f"/{{identifier}}",
-            endpoint=self.get_platform_resource_func(engine),
-            response_model=response_model,  # type: ignore
-            name=self.resource_name,
-            **default_kwargs,
-        )
+        if issubclass(self.resource_class, Resource):
+            router.add_api_route(
+                path=f"{url_prefix}/platforms/{{platform}}/{self.resource_name_plural}/{version}",
+                endpoint=self.get_platform_resources_func(engine),
+                response_model=response_model_plural,  # type: ignore
+                name=f"List {self.resource_name_plural}",
+                **default_kwargs,
+            )
+            router.add_api_route(
+                path=f"{url_prefix}/platforms/{{platform}}/{self.resource_name_plural}/{version}"
+                f"/{{identifier}}",
+                endpoint=self.get_platform_resource_func(engine),
+                response_model=response_model,  # type: ignore
+                name=self.resource_name,
+                **default_kwargs,
+            )
         return router
 
     def get_resources(
@@ -343,7 +342,7 @@ class ResourceRouter(abc.ABC):
                     try:
                         resource = self.create_resource(session, resource_create)
                         return self._wrap_with_headers({"identifier": resource.identifier})
-                    except IntegrityError as e:
+                    except Exception as e:
                         self._raise_clean_http_exception(e, session, resource_create)
             except Exception as e:
                 raise _wrap_as_http_exception(e)
@@ -351,35 +350,21 @@ class ResourceRouter(abc.ABC):
         return register_resource
 
     def create_resource(self, session: Session, resource_create_instance: SQLModel):
-
         # Store a resource in the database
-
+        parent = None
         if issubclass(self.resource_class, AIAsset):
-
             # example - datasets, publications, etc.
-
-            asset = AIAssetTable(type=self.resource_class.__tablename__)
-            session.add(asset)
-            session.flush()
-            resource = self.resource_class.from_orm(
-                resource_create_instance, update={"identifier": asset.identifier}
-            )
-
+            parent = AIAssetTable(type=self.resource_class.__tablename__)
         elif issubclass(self.resource_class, Agent):
-
             # example - organisations
-
-            agent = AgentTable(type=self.resource_class.__tablename__)
-            session.add(agent)
+            parent = AgentTable(type=self.resource_class.__tablename__)
+        if parent:
+            session.add(parent)
             session.flush()
             resource = self.resource_class.from_orm(
-                resource_create_instance, update={"identifier": agent.identifier}
+                resource_create_instance, update={"identifier": parent.identifier}
             )
-
         else:
-
-            # example - events, case_studies, news, etc.
-
             resource = self.resource_class.from_orm(resource_create_instance)
 
         deserialize_resource_relationships(
@@ -422,7 +407,7 @@ class ResourceRouter(abc.ABC):
                     try:
                         session.merge(resource)
                         session.commit()
-                    except IntegrityError as e:
+                    except Exception as e:
                         self._raise_clean_http_exception(e, session, resource_create_instance)
                 return self._wrap_with_headers(None)
             except Exception as e:
@@ -505,7 +490,7 @@ class ResourceRouter(abc.ABC):
         return JSONResponse(content=jsonable_encoder(resource, exclude_none=True), headers=headers)
 
     def _raise_clean_http_exception(
-        self, e: IntegrityError, session: Session, resource_create: SQLModel
+        self, e: Exception, session: Session, resource_create: SQLModel
     ):
         """Raise an understandable exception based on this SQL IntegrityError."""
         session.rollback()
@@ -517,6 +502,15 @@ class ResourceRouter(abc.ABC):
                 "contact the maintainers.",
             ) from e
         error = e.args[0]
+        # Note that the "real" errors are different from testing errors, because we use a
+        # sqlite db while testing and a mysql db when running the application. The correct error
+        # handling is therefore not tested. TODO: can we improve this?
+        if "MySQLdb.IntegrityError" in error:
+            fields = error.split("same_")[-1].split("'")[0]
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"There already exists a {self.resource_name} with the same {fields}.",
+            )
         if "UNIQUE constraint failed: " in error and ", " not in error:
             duplicate_field = error.split(".")[-1]
             query = select(self.resource_class).where(
@@ -546,7 +540,20 @@ class ResourceRouter(abc.ABC):
                 f"{field1} and {field2}, with "
                 f"identifier={existing_resource.identifier}.",
             ) from e
-        if "platform_and_platform_identifier" in error:
+        if (
+            "FOREIGN KEY" in error
+            and issubclass(self.resource_class, Resource)
+            and resource_create.platform is not None
+        ):
+            query = select(Platform).where(Platform.name == resource_create.platform)
+            if session.scalars(query).first() is None:
+                raise HTTPException(
+                    status_code=status.HTTP_412_PRECONDITION_FAILED,
+                    detail=f"Platform {resource_create.platform} does not exist. "
+                    f"You can register it using the POST platforms "
+                    f"endpoint.",
+                )
+        if "platform_xnor_platform_id_null" in error:
             error_msg = (
                 "If platform is NULL, platform_identifier should also be NULL, and vice versa."
             )
@@ -558,6 +565,7 @@ class ResourceRouter(abc.ABC):
 def _wrap_as_http_exception(exception: Exception) -> HTTPException:
     if isinstance(exception, HTTPException):
         return exception
+    traceback.print_exc()
     return HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail=(

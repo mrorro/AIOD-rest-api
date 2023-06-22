@@ -10,6 +10,8 @@ from sqlmodel import create_engine, SQLModel, Session
 from starlette.testclient import TestClient
 
 from database.model import AIAssetTable
+from database.model.platform.platform import Platform
+from database.model.platform.platform_names import PlatformName
 from main import add_routes
 from tests.testutils.test_resource import RouterTestResource, TestResource
 from unittest.mock import Mock
@@ -44,8 +46,9 @@ def clear_db(request):
                     connection.execute(table.delete())
                 connection.execute(text("PRAGMA foreign_keys=ON"))
                 transaction.commit()
-            if "filled" in engine_name:
-                with Session(engine) as session:
+            with Session(engine) as session:
+                session.add_all([Platform(name=name) for name in PlatformName])
+                if "filled" in engine_name:
                     session.add_all(
                         [
                             AIAssetTable(type="test_resource"),
@@ -57,7 +60,7 @@ def clear_db(request):
                             ),
                         ]
                     )
-                    session.commit()
+                session.commit()
 
 
 @event.listens_for(Engine, "connect")

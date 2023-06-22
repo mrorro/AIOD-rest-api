@@ -3,7 +3,7 @@ import json
 import responses
 
 import connectors
-from platform_names import PlatformName
+from database.model.platform.platform_names import PlatformName
 from tests.testutils.paths import path_test_resources
 
 OPENML_URL = "https://www.openml.org/api/v1/json"
