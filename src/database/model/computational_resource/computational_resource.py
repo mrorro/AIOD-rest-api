@@ -167,15 +167,6 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
     )
 
     class RelationshipConfig:  # This is AIoD-specific code, used to go from Pydantic to SqlAlchemy
-        # otherInfo_enum: str | None = ResourceRelationshipSingle(
-        #     identifier_name="otherInfo_enum_identifier",
-        #     serializer=AttributeSerializer("otherInfo"),  # code to serialize ORM to Pydantic
-        #     deserializer=FindByNameDeserializer(
-        #         ComputationalResourceOtherInfoEnum
-        #     ),  # deserialize Pydantic to ORM
-        #     example="string: tag",
-        # )
-
         alternateName: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ComputationalResourceAlternateName),
