@@ -45,7 +45,7 @@ class Resource(SQLModel):
             ),
             CheckConstraint(
                 "(platform IS NULL) <> (platform_identifier IS NOT NULL)",
-                name=f"{cls.__name__}_platform_and_platform_identifier",
+                name=f"{cls.__name__}_platform_xnor_platform_id_null",
             ),
         )
 
