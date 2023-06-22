@@ -7,26 +7,26 @@ from database.model.computational_resource.application_area_link import (
     ComputationalResourceApplicationAreaLink,
 )
 
-from database.model.computational_resource.computational_resource_alternate_name import (
+from database.model.computational_resource.alternate_name import (
     ComputationalResourceAlternateNameLink,
     ComputationalResourceAlternateName,
 )
-from database.model.computational_resource.computational_resource_capability import (
+from database.model.computational_resource.capability import (
     ComputationalResourceCapabilityLink,
     ComputationalResourceCapability,
 )
-from database.model.computational_resource.computational_resource_citation import (
+from database.model.computational_resource.citation import (
     ComputationalResourceCitationLink,
     ComputationalResourceCitation,
 )
-from database.model.computational_resource.computational_resource_distribution import (
+from database.model.computational_resource.distribution import (
     ComputationalResourceDistribution,
     ComputationalResourceDistributionOrm,
 )
-from database.model.computational_resource.computational_resource_keyword_link import (
+from database.model.computational_resource.keyword_link import (
     ComputationalResourceKeywordLink,
 )
-from database.model.computational_resource.computational_resources_otherinfo import (
+from database.model.computational_resource.otherinfo import (
     ComputationalResourceOtherInfoLink,
     ComputationalResourceOtherInfo,
 )

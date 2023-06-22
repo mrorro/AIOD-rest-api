@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from sqlmodel import Relationship
 
 from database.model.case_study.keyword_link import CaseStudyKeywordLink
-from database.model.computational_resource.computational_resource_keyword_link import (
+from database.model.computational_resource.keyword_link import (
     ComputationalResourceKeywordLink,
 )
 from database.model.dataset.keyword_link import DatasetKeywordLink
