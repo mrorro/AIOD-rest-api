@@ -123,3 +123,16 @@ def test_same_title_twice(client_test_resource: TestClient, mocked_privileged_to
         response.json()["detail"] == "There already exists a test_resource with the same title, "
         "with identifier=1."
     )
+
+
+def test_non_existent_platform(client_test_resource: TestClient, mocked_privileged_token: Mock):
+    keycloak_openid.decode_token = mocked_privileged_token
+    keycloak_openid.public_key = Mock(return_value="")
+    headers = {"Authorization": "Fake token"}
+    body = {"title": "title1", "platform": "this_does_not_exist", "platform_identifier": 1}
+    response = client_test_resource.post("/test_resources/v0", json=body, headers=headers)
+    assert response.status_code == 412
+    assert (
+        response.json()["detail"] == "Platform this_does_not_exist does not exist. You can "
+        "register it using the POST platforms endpoint."
+    )

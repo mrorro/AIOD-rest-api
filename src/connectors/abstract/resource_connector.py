@@ -4,7 +4,7 @@ from typing import Generic, TypeVar, Iterator
 from sqlmodel import SQLModel
 
 from connectors.resource_with_relations import ResourceWithRelations
-from platform_names import PlatformName
+from database.model.platform.platform_names import PlatformName
 
 
 RESOURCE = TypeVar("RESOURCE", bound=SQLModel)

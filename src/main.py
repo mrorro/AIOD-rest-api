@@ -21,8 +21,8 @@ from starlette.status import HTTP_400_BAD_REQUEST, HTTP_501_NOT_IMPLEMENTED
 import connectors
 import routers
 from authentication import get_current_user
+from database.model.platform.platform_names import PlatformName
 from database.setup import connect_to_database, populate_database
-from platform_names import PlatformName
 
 
 def _parse_args() -> argparse.Namespace:
@@ -141,11 +141,6 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         Returns the user, if authenticated correctly.
         """
         return {"msg": "success", "user": user}
-
-    @app.get(url_prefix + "/platforms/v0")
-    def get_platforms() -> list:
-        """Retrieve information about all known platforms"""
-        return list(PlatformName)
 
     for router in routers.resource_routers + routers.other_routers:
         app.include_router(router.create(engine, url_prefix))

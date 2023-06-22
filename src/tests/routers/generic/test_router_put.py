@@ -20,7 +20,7 @@ def test_unicode(
     keycloak_openid.decode_token = mocked_privileged_token
     response = client_test_resource.put(
         "/test_resources/v0/1",
-        json={"title": title, "platform": "other", "platform_identifier": "2"},
+        json={"title": title, "platform": "openml", "platform_identifier": "2"},
         headers={"Authorization": "Fake token"},
     )
     assert response.status_code == 200
@@ -28,7 +28,7 @@ def test_unicode(
     assert response.status_code == 200
     response_json = response.json()
     assert response_json["title"] == title
-    assert response_json["platform"] == "other"
+    assert response_json["platform"] == "openml"
     assert response_json["platform_identifier"] == "2"
 
 

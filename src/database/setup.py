@@ -13,9 +13,10 @@ import routers
 from connectors import ResourceConnector
 from connectors.resource_with_relations import ResourceWithRelations
 from database.model.dataset.dataset import Dataset
+from database.model.platform.platform import Platform
 from database.model.publication.publication import Publication
 from database.model.resource import Resource
-from platform_names import PlatformName
+from database.model.platform.platform_names import PlatformName
 
 
 def connect_to_database(
@@ -68,6 +69,7 @@ def populate_database(
     """Add some data to the Dataset and Publication tables."""
 
     with Session(engine) as session:
+        session.add_all([Platform(name=name) for name in PlatformName])
         data_exists = (
             session.scalars(select(Publication)).first() or session.scalars(select(Dataset)).first()
         )

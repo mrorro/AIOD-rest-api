@@ -6,7 +6,7 @@ from sqlmodel import SQLModel
 
 from connectors import ResourceConnector
 from database.model.resource import resource_create
-from platform_names import PlatformName
+from database.model.platform.platform_names import PlatformName
 
 
 RESOURCE = TypeVar("RESOURCE", bound=SQLModel)
