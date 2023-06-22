@@ -112,3 +112,18 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert set(response_json["hasShare"]) == {"uri2", "uri3"}
     assert set(response_json["service"]) == {"uri3", "uri4"}
     assert set(response_json["hasEndpoint"]) == {"endpoint1", "endpoint2"}
+
+    response = client.delete(
+        "/computational_resources/v0/3", headers={"Authorization": "Fake token"}
+    )
+    assert response.status_code == 400  # you cannot delete the parent of other resources
+    body["hasPart"] = []
+    body["isPartOf"] = []
+    response = client.put(
+        "/computational_resources/v0/3", json=body, headers={"Authorization": "Fake token"}
+    )
+    assert response.status_code == 200
+    response = client.delete(
+        "/computational_resources/v0/3", headers={"Authorization": "Fake token"}
+    )
+    assert response.status_code == 200
