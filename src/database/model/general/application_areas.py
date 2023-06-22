@@ -26,5 +26,5 @@ class ApplicationArea(NamedRelation, table=True):  # type: ignore [call-arg]
         back_populates="application_areas", link_model=EventApplicationAreaLink
     )
     computational_resources: List["ComputationalResource"] = Relationship(
-        back_populates="application_area", link_model=ComputationalResourceApplicationAreaLink
+        back_populates="applicationArea", link_model=ComputationalResourceApplicationAreaLink
     )

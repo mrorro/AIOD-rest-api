@@ -93,9 +93,7 @@ class ComputationalResourceBase(AIAsset):
     location: str | None = Field(
         max_length=500, schema_extra={"example": "Example location Computational resource"}
     )
-    type: str | None = Field(
-        max_length=500, schema_extra={"example": "Example type Computational resource"}
-    )
+    type: str | None = Field(max_length=500, schema_extra={"example": "AWS::ECS::Cluster"})
 
     qualityLevel: str | None = Field(
         max_length=500, schema_extra={"example": "Example quality level Computational resource"}
@@ -107,7 +105,7 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
 
     identifier: int = Field(primary_key=True, foreign_key="ai_asset.identifier")
 
-    alternate_name: list[ComputationalResourceAlternateName] = Relationship(
+    alternateName: list[ComputationalResourceAlternateName] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceAlternateNameLink
     )
     capability: list[ComputationalResourceCapability] = Relationship(
@@ -139,13 +137,13 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
     keyword: list[Keyword] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceKeywordLink
     )
-    other_info: list[ComputationalResourceOtherInfo] = Relationship(
+    otherInfo: list[ComputationalResourceOtherInfo] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceOtherInfoLink
     )
-    research_area: list["ResearchArea"] = Relationship(
+    researchArea: list["ResearchArea"] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceResearchAreaLink
     )
-    application_area: list["ApplicationArea"] = Relationship(
+    applicationArea: list["ApplicationArea"] = Relationship(
         back_populates="computational_resources",
         link_model=ComputationalResourceApplicationAreaLink,
     )
@@ -180,7 +178,7 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         #     example="string: tag",
         # )
 
-        alternate_name: list[str] = ResourceRelationshipList(
+        alternateName: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ComputationalResourceAlternateName),
             description="",
@@ -202,19 +200,19 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
             deserializer=FindByNameDeserializer(Keyword),
             description="terms or phrases providing additional context for the AI asset.",
         )
-        other_info: list[str] = ResourceRelationshipList(
+        otherInfo: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ComputationalResourceOtherInfo),
             description="laceholder to publish info that does not fit in any other attribute. "
             "Free-form string, comma-separated tags, (name, value ) pair are all "
             "examples of valid syntax ",
         )
-        research_area: list[str] = ResourceRelationshipList(
+        researchArea: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ResearchArea),
             example=["research_area1", "research_area2"],
         )
-        application_area: list[str] = ResourceRelationshipList(
+        applicationArea: list[str] = ResourceRelationshipList(
             serializer=AttributeSerializer("name"),
             deserializer=FindByNameDeserializer(ApplicationArea),
             example=["application_area1", "application_area2"],

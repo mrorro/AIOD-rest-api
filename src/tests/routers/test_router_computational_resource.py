@@ -54,13 +54,13 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "validity": 5,
         "type": "example type",
         "qualityLevel": "example qualityLevel",
-        "other_info": ["info1", "info2"],
+        "otherInfo": ["info1", "info2"],
         "capability": ["capability 1", "capability 2"],
         "complexity": "complexity example",
         "location": "Example location",
-        "alternate_name": ["name1", "name2"],
-        "research_area": ["research_area1", "research_area2"],
-        "application_area": ["application_area1", "application_area2"],
+        "alternateName": ["name1", "name2"],
+        "researchArea": ["research_area1", "research_area2"],
+        "applicationArea": ["application_area1", "application_area2"],
         "hasPart": [2],
         "isPartOf": [1],
         "creator": [1],
@@ -99,15 +99,15 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert response_json["logo"] == "https://www.example.com/computational_resource/logo.png"
     assert response_json["creationTime"] == "2023-01-01T15:15:00"
     assert response_json["validity"] == 5
-    assert set(response_json["other_info"]) == {"info1", "info2"}
+    assert set(response_json["otherInfo"]) == {"info1", "info2"}
     assert set(response_json["capability"]) == {"capability 1", "capability 2"}
     assert response_json["complexity"] == "complexity example"
     assert response_json["location"] == "Example location"
     assert response_json["type"] == "example type"
     assert response_json["qualityLevel"] == "example qualityLevel"
-    assert set(response_json["alternate_name"]) == {"name1", "name2"}
-    assert set(response_json["research_area"]) == {"research_area1", "research_area2"}
-    assert set(response_json["application_area"]) == {"application_area1", "application_area2"}
+    assert set(response_json["alternateName"]) == {"name1", "name2"}
+    assert set(response_json["researchArea"]) == {"research_area1", "research_area2"}
+    assert set(response_json["applicationArea"]) == {"application_area1", "application_area2"}
     assert set(response_json["isPartOf"]) == {1}
     assert set(response_json["hasPart"]) == {2}
     assert len(response_json["distribution"]) == 1

@@ -25,5 +25,5 @@ class ResearchArea(NamedRelation, table=True):  # type: ignore [call-arg]
         back_populates="research_areas", link_model=EventResearchAreaLink
     )
     computational_resources: List["ComputationalResource"] = Relationship(
-        back_populates="research_area", link_model=ComputationalResourceResearchAreaLink
+        back_populates="researchArea", link_model=ComputationalResourceResearchAreaLink
     )

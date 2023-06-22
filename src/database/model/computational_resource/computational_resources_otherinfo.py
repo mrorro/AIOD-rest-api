@@ -21,5 +21,5 @@ class ComputationalResourceOtherInfoLink(SQLModel, table=True):  # type: ignore 
 class ComputationalResourceOtherInfo(NamedRelation, table=True):  # type: ignore [call-arg]
     __tablename__ = "computational_resource_other_info"
     computational_resources: List["ComputationalResource"] = Relationship(
-        back_populates="other_info", link_model=ComputationalResourceOtherInfoLink
+        back_populates="otherInfo", link_model=ComputationalResourceOtherInfoLink
     )

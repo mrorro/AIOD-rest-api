@@ -21,5 +21,5 @@ class ComputationalResourceAlternateNameLink(SQLModel, table=True):  # type: ign
 class ComputationalResourceAlternateName(NamedRelation, table=True):  # type: ignore [call-arg]
     __tablename__ = "computational_resource_alternate_name"
     computational_resources: List["ComputationalResource"] = Relationship(
-        back_populates="alternate_name", link_model=ComputationalResourceAlternateNameLink
+        back_populates="alternateName", link_model=ComputationalResourceAlternateNameLink
     )
