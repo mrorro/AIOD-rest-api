@@ -3,11 +3,7 @@ from sqlalchemy import Column, Integer, ForeignKey
 
 
 class ComputationalResourceEndpoint(SQLModel):
-    endpoint: str | None = Field(
-        max_length=250,
-        schema_extra={"example": "uri examplexs"},
-    )
-    name: str | None = Field(max_length=150, schema_extra={"example": "Name of this file."})
+    name: str | None = Field(max_length=150, schema_extra={"example": "www.example.com/endpoint"})
 
 
 class ComputationalResourceEndpointOrm(ComputationalResourceEndpoint, table=True):  # type: ignore [call-arg]  # noqa E501

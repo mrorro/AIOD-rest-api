@@ -26,7 +26,6 @@ from database.model.computational_resource.distribution import (
     ComputationalResourceDistributionOrm,
 )
 from database.model.computational_resource.endpoint import (
-    ComputationalResourceEndpoint,
     ComputationalResourceEndpointOrm,
 )
 from database.model.computational_resource.has_endpoint_link import (
@@ -258,8 +257,9 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
             serializer=AttributeSerializer(attribute_name="name"),
             example=["www.example.com/resource/other_service"],
         )
-        hasEndpoint: list[ComputationalResourceEndpoint] = ResourceRelationshipList(
-            deserializer=CastDeserializer(ComputationalResourceEndpointOrm),
+        hasEndpoint: list[str] = ResourceRelationshipList(
+            deserializer=FindByNameDeserializer(ComputationalResourceEndpointOrm),
+            serializer=AttributeSerializer(attribute_name="name"),
             example=["http://www.example.com/endpoint"],
         )
         # TODO add documentIn, KnowledgeAsset should be implemented first.

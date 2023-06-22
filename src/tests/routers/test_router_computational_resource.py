@@ -74,7 +74,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
         "statusInfo": ["uri1", "uri2"],
         "hasShare": ["uri2", "uri3"],
         "service": ["uri3", "uri4"],
-        "hasEndpoint": [{"endpoint": "endpoint"}],
+        "hasEndpoint": ["endpoint1", "endpoint2"],
     }
     response = client.post(
         "/computational_resources/v0", json=body, headers={"Authorization": "Fake token"}
@@ -111,6 +111,4 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert set(response_json["statusInfo"]) == {"uri1", "uri2"}
     assert set(response_json["hasShare"]) == {"uri2", "uri3"}
     assert set(response_json["service"]) == {"uri3", "uri4"}
-
-    assert len(response_json["hasEndpoint"]) == 1
-    assert response_json["hasEndpoint"][0]["endpoint"] == "endpoint"
+    assert set(response_json["hasEndpoint"]) == {"endpoint1", "endpoint2"}
