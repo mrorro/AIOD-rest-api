@@ -95,9 +95,7 @@ class ComputationalResourceBase(AIAsset):
     )
     type: str | None = Field(max_length=500, schema_extra={"example": "AWS::ECS::Cluster"})
 
-    qualityLevel: str | None = Field(
-        max_length=500, schema_extra={"example": "Example quality level Computational resource"}
-    )
+    qualityLevel: str | None = Field(max_length=500, schema_extra={"example": "test"})
 
 
 class ComputationalResource(ComputationalResourceBase, table=True):  # type: ignore [call-arg]
