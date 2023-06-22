@@ -15,8 +15,9 @@ from .organisation_router import OrganisationRouter
 
 from .project_router import ProjectRouter
 from .presentation_router import PresentationRouter
+from .upload_router_huggingface import UploadRouterHuggingface
 
-routers = [
+resource_routers = [
     CaseStudyRouter(),
     DatasetRouter(),
     EducationalResourceRouter(),
@@ -27,3 +28,5 @@ routers = [
     ProjectRouter(),
     PresentationRouter(),
 ]  # type: typing.List[ResourceRouter]
+
+other_routers = [UploadRouterHuggingface()]

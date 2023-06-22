@@ -77,7 +77,7 @@ def populate_database(
         for connector in connectors:
             (router,) = [
                 router
-                for router in routers.routers
+                for router in routers.resource_routers
                 if router.resource_class == connector.resource_class
             ]
             # We use the create_resource function for this router.
@@ -144,7 +144,7 @@ def _create_or_fetch_related_objects(session: Session, item: ResourceWithRelatio
                 resource_read_str = type(resource).__name__  # E.g. DatasetRead
                 (router,) = [
                     router
-                    for router in routers.routers
+                    for router in routers.resource_routers
                     if resource_read_str.startswith(router.resource_class.__name__)
                     # E.g. "DatasetRead".startswith("Dataset")
                 ]

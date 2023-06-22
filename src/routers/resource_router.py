@@ -113,6 +113,7 @@ class ResourceRouter(abc.ABC):
         default_kwargs = {
             "response_model_exclude_none": True,
             "deprecated": self.deprecated_from is not None,
+            "tags": [self.resource_name_plural],
         }
         available_schemas: list[Type] = [c.to_class for c in self.schema_converters.values()]
         response_model = Union[self.resource_class_read, *available_schemas]  # type:ignore
