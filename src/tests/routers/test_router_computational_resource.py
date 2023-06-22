@@ -71,9 +71,9 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
                 "name": "Name of this file.",
             }
         ],
-        "statusInfo": [{"uri": "uri1"}],
-        "hasShare": [{"uri": "uri2"}],
-        "service": [{"uri": "uri3"}],
+        "statusInfo": ["uri1", "uri2"],
+        "hasShare": ["uri2", "uri3"],
+        "service": ["uri3", "uri4"],
         "hasEndpoint": [{"endpoint": "endpoint"}],
     }
     response = client.post(
@@ -107,11 +107,10 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
     assert set(response_json["isPartOf"]) == {1}
     assert set(response_json["hasPart"]) == {2}
     assert len(response_json["distribution"]) == 1
-    assert len(response_json["statusInfo"]) == 1
-    assert response_json["statusInfo"][0]["uri"] == "uri1"
-    assert len(response_json["hasShare"]) == 1
-    assert response_json["hasShare"][0]["uri"] == "uri2"
-    assert len(response_json["service"]) == 1
-    assert response_json["service"][0]["uri"] == "uri3"
+
+    assert set(response_json["statusInfo"]) == {"uri1", "uri2"}
+    assert set(response_json["hasShare"]) == {"uri2", "uri3"}
+    assert set(response_json["service"]) == {"uri3", "uri4"}
+
     assert len(response_json["hasEndpoint"]) == 1
     assert response_json["hasEndpoint"][0]["endpoint"] == "endpoint"

@@ -1,15 +1,15 @@
 from datetime import datetime
 
 from sqlmodel import Field, Relationship, SQLModel
+
 from database.model.agent_table import AgentTable
 from database.model.ai_asset import AIAsset
-from database.model.computational_resource.application_area_link import (
-    ComputationalResourceApplicationAreaLink,
-)
-
 from database.model.computational_resource.alternate_name import (
     ComputationalResourceAlternateNameLink,
     ComputationalResourceAlternateName,
+)
+from database.model.computational_resource.application_area_link import (
+    ComputationalResourceApplicationAreaLink,
 )
 from database.model.computational_resource.capability import (
     ComputationalResourceCapabilityLink,
@@ -19,19 +19,12 @@ from database.model.computational_resource.citation import (
     ComputationalResourceCitationLink,
     ComputationalResourceCitation,
 )
+from database.model.computational_resource.contact_link import ComputationalResourceContactLink
+from database.model.computational_resource.creator_link import ComputationalResourceCreatorLink
 from database.model.computational_resource.distribution import (
     ComputationalResourceDistribution,
     ComputationalResourceDistributionOrm,
 )
-from database.model.computational_resource.keyword_link import (
-    ComputationalResourceKeywordLink,
-)
-from database.model.computational_resource.otherinfo import (
-    ComputationalResourceOtherInfoLink,
-    ComputationalResourceOtherInfo,
-)
-from database.model.computational_resource.contact_link import ComputationalResourceContactLink
-from database.model.computational_resource.creator_link import ComputationalResourceCreatorLink
 from database.model.computational_resource.endpoint import (
     ComputationalResourceEndpoint,
     ComputationalResourceEndpointOrm,
@@ -40,7 +33,14 @@ from database.model.computational_resource.has_endpoint_link import (
     ComputationalResourceHasEndpointLink,
 )
 from database.model.computational_resource.has_share_link import ComputationalResourceHasShareLink
+from database.model.computational_resource.keyword_link import (
+    ComputationalResourceKeywordLink,
+)
 from database.model.computational_resource.managed_by_link import ComputationalResourceManagedByLink
+from database.model.computational_resource.otherinfo import (
+    ComputationalResourceOtherInfoLink,
+    ComputationalResourceOtherInfo,
+)
 from database.model.computational_resource.research_area_link import (
     ComputationalResourceResearchAreaLink,
 )
@@ -48,13 +48,12 @@ from database.model.computational_resource.service_link import ComputationalReso
 from database.model.computational_resource.status_info_link import (
     ComputationalResourceStatusInfoLink,
 )
+from database.model.computational_resource.uri import (
+    ComputationalResourceUriOrm,
+)
 from database.model.general.application_areas import ApplicationArea
 from database.model.general.keyword import Keyword
 from database.model.general.research_areas import ResearchArea
-from database.model.computational_resource.uri import (
-    ComputationalResourceUri,
-    ComputationalResourceUriOrm,
-)
 from database.model.relationships import ResourceRelationshipList
 from serialization import (
     CastDeserializer,
@@ -245,15 +244,18 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
         distribution: list[ComputationalResourceDistribution] = ResourceRelationshipList(
             deserializer=CastDeserializer(ComputationalResourceDistributionOrm)
         )
-        statusInfo: list[ComputationalResourceUri] = ResourceRelationshipList(
-            deserializer=CastDeserializer(ComputationalResourceUriOrm),
+        statusInfo: list[str] = ResourceRelationshipList(
+            deserializer=FindByNameDeserializer(ComputationalResourceUriOrm),
+            serializer=AttributeSerializer(attribute_name="name"),
             example=["www.example.com/resource/status-page"],
         )
-        hasShare: list[ComputationalResourceUri] = ResourceRelationshipList(
-            deserializer=CastDeserializer(ComputationalResourceUriOrm),
+        hasShare: list[str] = ResourceRelationshipList(
+            deserializer=FindByNameDeserializer(ComputationalResourceUriOrm),
+            serializer=AttributeSerializer(attribute_name="name"),
         )
-        service: list[ComputationalResourceUri] = ResourceRelationshipList(
-            deserializer=CastDeserializer(ComputationalResourceUriOrm),
+        service: list[str] = ResourceRelationshipList(
+            deserializer=FindByNameDeserializer(ComputationalResourceUriOrm),
+            serializer=AttributeSerializer(attribute_name="name"),
             example=["www.example.com/resource/other_service"],
         )
         hasEndpoint: list[ComputationalResourceEndpoint] = ResourceRelationshipList(
