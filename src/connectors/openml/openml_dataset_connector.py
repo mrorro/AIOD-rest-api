@@ -14,7 +14,7 @@ from connectors.abstract.resource_connector import ResourceConnector
 from database.model.dataset.data_download import DataDownload
 from database.model.dataset.dataset import Dataset
 from database.model.resource import resource_create
-from platform_names import PlatformName
+from database.model.platform.platform_names import PlatformName
 
 
 class OpenMlDatasetConnector(ResourceConnector[Dataset]):

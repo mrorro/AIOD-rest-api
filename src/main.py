@@ -22,7 +22,7 @@ import connectors
 import routers
 from authentication import get_current_user
 from database.setup import connect_to_database, populate_database
-from platform_names import PlatformName
+from database.model.platform.platform_names import PlatformName
 from uploader.hugging_face_uploader import HuggingfaceUploader
 
 
@@ -143,16 +143,11 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         """
         return {"msg": "success", "user": user}
 
-    @app.get(url_prefix + "/platforms/v0")
-    def get_platforms() -> list:
-        """Retrieve information about all known platforms"""
-        return list(PlatformName)
-
     for router in routers.routers:
         app.include_router(router.create(engine, url_prefix))
 
     @app.post(url_prefix + "/upload/datasets/{identifier}/huggingface")
-    def huggingFaceUpload(
+    def upload_hugging_face(
         identifier: int,
         file: UploadFile = File(
             ..., title="File", description="This file will be upload to huggingface"

@@ -8,7 +8,7 @@ from sqlmodel.main import FieldInfo
 
 from database.model.relationships import ResourceRelationshipInfo
 from serialization import create_getter_dict
-from platform_names import PlatformName
+from database.model.platform.platform_names import PlatformName
 
 
 class Resource(SQLModel):
@@ -22,6 +22,7 @@ class Resource(SQLModel):
         "AIoD. If platform is not None, "
         "the platform_identifier should be set as well.",
         schema_extra={"example": PlatformName.zenodo},
+        foreign_key="platform.name",
     )
     platform_identifier: str | None = Field(
         description="A unique identifier issued by an external platform. Leave empty if this item "
