@@ -2,7 +2,7 @@
 name = "ai4eu_server_demo"
 description = "A containerized demo application for AI on demand (previously AI4EU) "
 version = "0.3.20230501"
-requires-python = ">=3.11"
+requires-python = ">=3.11.0"
 authors = [
 
     { name = "Antonis Ganios"},
