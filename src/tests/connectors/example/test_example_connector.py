@@ -6,13 +6,14 @@ import connectors
 @pytest.mark.parametrize(
     "datatype",
     [
-        "publications",
-        "news",
-        "events",
         "case_studies",
+        "computational_resources",
+        "educational_resources",
+        "events",
         "presentations",
         "projects",
-        "educational_resources",
+        "publications",
+        "news",
         "organisations",
     ],
 )

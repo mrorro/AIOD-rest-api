@@ -73,8 +73,8 @@ class ComputationalResourceParentChildLink(SQLModel, table=True):  # type: ignor
 class ComputationalResourceBase(AIAsset):
     # Required fields
     name: str = Field(max_length=150, schema_extra={"example": "Human-readable name"})
-    # Recommended fields
 
+    # Recommended fields
     description: str | None = Field(max_length=5000, schema_extra={"example": "description"})
     logo: str | None = Field(
         max_length=250,
@@ -144,17 +144,17 @@ class ComputationalResource(ComputationalResourceBase, table=True):  # type: ign
     otherInfo: list[ComputationalResourceOtherInfo] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceOtherInfoLink
     )
-    researchArea: list["ResearchArea"] = Relationship(
+    researchArea: list[ResearchArea] = Relationship(
         back_populates="computational_resources", link_model=ComputationalResourceResearchAreaLink
     )
-    applicationArea: list["ApplicationArea"] = Relationship(
+    applicationArea: list[ApplicationArea] = Relationship(
         back_populates="computational_resources",
         link_model=ComputationalResourceApplicationAreaLink,
     )
 
-    creator: list["AgentTable"] = Relationship(link_model=ComputationalResourceCreatorLink)
-    contact: list["AgentTable"] = Relationship(link_model=ComputationalResourceContactLink)
-    managedBy: list["AgentTable"] = Relationship(link_model=ComputationalResourceManagedByLink)
+    creator: list[AgentTable] = Relationship(link_model=ComputationalResourceCreatorLink)
+    contact: list[AgentTable] = Relationship(link_model=ComputationalResourceContactLink)
+    managedBy: list[AgentTable] = Relationship(link_model=ComputationalResourceManagedByLink)
     hasPart: list["ComputationalResource"] = Relationship(
         back_populates="isPartOf",
         link_model=ComputationalResourceParentChildLink,
