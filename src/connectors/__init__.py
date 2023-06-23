@@ -2,6 +2,7 @@ import pathlib
 from typing import Dict  # noqa:F401
 
 from database.model.case_study.case_study import CaseStudy
+from database.model.computational_resource.computational_resource import ComputationalResource
 from database.model.educational_resource.educational_resource import EducationalResource
 from database.model.event.event import Event
 from database.model.news.news import News
@@ -30,6 +31,10 @@ _path_example_resources = pathlib.Path(__file__).parent / "example" / "resources
 example_connectors = {
     "case_studies": ExampleConnector(
         resource_class=CaseStudy, json_path=_path_example_resources / "case_studies.json"
+    ),
+    "computational_resources": ExampleConnector(
+        resource_class=ComputationalResource,
+        json_path=_path_example_resources / "computational_resources.json",
     ),
     "datasets": ExampleDatasetConnector(),
     "educational_resources": ExampleConnector(

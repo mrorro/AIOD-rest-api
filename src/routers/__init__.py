@@ -2,6 +2,7 @@ import typing  # noqa:F401
 
 from .resource_router import ResourceRouter  # noqa:F401
 from .case_study_router import CaseStudyRouter
+from .computational_resource_router import ComputationalResourceRouter
 from .dataset_router import DatasetRouter
 from .educational_resource_router import EducationalResourceRouter
 from .event_router import EventRouter
@@ -16,6 +17,7 @@ from .upload_router_huggingface import UploadRouterHuggingface
 resource_routers = [
     PlatformRouter(),
     CaseStudyRouter(),
+    ComputationalResourceRouter(),
     DatasetRouter(),
     EducationalResourceRouter(),
     EventRouter(),
