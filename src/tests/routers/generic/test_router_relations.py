@@ -187,7 +187,7 @@ def test_get_all_happy_path(client_with_testobject: TestClient):
 
 
 def test_post_happy_path(client_with_testobject: TestClient, mocked_privileged_token: Mock):
-    keycloak_openid.decode_token = mocked_privileged_token
+    keycloak_openid.userinfo = mocked_privileged_token
     response = client_with_testobject.post(
         "/test_resources/v0",
         json={
@@ -218,7 +218,7 @@ def test_post_happy_path(client_with_testobject: TestClient, mocked_privileged_t
 
 
 def test_put_happy_path(client_with_testobject: TestClient, mocked_privileged_token: Mock):
-    keycloak_openid.decode_token = mocked_privileged_token
+    keycloak_openid.userinfo = mocked_privileged_token
     response = client_with_testobject.put(
         "/test_resources/v0/4",
         json={

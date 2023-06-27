@@ -21,7 +21,7 @@ from database.model.publication.publication import Publication
 
 
 def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token: Mock):
-    keycloak_openid.decode_token = mocked_privileged_token
+    keycloak_openid.userinfo = mocked_privileged_token
     with Session(engine) as session:
         session.add_all(
             [
@@ -120,7 +120,7 @@ def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token:
 
 def test_delete(client: TestClient, engine: Engine, mocked_privileged_token: Mock):
     """Tested separately because of the nested objects such as dataset.distributions"""
-    keycloak_openid.decode_token = mocked_privileged_token
+    keycloak_openid.userinfo = mocked_privileged_token
 
     with Session(engine) as session:
         md5 = ChecksumAlgorithm(name="md5")

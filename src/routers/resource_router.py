@@ -1,5 +1,6 @@
 import abc
 import datetime
+import os
 import traceback
 from typing import Literal, Union, Any
 from typing import TypeVar, Type
@@ -332,7 +333,7 @@ class ResourceRouter(abc.ABC):
             user: dict = Depends(get_current_user),
         ):
             f"""Register a {self.resource_name} with AIoD."""
-            if "edit_aiod_resources" not in user["realm_access"]["roles"]:
+            if os.getenv("KEYCLOAK_ROLE") not in user["groups"]:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You do not have permission to edit Aiod resources.",
@@ -388,7 +389,7 @@ class ResourceRouter(abc.ABC):
             user: dict = Depends(get_current_user),
         ):
             f"""Update an existing {self.resource_name}."""
-            if "edit_aiod_resources" not in user["realm_access"]["roles"]:
+            if os.getenv("KEYCLOAK_ROLE") not in user["groups"]:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You do not have permission to edit Aiod resources.",
@@ -423,7 +424,7 @@ class ResourceRouter(abc.ABC):
         """
 
         def delete_resource(identifier: str, user: dict = Depends(get_current_user)):
-            if "edit_aiod_resources" not in user["realm_access"]["roles"]:
+            if os.getenv("KEYCLOAK_ROLE") not in user["groups"]:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You do not have permission to edit Aiod resources.",

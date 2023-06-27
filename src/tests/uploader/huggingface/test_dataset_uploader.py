@@ -15,7 +15,7 @@ from tests.testutils.paths import path_test_resources
 def test_happy_path_new_repository(
     client: TestClient, engine: Engine, mocked_privileged_token: Mock
 ):
-    keycloak_openid.decode_token = mocked_privileged_token
+    keycloak_openid.userinfo = mocked_privileged_token
     dataset_id = 1
     with Session(engine) as session:
         session.add_all(
@@ -62,7 +62,7 @@ def test_happy_path_new_repository(
 
 
 def test_repo_already_exists(client: TestClient, engine: Engine, mocked_privileged_token: Mock):
-    keycloak_openid.decode_token = mocked_privileged_token
+    keycloak_openid.userinfo = mocked_privileged_token
     dataset_id = 1
     with Session(engine) as session:
         session.add_all(

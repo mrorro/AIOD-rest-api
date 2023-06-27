@@ -21,10 +21,6 @@ keycloak_openid = KeycloakOpenID(
     verify=True,
 )
 
-KEYCLOAK_PUBLIC_KEY = (
-    "-----BEGIN PUBLIC KEY-----\n" + keycloak_openid.public_key() + "\n-----END PUBLIC KEY-----"
-)
-
 
 async def get_current_user(token=Security(oidc)) -> dict:
     if not token:
@@ -35,8 +31,7 @@ async def get_current_user(token=Security(oidc)) -> dict:
         )
     try:
         token = token.replace("Bearer ", "")
-        token_info = keycloak_openid.decode_token(token, key=KEYCLOAK_PUBLIC_KEY)
-        return token_info
+        return keycloak_openid.userinfo(token)
     except KeycloakError as e:
         logging.error(f"Error while checking the access token: '{e}'")
         error_msg = e.error_message
