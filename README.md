@@ -293,6 +293,7 @@ bumped version in the pyproject.toml, and merged with the master. The tag should
 message detailing all the breaking and non-breaking changes. This message should adhere to the 
 guiding principles as described in https://keepachangelog.com/. 
 
-To get an overview of the complete changelog, the Github API can be used:
- - Get all tags: https://api.github.com/repos/aiondemand/AIOD-rest-api/git/refs/tags
- - Get all information for a single tag: https://api.github.com/repos/aiondemand/AIOD-rest-api/git/tags/080e9afa5a1fe84316d4e39d8bc669a1fce9f24d
+- Show all tags: https://github.com/aiondemand/AIOD-rest-api/tags
+- Show a specific tag: https://github.com/aiondemand/AIOD-rest-api/releases/tag/0.3.20220501
+
+This information can also be extracted using the Github REST API.
