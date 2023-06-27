@@ -1,23 +1,23 @@
 import logging
 import os
 
+from dotenv import load_dotenv
 from fastapi import HTTPException, Security, status
 from fastapi.security import OpenIdConnect
-
 from keycloak import KeycloakOpenID, KeycloakError
 
+load_dotenv()
 
 oidc = OpenIdConnect(
-    openIdConnectUrl="https://test.openml.org/aiod-auth/realms/dev/.well-known/openid"
-    "-configuration",
+    openIdConnectUrl=os.getenv("KEYCLOAK_OPENID_CONNECT_URL"),
     auto_error=False,
 )
 
 keycloak_openid = KeycloakOpenID(
-    server_url="https://test.openml.org/aiod-auth/",
+    server_url=os.getenv("KEYCLOAK_SERVER_URL"),
     client_id=os.getenv("KEYCLOAK_CLIENT_ID"),
     client_secret_key=os.getenv("KEYCLOAK_CLIENT_SECRET"),
-    realm_name="dev",
+    realm_name=os.getenv("KEYCLOAK_REALM"),
     verify=True,
 )
 

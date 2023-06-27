@@ -11,7 +11,6 @@ import tomllib
 from typing import Dict
 
 import uvicorn
-from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import Json
@@ -148,17 +147,20 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
 
 def create_app() -> FastAPI:
     """Create the FastAPI application, complete with routes."""
+    args = _parse_args()
     app = FastAPI(
+        openapi_url=f"{args.url_prefix}/openapi.json",
+        docs_url=f"{args.url_prefix}/docs",
+        swagger_ui_oauth2_redirect_url=f"{args.url_prefix}/docs/oauth2-redirect",
         swagger_ui_init_oauth={
             "clientId": os.getenv("KEYCLOAK_CLIENT_ID"),
             "clientSecret": os.getenv("KEYCLOAK_CLIENT_SECRET"),
             "realm": "dev",
             "appName": "AIoD API",
             "usePkceWithAuthorizationCodeGrant": True,
-            "scopes": "openid profile microprofile-jwt",
-        }
+            "scopes": os.getenv("KEYCLOAK_SCOPES"),
+        },
     )
-    args = _parse_args()
 
     dataset_connectors = [
         _connector_from_platform_name("dataset", connectors.dataset_connectors, platform_name)
@@ -185,7 +187,6 @@ def create_app() -> FastAPI:
 def main():
     """Run the application. Placed in a separate function, to avoid having global variables"""
     args = _parse_args()
-    load_dotenv()
     uvicorn.run("main:create_app", host="0.0.0.0", reload=args.reload, factory=True)
 
 
