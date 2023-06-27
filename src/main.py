@@ -25,6 +25,7 @@ from database.setup import connect_to_database, populate_database
 
 
 def _parse_args() -> argparse.Namespace:
+    # TODO: refactor configuration (https://github.com/aiondemand/AIOD-rest-api/issues/82)
     parser = argparse.ArgumentParser(description="Please refer to the README.")
     parser.add_argument("--url-prefix", default="", help="Prefix for the api url.")
     parser.add_argument(
@@ -153,10 +154,9 @@ def create_app() -> FastAPI:
         docs_url=f"{args.url_prefix}/docs",
         swagger_ui_oauth2_redirect_url=f"{args.url_prefix}/docs/oauth2-redirect",
         swagger_ui_init_oauth={
-            "clientId": os.getenv("KEYCLOAK_CLIENT_ID"),
-            "clientSecret": os.getenv("KEYCLOAK_CLIENT_SECRET"),
-            "realm": "dev",
-            "appName": "AIoD API",
+            "clientId": os.getenv("KEYCLOAK_CLIENT_ID_SWAGGER"),
+            "realm": os.getenv("KEYCLOAK_REALM"),
+            "appName": "AIoD Metadata Catalogue",
             "usePkceWithAuthorizationCodeGrant": True,
             "scopes": os.getenv("KEYCLOAK_SCOPES"),
         },
