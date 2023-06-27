@@ -1,14 +1,8 @@
-from typing import Type
-
-from converters import presentation_converter_instance
-from converters.orm_converters.orm_converter import OrmConverter
-from database.model.presentation import OrmPresentation
-from database.model.publication import OrmPublication
+from database.model.presentation.presentation import Presentation
 from routers.resource_router import ResourceRouter
-from schemas import AIoDPresentation
 
 
-class PresentationRouter(ResourceRouter[OrmPresentation, AIoDPresentation]):
+class PresentationRouter(ResourceRouter):
     @property
     def version(self) -> int:
         return 0
@@ -22,13 +16,5 @@ class PresentationRouter(ResourceRouter[OrmPresentation, AIoDPresentation]):
         return "presentations"
 
     @property
-    def aiod_class(self) -> Type[AIoDPresentation]:
-        return AIoDPresentation
-
-    @property
-    def orm_class(self) -> Type[OrmPresentation]:
-        return OrmPresentation
-
-    @property
-    def converter(self) -> OrmConverter[AIoDPresentation, OrmPublication]:
-        return presentation_converter_instance
+    def resource_class(self) -> type[Presentation]:
+        return Presentation

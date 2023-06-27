@@ -74,7 +74,7 @@ class SchemaDotOrgDataset(BaseModel):
     description: str = Field(default=None, description="A description of the item.")
     identifier: str = Field(description="The AIoD identifier")
     maintainer: SchemaDotOrgOrganization = Field(
-        description="The platform on which this dataset is " "found."
+        description="The platform on which this dataset is found."
     )
     alternateName: list[str] | str | None = Field(
         default=None,

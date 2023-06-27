@@ -1,43 +1,14 @@
-from sqlalchemy import String, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
-from database.model.resource import OrmResource
-
-from database.model.base import Base
-from database.model.unique_model import UniqueMixin
+from database.model.resource import Resource
 
 
-class OrmEmail(UniqueMixin, Base):
-    __tablename__ = "emails"
+class Agent(Resource):
+    """
+    Many resources, such as organisation and member, are a type of Agent
+    and should therefore inherit from this Agent class.
+    Shared fields can be defined on this class.
 
-    @classmethod
-    def _unique_hash(cls, email):
-        return email
-
-    @classmethod
-    def _unique_filter(cls, query, email):
-        return query.filter(cls.email == email)
-
-    email: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    identifier: Mapped[int] = mapped_column(init=False, primary_key=True)
-
-    organisation_id: Mapped[int] = mapped_column(
-        ForeignKey("organisations.identifier", ondelete="cascade"), nullable=True, default=None
-    )
-
-
-class OrmAgent(OrmResource):
-    """The class of agents"""
-
-    __tablename__ = "agents"
-
-    # required fields
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
-    description: Mapped[str] = mapped_column(String(500), nullable=False)
-
-    # optional fields
-    image_url: Mapped[str | None] = mapped_column(String(100), nullable=True)
-
-    __mapper_args__ = {"polymorphic_identity": "agent", "with_polymorphic": "*"}
-
-    # TODO
-    # add email relationship
+    Notice the difference between Agent and AgentTable.
+    The latter enables defining a relationship to "any Agent",
+    by making sure that the identifiers of all resources that
+    are Agents, are unique over the Agents.
+    """

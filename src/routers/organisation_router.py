@@ -1,13 +1,8 @@
-from typing import Type
-
-from converters import organisation_converter_instance
-from converters.orm_converters.orm_converter import OrmConverter
-from database.model.organisation import OrmOrganisation
+from database.model.organisation.organisation import Organisation
 from routers import ResourceRouter
-from schemas import AIoDOrganisation
 
 
-class OrganisationRouter(ResourceRouter[OrmOrganisation, AIoDOrganisation]):
+class OrganisationRouter(ResourceRouter):
     @property
     def version(self) -> int:
         return 0
@@ -21,13 +16,5 @@ class OrganisationRouter(ResourceRouter[OrmOrganisation, AIoDOrganisation]):
         return "organisations"
 
     @property
-    def aiod_class(self) -> Type[AIoDOrganisation]:
-        return AIoDOrganisation
-
-    @property
-    def orm_class(self) -> Type[OrmOrganisation]:
-        return OrmOrganisation
-
-    @property
-    def converter(self) -> OrmConverter[AIoDOrganisation, OrmOrganisation]:
-        return organisation_converter_instance
+    def resource_class(self) -> type[Organisation]:
+        return Organisation

@@ -1,12 +1,12 @@
-from sqlalchemy import Engine, select
-from sqlalchemy.orm import Session
+from sqlalchemy import delete
+from sqlalchemy.engine import Engine
+from sqlmodel import Session, select
 
-from connectors import (
-    ExampleDatasetConnector,
-    ExamplePublicationConnector,
-)
-from database.model.dataset import OrmDataset
-from database.model.publication import OrmPublication
+from connectors import example_connectors
+from database.model.dataset.dataset import Dataset
+from database.model.platform.platform import Platform
+from database.model.platform.platform_names import PlatformName
+from database.model.publication.publication import Publication
 from database.setup import populate_database
 
 OPENML_URL = "https://www.openml.org/api/v1/json"
@@ -14,15 +14,20 @@ HUGGINGFACE_URL = "https://datasets-server.huggingface.co"
 
 
 def test_example_happy_path(engine: Engine):
+    with Session(engine) as session:
+        session.execute(delete(Platform))  # Were added in default_sqlalchemy.clear_db()
+        session.commit()
     populate_database(
         engine,
-        connectors=[ExampleDatasetConnector(), ExamplePublicationConnector()],
+        connectors=[example_connectors["datasets"], example_connectors["publications"]],
     )
     with Session(engine) as session:
-        datasets = session.scalars(select(OrmDataset)).all()
-        publications = session.scalars(select(OrmPublication)).all()
+        platforms = session.scalars(select(Platform)).all()
+        datasets = session.scalars(select(Dataset)).all()
+        publications = session.scalars(select(Publication)).all()
+        assert {p.name for p in platforms} == set(PlatformName)
         assert len(datasets) == 2
-        assert len(publications) == 2
+        assert len(publications) == 20
         assert {len(d.citations) for d in datasets} == {0, 1}
         assert {len(p.datasets) for p in publications} == {0, 1}
 

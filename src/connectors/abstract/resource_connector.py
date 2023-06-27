@@ -1,17 +1,24 @@
 import abc
 from typing import Generic, TypeVar, Iterator
 
+from sqlmodel import SQLModel
+
 from connectors.resource_with_relations import ResourceWithRelations
-from platform_names import PlatformName
-from schemas import AIoDResource
-
-AIOD_CLASS = TypeVar("AIOD_CLASS", bound=AIoDResource)
+from database.model.platform.platform_names import PlatformName
 
 
-class ResourceConnector(abc.ABC, Generic[AIOD_CLASS]):
+RESOURCE = TypeVar("RESOURCE", bound=SQLModel)
+
+
+class ResourceConnector(abc.ABC, Generic[RESOURCE]):
     """
     For every platform that offers this resource, this ResourceConnector should be implemented.
     """
+
+    @property
+    @abc.abstractmethod
+    def resource_class(self) -> type[RESOURCE]:
+        pass
 
     @property
     @abc.abstractmethod
@@ -20,13 +27,8 @@ class ResourceConnector(abc.ABC, Generic[AIOD_CLASS]):
         pass
 
     @abc.abstractmethod
-    def fetch(self, platform_identifier: str) -> AIOD_CLASS | ResourceWithRelations[AIOD_CLASS]:
-        """Retrieve information of specific resource"""
-        pass
-
-    @abc.abstractmethod
     def fetch_all(
         self, limit: int | None = None
-    ) -> Iterator[AIOD_CLASS | ResourceWithRelations[AIOD_CLASS]]:
+    ) -> Iterator[SQLModel | ResourceWithRelations[SQLModel]]:
         """Retrieve information of all resources"""
         pass

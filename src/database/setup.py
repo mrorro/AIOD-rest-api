@@ -1,19 +1,22 @@
 """
 Utility functions for initializing the database and tables through SQLAlchemy.
 """
+import logging
 from typing import List
 
-from sqlalchemy import Engine, text, create_engine, select
-from sqlalchemy.orm import Session
+from sqlalchemy import text, and_
+from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
+from sqlmodel import create_engine, Session, select, SQLModel
 
-import converters
+import routers
 from connectors import ResourceConnector
 from connectors.resource_with_relations import ResourceWithRelations
-from schemas import AIoDAIResource
-from .model.ai_resource import OrmAIResource
-from .model.base import Base  # noqa:F401
-from .model.dataset import OrmDataset
-from .model.publication import OrmPublication
+from database.model.dataset.dataset import Dataset
+from database.model.platform.platform import Platform
+from database.model.publication.publication import Publication
+from database.model.resource import Resource
+from database.model.platform.platform_names import PlatformName
 
 
 def connect_to_database(
@@ -40,7 +43,7 @@ def connect_to_database(
     engine = create_engine(url, echo=True, pool_recycle=3600)
 
     with engine.connect() as connection:
-        Base.metadata.create_all(connection, checkfirst=True)
+        Resource.metadata.create_all(connection, checkfirst=True)
         connection.commit()
     return engine
 
@@ -66,40 +69,96 @@ def populate_database(
     """Add some data to the Dataset and Publication tables."""
 
     with Session(engine) as session:
+        session.add_all([Platform(name=name) for name in PlatformName])
         data_exists = (
-            session.scalars(select(OrmPublication)).first()
-            or session.scalars(select(OrmDataset)).first()
+            session.scalars(select(Publication)).first() or session.scalars(select(Dataset)).first()
         )
         if only_if_empty and data_exists:
             return
 
         for connector in connectors:
+            (router,) = [
+                router
+                for router in routers.resource_routers
+                if router.resource_class == connector.resource_class
+            ]
+            # We use the create_resource function for this router.
+            # This is a temporary solution. After finishing the Connectors (so that they're
+            # synchronizing), we will probably just perform a HTTP POST instead.
+
             for item in connector.fetch_all(limit=limit):
                 if isinstance(item, ResourceWithRelations):
-                    orm_resource = _convert(session, item.resource)
-                    _add_related_objects(session, orm_resource, item.related_resources)
+                    resource_create_instance = item.resource
+                    _create_or_fetch_related_objects(session, item)
                 else:
-                    orm_resource = _convert(session, item)
-                session.add(orm_resource)
+                    resource_create_instance = item
+                if (
+                    _get_existing_resource(
+                        session, resource_create_instance, connector.resource_class
+                    )
+                    is None
+                ):
+                    try:
+                        router.create_resource(session, resource_create_instance)
+                    except IntegrityError as e:
+                        logging.warning(
+                            f"Error while creating resource. Continuing for now: " f" {e}"
+                        )
+                session.flush()
         session.commit()
 
 
-def _add_related_objects(
-    session: Session,
-    orm_resource: OrmAIResource,
-    related_resources: dict[str, AIoDAIResource | List[AIoDAIResource]],
-):
-    for field_name, related_resource_or_list in related_resources.items():
-        if isinstance(related_resource_or_list, AIoDAIResource):
-            resource: AIoDAIResource = related_resource_or_list
-            related_orm = _convert(session, resource)
-            orm_resource.__setattr__(field_name, related_orm)
+def _get_existing_resource(
+    session: Session, resource: Resource, clazz: type[SQLModel]
+) -> Resource | None:
+    """Selecting a resource based on platform and platform_identifier"""
+    query = select(clazz).where(
+        and_(
+            clazz.platform == resource.platform,
+            clazz.platform_identifier == resource.platform_identifier,
+        )
+    )
+    return session.scalars(query).first()
+
+
+def _create_or_fetch_related_objects(session: Session, item: ResourceWithRelations):
+    """
+    For all resources in the `related_resources`, get the identifier, by either
+    inserting them in the database, or retrieving the existing values, and put the identifiers
+    into the item.resource.[field_name]
+    """
+    for field_name, related_resource_or_list in item.related_resources.items():
+        if isinstance(related_resource_or_list, Resource):
+            resources = [related_resource_or_list]
         else:
-            resources: list[AIoDAIResource] = related_resource_or_list
-            related_orms = [_convert(session, resource) for resource in resources]
-            orm_resource.__setattr__(field_name, related_orms)
+            resources = related_resource_or_list
+        identifiers = []
+        for resource in resources:
+            if (
+                resource.platform is not None
+                and resource.platform != PlatformName.aiod
+                and resource.platform_identifier is not None
+            ):
+                # Get the router of this resource. The difficulty is, that the resource will be a
+                # ResourceRead (e.g. a DatasetRead). So we search for the router for which the
+                # resource name starts with the research-read-name
 
+                resource_read_str = type(resource).__name__  # E.g. DatasetRead
+                (router,) = [
+                    router
+                    for router in routers.resource_routers
+                    if resource_read_str.startswith(router.resource_class.__name__)
+                    # E.g. "DatasetRead".startswith("Dataset")
+                ]
+                existing = _get_existing_resource(session, resource, router.resource_class)
+                if existing is None:
+                    created_resource = router.create_resource(session, resource)
+                    identifiers.append(created_resource.identifier)
+                else:
+                    identifiers.append(existing.identifier)
 
-def _convert(session: Session, resource: AIoDAIResource) -> OrmAIResource:
-    converter = converters.converters[type(resource)]
-    return converter.aiod_to_orm(session, resource, return_existing_if_present=True)
+        if isinstance(related_resource_or_list, Resource):
+            (id_,) = identifiers
+            item.resource.__setattr__(field_name, id_)  # E.g. Dataset.license_identifier = 1
+        else:
+            item.resource.__setattr__(field_name, identifiers)  # E.g. Dataset.keywords = [1, 4]

@@ -10,4 +10,4 @@ docker run \
 	--network sql-network \
 	--rm \
 	-v $DATA_DIR:/var/lib/mysql \
-	mysql
+	mysql 

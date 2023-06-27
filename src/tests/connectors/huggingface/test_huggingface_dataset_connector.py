@@ -4,7 +4,7 @@ import responses
 
 import connectors
 from connectors.resource_with_relations import ResourceWithRelations
-from platform_names import PlatformName
+from database.model.platform.platform_names import PlatformName
 from tests.testutils.paths import path_test_resources
 
 HUGGINGFACE_URL = "https://datasets-server.huggingface.co"

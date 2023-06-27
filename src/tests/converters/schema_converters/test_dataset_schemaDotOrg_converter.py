@@ -1,11 +1,11 @@
 from converters.schema_converters import dataset_converter_schema_dot_org_instance
-from schemas import AIoDDataset
+from database.model.dataset.dataset import Dataset
 from tests.testutils.paths import path_test_resources
 
 
-def test_aiod_to_schema_dot_org_happy_path(aiod_dataset: AIoDDataset):
+def test_aiod_to_schema_dot_org_happy_path(dataset: Dataset):
     converter = dataset_converter_schema_dot_org_instance
-    result = converter.convert(aiod_dataset)
+    result = converter.convert(dataset)
     actual = result.json(by_alias=True, indent=4)
     with open(path_test_resources() / "schemes" / "schema_dot_org" / "dataset.json", "r") as f:
         expected = f.read()

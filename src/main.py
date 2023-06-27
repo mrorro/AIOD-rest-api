@@ -5,6 +5,7 @@ Note: order matters for overloaded paths
 (https://fastapi.tiangolo.com/tutorial/path-params/#order-matters).
 """
 import argparse
+import logging
 import os
 import tomllib
 from typing import Dict
@@ -14,13 +15,14 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import Json
-from sqlalchemy import Engine
+from sqlalchemy.engine import Engine
+from starlette.status import HTTP_400_BAD_REQUEST, HTTP_501_NOT_IMPLEMENTED
 
 import connectors
 import routers
 from authentication import get_current_user
+from database.model.platform.platform_names import PlatformName
 from database.setup import connect_to_database, populate_database
-from platform_names import PlatformName
 
 
 def _parse_args() -> argparse.Namespace:
@@ -40,18 +42,18 @@ def _parse_args() -> argparse.Namespace:
         help="Zero, one or more platforms with which the datasets should get populated.",
     )
     parser.add_argument(
-        "--populate-publications",
+        "--fill-with-examples",
         default=[],
         nargs="+",
-        choices=[p.name for p in PlatformName],
-        help="Zero, one or more platforms with which the publications should get populated.",
+        choices=connectors.example_connectors.keys(),
+        help="Zero, one or more resources with which the database will have examples.",
     )
     parser.add_argument(
         "--limit",
         type=int,
         default=None,
         help="Limit the number of initial resources with which the database is populated, "
-        "per resources and per platform.",
+        "per resource and per platform.",
     )
     parser.add_argument(
         "--reload",
@@ -86,7 +88,10 @@ def _connector_from_platform_name(connector_type: str, connector_dict: Dict, pla
     try:
         platform = PlatformName(platform_name)
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"platform '{platform_name}' not recognized.")
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"platform " f"'{platform_name}' not recognized.",
+        )
     connector = connector_dict.get(platform, None)
     if connector is None:
         possibilities = ", ".join(f"`{c}`" for c in connectors.dataset_connectors.keys())
@@ -94,7 +99,21 @@ def _connector_from_platform_name(connector_type: str, connector_dict: Dict, pla
             f"No {connector_type} connector for platform '{platform_name}' available. Possible "
             f"values: {possibilities}"
         )
-        raise HTTPException(status_code=501, detail=msg)
+        raise HTTPException(status_code=HTTP_501_NOT_IMPLEMENTED, detail=msg)
+    return connector
+
+
+def _connector_example_from_resource(resource):
+    connector_dict = connectors.example_connectors
+    connector = connector_dict.get(resource, None)
+    if connector is None:
+        possibilities = ", ".join(f"`{c}`" for c in connectors.example_connectors.keys())
+        msg = (
+            f"No example connector for resource '{resource}' available. Possible "
+            f"values: {possibilities}"
+        )
+        logging.warning(msg)
+        raise HTTPException(status_code=HTTP_501_NOT_IMPLEMENTED, detail=msg)
     return connector
 
 
@@ -123,12 +142,7 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
         """
         return {"msg": "success", "user": user}
 
-    @app.get(url_prefix + "/platforms/v0")
-    def get_platforms() -> list:
-        """Retrieve information about all known platforms"""
-        return list(PlatformName)
-
-    for router in routers.routers:
+    for router in routers.resource_routers + routers.other_routers:
         app.include_router(router.create(engine, url_prefix))
 
 
@@ -141,7 +155,7 @@ def create_app() -> FastAPI:
             "realm": "dev",
             "appName": "AIoD API",
             "usePkceWithAuthorizationCodeGrant": True,
-            "scopes": "openid profile",
+            "scopes": "openid profile microprofile-jwt",
         }
     )
     args = _parse_args()
@@ -150,13 +164,11 @@ def create_app() -> FastAPI:
         _connector_from_platform_name("dataset", connectors.dataset_connectors, platform_name)
         for platform_name in args.populate_datasets
     ]
-    publication_connectors = [
-        _connector_from_platform_name(
-            "publication", connectors.publication_connectors, platform_name
-        )
-        for platform_name in args.populate_publications
+
+    examples_connectors = [
+        _connector_example_from_resource(resource) for resource in args.fill_with_examples
     ]
-    connectors_ = dataset_connectors + publication_connectors
+    connectors_ = dataset_connectors + examples_connectors
     engine = _engine(args.rebuild_db)
     if len(connectors_) > 0:
         populate_database(

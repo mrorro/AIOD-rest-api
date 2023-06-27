@@ -1,12 +1,8 @@
-from typing import Type
-
-from converters import project_converter_instance, OrmConverter
-from database.model.project import OrmProject
+from database.model.project.project import Project
 from routers.resource_router import ResourceRouter
-from schemas import AIoDProject
 
 
-class ProjectRouter(ResourceRouter[OrmProject, AIoDProject]):
+class ProjectRouter(ResourceRouter):
     @property
     def version(self) -> int:
         return 0
@@ -20,13 +16,5 @@ class ProjectRouter(ResourceRouter[OrmProject, AIoDProject]):
         return "projects"
 
     @property
-    def aiod_class(self) -> Type[AIoDProject]:
-        return AIoDProject
-
-    @property
-    def orm_class(self) -> Type[OrmProject]:
-        return OrmProject
-
-    @property
-    def converter(self) -> OrmConverter[AIoDProject, OrmProject]:
-        return project_converter_instance
+    def resource_class(self) -> type[Project]:
+        return Project

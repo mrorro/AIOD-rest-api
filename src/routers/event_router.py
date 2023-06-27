@@ -1,12 +1,9 @@
 from typing import Type
-
-from converters import event_converter_instance, OrmConverter
-from database.model.event import OrmEvent
+from database.model.event.event import Event
 from routers.resource_router import ResourceRouter
-from schemas import AIoDEvent
 
 
-class EventRouter(ResourceRouter[OrmEvent, AIoDEvent]):
+class EventRouter(ResourceRouter):
     @property
     def version(self) -> int:
         return 0
@@ -20,13 +17,5 @@ class EventRouter(ResourceRouter[OrmEvent, AIoDEvent]):
         return "events"
 
     @property
-    def aiod_class(self) -> Type[AIoDEvent]:
-        return AIoDEvent
-
-    @property
-    def orm_class(self) -> Type[OrmEvent]:
-        return OrmEvent
-
-    @property
-    def converter(self) -> OrmConverter[AIoDEvent, OrmEvent]:
-        return event_converter_instance
+    def resource_class(self) -> Type[Event]:
+        return Event
