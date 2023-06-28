@@ -333,7 +333,7 @@ class ResourceRouter(abc.ABC):
             user: dict = Depends(get_current_user),
         ):
             f"""Register a {self.resource_name} with AIoD."""
-            if os.getenv("KEYCLOAK_ROLE") not in user["groups"]:
+            if "groups" in user and os.getenv("KEYCLOAK_ROLE") not in user["groups"]:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You do not have permission to edit Aiod resources.",
@@ -389,7 +389,7 @@ class ResourceRouter(abc.ABC):
             user: dict = Depends(get_current_user),
         ):
             f"""Update an existing {self.resource_name}."""
-            if os.getenv("KEYCLOAK_ROLE") not in user["groups"]:
+            if "groups" in user and os.getenv("KEYCLOAK_ROLE") not in user["groups"]:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You do not have permission to edit Aiod resources.",
@@ -424,7 +424,7 @@ class ResourceRouter(abc.ABC):
         """
 
         def delete_resource(identifier: str, user: dict = Depends(get_current_user)):
-            if os.getenv("KEYCLOAK_ROLE") not in user["groups"]:
+            if "groups" in user and os.getenv("KEYCLOAK_ROLE") not in user["groups"]:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You do not have permission to edit Aiod resources.",
