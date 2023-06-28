@@ -198,10 +198,13 @@ Please ask Jos van der Velde (j.d.v.d.velde@tue.nl) for the keycloak secret, and
 user the correct roles.
 
 Alternatively, you can connect to a different keycloak instance by modifying `src/.env`. EGI 
-Checkin can for instance be used on a deployed instance - not on local host. The redirection url 
-of a Keycloak must be set. On our development keycloak, any redirection url is accepted, so it 
-works on local host or wherever you deploy. This should never be the case for a production 
-instance, of course.
+Checkin can for instance be used on a deployed instance - not on local host. Marco Rorro is the 
+go-to person to request the usage of the EGI Checkin.
+
+The reason that EGI Checkin doesn't work on localhost, is that the redirection url of EGI 
+Checkin is strict - as it should be. On our development keycloak, any redirection url is 
+accepted, so that it works on local host or wherever you deploy. This should never be the case 
+for a production instance.
 
 See [authentication README](authentication/README.md) for more information.
 
