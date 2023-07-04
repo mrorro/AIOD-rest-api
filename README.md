@@ -186,17 +186,25 @@ Follow the instructions and select the root folder of the project:
 
 ### Authentication
 Currently, the code is on default coupled with a keycloak running on test.openml.org. To make 
-this work, you need to set some environment variables. You can do this by creating a `.env` file 
-and place it in the `src` directory. The `.env` file needs two variables:
+this work, you need to set an environment variable. You can do this by setting the 
+`KEYCLOAK_CLIENT_SECRET` in `src/.env`.
 
 ```bash
-# Authentication
-KEYCLOAK_CLIENT_ID=aiod-api
+# src/.env
 KEYCLOAK_CLIENT_SECRET=[SECRET]
 ```
 
 Please ask Jos van der Velde (j.d.v.d.velde@tue.nl) for the keycloak secret, and to give your 
 user the correct roles.
+
+Alternatively, you can connect to a different keycloak instance by modifying `src/.env`. EGI 
+Checkin can for instance be used on a deployed instance - not on local host. Marco Rorro is the 
+go-to person to request the usage of the EGI Checkin.
+
+The reason that EGI Checkin doesn't work on localhost, is that the redirection url of EGI 
+Checkin is strict - as it should be. On our development keycloak, any redirection url is 
+accepted, so that it works on local host or wherever you deploy. This should never be the case 
+for a production instance.
 
 See [authentication README](authentication/README.md) for more information.
 

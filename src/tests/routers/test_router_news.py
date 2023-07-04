@@ -6,7 +6,7 @@ from authentication import keycloak_openid
 
 
 def test_happy_path(client: TestClient, mocked_privileged_token: Mock):
-    keycloak_openid.decode_token = mocked_privileged_token
+    keycloak_openid.userinfo = mocked_privileged_token
     body = {
         "platform": "example",
         "platform_identifier": "2",

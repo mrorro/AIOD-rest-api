@@ -14,6 +14,7 @@ from sqlmodel import SQLModel, Session, select
 from starlette.responses import JSONResponse
 
 from authentication import get_current_user
+from config import KEYCLOAK_CONFIG
 from converters.schema_converters.schema_converter import SchemaConverter
 from database.model.agent import Agent
 from database.model.agent_table import AgentTable
@@ -332,7 +333,7 @@ class ResourceRouter(abc.ABC):
             user: dict = Depends(get_current_user),
         ):
             f"""Register a {self.resource_name} with AIoD."""
-            if "edit_aiod_resources" not in user["realm_access"]["roles"]:
+            if "groups" in user and KEYCLOAK_CONFIG.get("role") not in user["groups"]:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You do not have permission to edit Aiod resources.",
@@ -388,7 +389,7 @@ class ResourceRouter(abc.ABC):
             user: dict = Depends(get_current_user),
         ):
             f"""Update an existing {self.resource_name}."""
-            if "edit_aiod_resources" not in user["realm_access"]["roles"]:
+            if "groups" in user and KEYCLOAK_CONFIG.get("role") not in user["groups"]:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You do not have permission to edit Aiod resources.",
@@ -423,7 +424,7 @@ class ResourceRouter(abc.ABC):
         """
 
         def delete_resource(identifier: str, user: dict = Depends(get_current_user)):
-            if "edit_aiod_resources" not in user["realm_access"]["roles"]:
+            if "groups" in user and KEYCLOAK_CONFIG.get("role") not in user["groups"]:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You do not have permission to edit Aiod resources.",

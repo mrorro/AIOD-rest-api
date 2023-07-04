@@ -16,7 +16,7 @@ def test_happy_path(
     identifier: int,
     mocked_privileged_token: Mock,
 ):
-    keycloak_openid.decode_token = mocked_privileged_token
+    keycloak_openid.userinfo = mocked_privileged_token
 
     with Session(engine_test_resource) as session:
         session.add_all(
@@ -48,7 +48,7 @@ def test_non_existent(
     identifier: int,
     mocked_privileged_token: Mock,
 ):
-    keycloak_openid.decode_token = mocked_privileged_token
+    keycloak_openid.userinfo = mocked_privileged_token
     with Session(engine_test_resource) as session:
         session.add_all(
             [

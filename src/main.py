@@ -6,12 +6,9 @@ Note: order matters for overloaded paths
 """
 import argparse
 import logging
-import os
-import tomllib
 from typing import Dict
 
 import uvicorn
-from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import Json
@@ -21,11 +18,13 @@ from starlette.status import HTTP_400_BAD_REQUEST, HTTP_501_NOT_IMPLEMENTED
 import connectors
 import routers
 from authentication import get_current_user
+from config import DB_CONFIG, KEYCLOAK_CONFIG
 from database.model.platform.platform_names import PlatformName
 from database.setup import connect_to_database, populate_database
 
 
 def _parse_args() -> argparse.Namespace:
+    # TODO: refactor configuration (https://github.com/aiondemand/AIOD-rest-api/issues/82)
     parser = argparse.ArgumentParser(description="Please refer to the README.")
     parser.add_argument("--url-prefix", default="", help="Prefix for the api url.")
     parser.add_argument(
@@ -68,14 +67,11 @@ def _engine(rebuild_db: str) -> Engine:
     Return a SqlAlchemy engine, backed by the MySql connection as configured in the configuration
     file.
     """
-    with open("config.toml", "rb") as fh:
-        config = tomllib.load(fh)
-    db_config = config.get("database", {})
-    username = db_config.get("name", "root")
-    password = db_config.get("password", "ok")
-    host = db_config.get("host", "demodb")
-    port = db_config.get("port", 3306)
-    database = db_config.get("database", "aiod")
+    username = DB_CONFIG.get("name", "root")
+    password = DB_CONFIG.get("password", "ok")
+    host = DB_CONFIG.get("host", "demodb")
+    port = DB_CONFIG.get("port", 3306)
+    database = DB_CONFIG.get("database", "aiod")
 
     db_url = f"mysql://{username}:{password}@{host}:{port}/{database}"
 
@@ -148,17 +144,19 @@ def add_routes(app: FastAPI, engine: Engine, url_prefix=""):
 
 def create_app() -> FastAPI:
     """Create the FastAPI application, complete with routes."""
-    app = FastAPI(
-        swagger_ui_init_oauth={
-            "clientId": os.getenv("KEYCLOAK_CLIENT_ID"),
-            "clientSecret": os.getenv("KEYCLOAK_CLIENT_SECRET"),
-            "realm": "dev",
-            "appName": "AIoD API",
-            "usePkceWithAuthorizationCodeGrant": True,
-            "scopes": "openid profile microprofile-jwt",
-        }
-    )
     args = _parse_args()
+    app = FastAPI(
+        openapi_url=f"{args.url_prefix}/openapi.json",
+        docs_url=f"{args.url_prefix}/docs",
+        swagger_ui_oauth2_redirect_url=f"{args.url_prefix}/docs/oauth2-redirect",
+        swagger_ui_init_oauth={
+            "clientId": KEYCLOAK_CONFIG.get("client_id_swagger"),
+            "realm": KEYCLOAK_CONFIG.get("realm"),
+            "appName": "AIoD Metadata Catalogue",
+            "usePkceWithAuthorizationCodeGrant": True,
+            "scopes": KEYCLOAK_CONFIG.get("scopes"),
+        },
+    )
 
     dataset_connectors = [
         _connector_from_platform_name("dataset", connectors.dataset_connectors, platform_name)
@@ -185,7 +183,6 @@ def create_app() -> FastAPI:
 def main():
     """Run the application. Placed in a separate function, to avoid having global variables"""
     args = _parse_args()
-    load_dotenv()
     uvicorn.run("main:create_app", host="0.0.0.0", reload=args.reload, factory=True)
 
 

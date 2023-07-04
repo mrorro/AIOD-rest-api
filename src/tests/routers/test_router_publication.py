@@ -10,7 +10,7 @@ from database.model.dataset.dataset import Dataset
 
 
 def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token: Mock):
-    keycloak_openid.decode_token = mocked_privileged_token
+    keycloak_openid.userinfo = mocked_privileged_token
     asset = AIAssetTable(type="dataset")
     dataset_description = Dataset(
         identifier="1",

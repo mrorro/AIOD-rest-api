@@ -13,7 +13,7 @@ from database.model.computational_resource.computational_resource import Computa
 
 
 def test_happy_path(client: TestClient, engine: Engine, mocked_privileged_token: Mock):
-    keycloak_openid.decode_token = mocked_privileged_token
+    keycloak_openid.userinfo = mocked_privileged_token
     with Session(engine) as session:
         session.add_all(
             [
