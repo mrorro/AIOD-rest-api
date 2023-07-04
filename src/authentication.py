@@ -27,25 +27,26 @@ from fastapi import HTTPException, Security, status
 from fastapi.security import OpenIdConnect
 from keycloak import KeycloakOpenID, KeycloakError
 
+from config import KEYCLOAK_CONFIG
+
 load_dotenv()
 
-oidc = OpenIdConnect(
-    openIdConnectUrl=os.getenv("KEYCLOAK_OPENID_CONNECT_URL"),
-    auto_error=False,
-)
+
+oidc = OpenIdConnect(openIdConnectUrl=KEYCLOAK_CONFIG.get("openid_connect_url"), auto_error=False)
+
 
 client_secret = os.getenv("KEYCLOAK_CLIENT_SECRET")
 keycloak_openid = KeycloakOpenID(
-    server_url=os.getenv("KEYCLOAK_SERVER_URL"),
-    client_id=os.getenv("KEYCLOAK_CLIENT_ID"),
+    server_url=KEYCLOAK_CONFIG.get("server_url"),
+    client_id=KEYCLOAK_CONFIG.get("client_id"),
     client_secret_key=client_secret,
-    realm_name=os.getenv("KEYCLOAK_REALM"),
+    realm_name=KEYCLOAK_CONFIG.get("realm"),
     verify=True,
 )
 
 
 async def get_current_user(token=Security(oidc)) -> dict:
-    if not client_secret or " " in client_secret:
+    if not client_secret:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="This instance is not configured correctly. You'll need to set the env var "

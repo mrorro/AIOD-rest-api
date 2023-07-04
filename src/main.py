@@ -6,8 +6,6 @@ Note: order matters for overloaded paths
 """
 import argparse
 import logging
-import os
-import tomllib
 from typing import Dict
 
 import uvicorn
@@ -20,6 +18,7 @@ from starlette.status import HTTP_400_BAD_REQUEST, HTTP_501_NOT_IMPLEMENTED
 import connectors
 import routers
 from authentication import get_current_user
+from config import DB_CONFIG, KEYCLOAK_CONFIG
 from database.model.platform.platform_names import PlatformName
 from database.setup import connect_to_database, populate_database
 
@@ -68,14 +67,11 @@ def _engine(rebuild_db: str) -> Engine:
     Return a SqlAlchemy engine, backed by the MySql connection as configured in the configuration
     file.
     """
-    with open("config.toml", "rb") as fh:
-        config = tomllib.load(fh)
-    db_config = config.get("database", {})
-    username = db_config.get("name", "root")
-    password = db_config.get("password", "ok")
-    host = db_config.get("host", "demodb")
-    port = db_config.get("port", 3306)
-    database = db_config.get("database", "aiod")
+    username = DB_CONFIG.get("name", "root")
+    password = DB_CONFIG.get("password", "ok")
+    host = DB_CONFIG.get("host", "demodb")
+    port = DB_CONFIG.get("port", 3306)
+    database = DB_CONFIG.get("database", "aiod")
 
     db_url = f"mysql://{username}:{password}@{host}:{port}/{database}"
 
@@ -154,11 +150,11 @@ def create_app() -> FastAPI:
         docs_url=f"{args.url_prefix}/docs",
         swagger_ui_oauth2_redirect_url=f"{args.url_prefix}/docs/oauth2-redirect",
         swagger_ui_init_oauth={
-            "clientId": os.getenv("KEYCLOAK_CLIENT_ID_SWAGGER"),
-            "realm": os.getenv("KEYCLOAK_REALM"),
+            "clientId": KEYCLOAK_CONFIG.get("client_id_swagger"),
+            "realm": KEYCLOAK_CONFIG.get("realm"),
             "appName": "AIoD Metadata Catalogue",
             "usePkceWithAuthorizationCodeGrant": True,
-            "scopes": os.getenv("KEYCLOAK_SCOPES"),
+            "scopes": KEYCLOAK_CONFIG.get("scopes"),
         },
     )
 
