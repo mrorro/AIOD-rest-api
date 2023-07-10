@@ -7,7 +7,6 @@ updates:
     schedule:
       interval: "daily"
     # Raise pull requests for version updates
-    # to pip against the `feature/depend-a-bot` branch
     target-branch: "feature/depend-a-bot"
     # Labels on pull requests for version updates only
     labels: "pip dependencies"
