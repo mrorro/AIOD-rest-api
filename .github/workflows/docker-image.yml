@@ -16,3 +16,11 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build the Docker image
       run: docker build --tag ai4eu_server_demo:latest -f Dockerfile .
+    
+    #Start up sqlserver
+    - name: Built mysql server
+      run: ./scripts/run_mysql_server.sh
+
+    #Start up api server
+    - name: built apiserver
+      run : ./scripts/run_apiserver.sh
