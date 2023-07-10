@@ -22,6 +22,10 @@ jobs:
     
     #Start up sqlserver
     - name: Built mysql server
-      run: docker run --network sql-network -it --rm -p 8000:8000 --name apiserver ai4eu_server_demo
+      run: ./scripts/mysql_server.sh
+      
+    #Start up apiserver
+    - name: Built api server
+      run: ./scripts/apiserver.sh
 
 
