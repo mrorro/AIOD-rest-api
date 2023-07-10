@@ -14,11 +14,13 @@ permissions:
 
 jobs:
   build:
-
+    strategy:
+      matrix:
+        python-version: [3.11]
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./src/tests
+        working-directory: ./src/
 
     steps:
     - uses: actions/checkout@v3
@@ -32,8 +34,10 @@ jobs:
         pip install flake8 pytest
         python -m pip install .
         python -m pip install ".[dev]"
-    - name: unit tests
-      run: |
+        pip install -e .
+    - name: Run unit tests
+      run: | 
+        pytest
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
