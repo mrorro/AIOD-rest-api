@@ -6,7 +6,5 @@ updates:
     # Check for updates daily
     schedule:
       interval: "daily"
-    # Raise pull requests for version updates
-    target-branch: "feature/depend-a-bot"
     # Labels on pull requests for version updates only
     labels: "pip dependencies"
