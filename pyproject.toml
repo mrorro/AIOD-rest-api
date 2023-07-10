@@ -51,8 +51,6 @@ line-length = 100
 filterwarnings = [
     "ignore::FutureWarning"
 ]
-addopts = "--ignore=dbt_packages"
-
 env_override_existing_values = 1
 env_files = [
     "src/.env",
