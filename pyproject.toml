@@ -16,7 +16,7 @@ dependencies = [
     "urllib3== 2.0.3",
     "bibtexparser==1.4.0",
     "datasets==2.13.1",
-    "fastapi==0.98.0",
+    "fastapi==0.100.0",
     "uvicorn==0.22.0",
     "requests==2.31.0",
     "mysqlclient==2.1.1",
