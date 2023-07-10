@@ -34,6 +34,5 @@ jobs:
         pip install -e .
     
     - name: Test with pytest
-      continue-on-error: true
       run: |
-        pytest
+        pytest ./src/tests/
