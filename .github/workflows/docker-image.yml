@@ -22,10 +22,10 @@ jobs:
     
     #Start up sqlserver
     - name: Built mysql server
-      run: ./scripts/mysql_server.sh
+      run: ./scripts/run_mysql_server.sh
       
     #Start up apiserver
     - name: Built api server
-      run: ./scripts/apiserver.sh
+      run: ./scripts/run_apiserver.sh
 
 
