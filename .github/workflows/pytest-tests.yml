@@ -39,4 +39,4 @@ jobs:
     
     - name: Test with pytest
       run: |
-        pytest ./src/tests/ -s
+        pytest ./src/tests/ 
