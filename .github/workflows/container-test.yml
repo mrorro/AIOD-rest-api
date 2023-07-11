@@ -12,8 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
         packages: read
+        contents: read
+
     container:
-      
       image: 'ghcr.io/aiondemand/ai4eu_server_demo:latest'
       credentials:
          username: ${{ github.ref }}
@@ -22,12 +23,24 @@ jobs:
         actor: ${{ github.actor }}
 
     steps:
-    - uses: actions/checkout@main
-    - name: run ls
-      run: ls
-    # all these below work
-    - name: print actor env var
-      run: echo "$actor"
-    - name: print directly github context
-      run: echo "${{ github.actor }}"
+        - uses: actions/checkout@v3
+        - name: Set up Python 3.11 
+          uses: actions/setup-python@v3
+          with:
+            python-version: "3.11" 
+        
+        - name: Install dependencies
+          run: |
+            python -m pip install ".[dev]"
+            pre-commit install
+            
+        - name: pre-commit check
+          run: |
+            source venv/bin/activate
+            pre-commit run --all
+        
+        - name: Test with pytest
+          run: |
+            source venv/bin/activate
+            pytest ./src/tests/ 
     
