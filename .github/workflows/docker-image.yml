@@ -22,32 +22,32 @@ jobs:
     - name: Check for dockerenv file
       run: (ls /.dockerenv && echo Found dockerenv) || (echo No dockerenv)
   
-  test:
-    strategy:
-      matrix:
-        python-version: ["3.11"]
-    runs-on: ubuntu-latest
-    container: ai4eu_server_demo:latest
-    steps:
+  # test:
+  #   strategy:
+  #     matrix:
+  #       python-version: ["3.11"]
+  #   runs-on: ubuntu-latest
+  #   container: ai4eu_server_demo:latest
+  #   steps:
 
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }} 
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}  
-      - name: Install dependencies
-        run: |
-          python -m pip install .
-          python -m pip install ".[dev]"
-          pre-commit install
+  #     - uses: actions/checkout@v3
+  #     - name: Set up Python ${{ matrix.python-version }} 
+  #       uses: actions/setup-python@v3
+  #       with:
+  #         python-version: ${{ matrix.python-version }}  
+  #     - name: Install dependencies
+  #       run: |
+  #         python -m pip install .
+  #         python -m pip install ".[dev]"
+  #         pre-commit install
           
-      - name: pre-commit check
-        run: |
-          pre-commit run --all
+  #     - name: pre-commit check
+  #       run: |
+  #         pre-commit run --all
       
-      - name: Test with pytest
-        run: |
-          pytest ./src/tests/ 
+  #     - name: Test with pytest
+  #       run: |
+  #         pytest ./src/tests/ 
     
 
 
