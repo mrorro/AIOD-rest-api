@@ -26,9 +26,9 @@ jobs:
           
       - name: Push the docker Image
         run: | 
-          docker push ghcr.io/${{ github.repository }}:${{ github.run_number }}
-          docker tag ghcr.io/${{ github.repository }}:${{ github.run_number }} ghcr.io/${{ github.repository }}:latest
-          docker push ghcr.io/${{ github.repository }}:latest
+          docker push ai4eu_server_demo
+          docker tag ai4eu_server_demo:latest
+          docker push ai4eu_server_demo:latest
   
   
     
