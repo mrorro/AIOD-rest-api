@@ -16,6 +16,7 @@ jobs:
 
     container:
       image: 'ghcr.io/aiondemand/ai4eu_server_demo:latest'
+      options: --user root
       credentials:
          username: ${{ github.ref }}
          password: ${{ secrets.GITHUB_TOKEN }}
