@@ -10,6 +10,8 @@ on:
 jobs:  
   container:
     runs-on: ubuntu-latest
+    permissions:
+        packages: read
     container:
       
       image: 'ghcr.io/aiondemand/ai4eu_server_demo:latest'
