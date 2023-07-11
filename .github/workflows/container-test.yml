@@ -1,0 +1,31 @@
+name: Pytest inside Container
+
+on:
+    push:
+        branches:
+            develop
+    pull_request:
+        branches: [ develop ]
+
+jobs:  
+  container:
+    runs-on: ubuntu-latest
+    container:
+      
+      image: 'ghcr.io/aiondemand/ai4eu_server_demo:latest'
+      credentials:
+         username: ${{ github.ref }}
+         password: ${{ secrets.GITHUB_TOKEN }}
+      env: 
+        actor: ${{ github.actor }}
+
+    steps:
+    - uses: actions/checkout@main
+    - name: run ls
+      run: ls
+    # all these below work
+    - name: print actor env var
+      run: echo "$actor"
+    - name: print directly github context
+      run: echo "${{ github.actor }}"
+    
