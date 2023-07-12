@@ -1,4 +1,4 @@
-name: Docker Image  CI and pytest test.
+name: Built docker image and run tests
 
 # This workflow is only triggered when something is pushed on develop branch.
 # This workflow will built docker image and run tests inside the container.
