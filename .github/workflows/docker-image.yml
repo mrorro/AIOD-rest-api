@@ -18,12 +18,10 @@ jobs:
       - name: Build the Docker image
         run: docker build --tag ai4eu_server_demo:latest -f Dockerfile .
       
-      - run: pip install ".[dev]"
       - uses: ./src/
       - name: Run docker container
         run: |
-          docker run --entrypoint "pytest tests" ai4eu_server_demo
-          
+          docker run --entrypoint "" ai4eu_server_demo pip install --user ".[dev]" && pytest test          
   
   
           
