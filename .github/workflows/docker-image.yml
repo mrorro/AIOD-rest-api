@@ -3,13 +3,18 @@ name: Built docker image and run tests
 # This workflow is only triggered when something is pushed on develop branch.
 # This workflow will built docker image and run tests inside the container.
 # This workflow ensures that the after every change in "develop", the code is not breaking.
-# This workflow is not executed for every PR because if we have multiple PRs, 
-# the docker container will reponsd to the last created created PR, which is not good.
+# This workflow is not executed for every PR because it seems unnecessary: we're already testing 
+# the PRs using a python virtual env instead of the docker. 
+# Also performing dockerized tests for every PR seems to be overkill."
 
 on:
   push:
-     branches:
-       - "develop"
+    paths:
+      - '.github/workflows/docker-image.yml'
+      - 'pyproject.tml'
+    branches:
+      - "develop"
+
   # allows to manually start a workflow run from the GitHub UI or using the GitHub API.    
   workflow_dispatch:
 
@@ -26,7 +31,7 @@ jobs:
       
       - name: Run docker container and pytest tests
         run: |
-          docker run -e KEYCLOAK_CLIENT_SECRET="mocked_secret" --entrypoint "" ai4eu_server_demo sh -c "pip install \".[dev]\" && pytest --envfile test/.env tests -s"
+          docker run -e KEYCLOAK_CLIENT_SECRET="mocked_secret" --entrypoint "" ai4eu_server_demo sh -c "pip install \".[dev]\" && pytest tests -s"
   
   
           
