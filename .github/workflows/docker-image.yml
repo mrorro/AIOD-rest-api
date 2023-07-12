@@ -17,13 +17,12 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build the Docker image
         run: docker build --tag ai4eu_server_demo:latest -f Dockerfile .
-        
+      
+      - run: pip install ".[dev]"
       - name: Run docker container
         run: |
-          docker network create sql-network
-          docker run -e MYSQL_ROOT_PASSWORD=ok --name sqlserver --network sql-network -d mysql
-          docker run --network sql-network -it --rm -p 8000:8000 --name apiserver ai4eu_server_demo
-          pip install pre-commit
+          docker run --entrypoint "pytest tests" ai4eu_server_demo
+          
   
   
           
