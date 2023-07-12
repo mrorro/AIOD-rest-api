@@ -12,6 +12,7 @@ on:
     paths:
       - '.github/workflows/docker-image.yml'
       - 'pyproject.tml'
+      - 'Dockerfile'
     branches:
       - "develop"
 
