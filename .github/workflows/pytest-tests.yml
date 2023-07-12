@@ -4,10 +4,10 @@
 name:  Run Unit Test via Pytest 
 
 on:
-  push:
-    branches: [ "develop" ]
   pull_request:
     branches: [ "develop" ]
+  # allows to manually start a workflow run from the GitHub UI or using the GitHub API. 
+  workflow_dispatch:
 
 permissions:
   contents: read
