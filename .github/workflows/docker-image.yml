@@ -1,14 +1,17 @@
 name: Docker Image  CI and pytest test.
 
-# This workflow is only triggered when This workflow will install Python dependencies, run tests and pre-commit hook with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+# This workflow is only triggered when something is pushed on develop branch.
+# This workflow will built docker image and run tests inside the container.
+# This workflow ensures that the after every change in "develop", the code is not breaking.
+# This workflow is not executed for every PR because if we have multiple PRs, 
+# the docker container will reponsd to the last created created PR, which is not good.
 
 on:
   push:
-    paths:
-      - '.github/workflows/docker-image.yml'
-    # branches:
-    #   - "develop"
+     branches:
+       - "develop"
+  # allows to manually start a workflow run from the GitHub UI or using the GitHub API.    
+  workflow_dispatch:
 
 jobs:
   built:
@@ -18,10 +21,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Build the Docker image
+      - name: Build the docker image
         run: docker build --tag ai4eu_server_demo:latest -f Dockerfile .
       
-      - name: Run Docker container and pytest tests
+      - name: Run docker container and pytest tests
         run: |
           docker run -e KEYCLOAK_CLIENT_SECRET="mocked_secret" --entrypoint "" ai4eu_server_demo sh -c "pip install \".[dev]\" && pytest --envfile test/.env tests -s"
   
