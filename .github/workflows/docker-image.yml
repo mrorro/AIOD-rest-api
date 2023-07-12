@@ -21,7 +21,8 @@ jobs:
       - name: Run docker container
         run: |
           docker network create sql-network
-          docker run ai4eu_server_demo:latest
+          docker run -e MYSQL_ROOT_PASSWORD=ok --name sqlserver --network sql-network -d mysql
+          docker run --network sql-network -it --rm -p 8000:8000 --name apiserver ai4eu_server_demo
           pip install pre-commit
   
   
