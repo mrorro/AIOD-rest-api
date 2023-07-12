@@ -20,7 +20,7 @@ jobs:
       
       - name: Run docker container
         run: |
-          docker run --rm --entrypoint "" ai4eu_server_demo sh -c "pip install \".[dev]\" && pytest tests"
+          docker run --entrypoint "" ai4eu_server_demo sh -c "pip install \".[dev]\" && pytest tests -s"
   
   
           
