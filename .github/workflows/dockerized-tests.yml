@@ -1,8 +1,8 @@
 name: Built docker image and run tests
 
 # This workflow will built docker image and run tests inside the container.
-# This workflow is only executed when a push is made in "develop", or 
-# if there is pull request with change in pyproject.toml dependencies, or in Dockerfile, or in docker workflow. 
+# This workflow is only executed if there is pull request with change in pyproject.toml dependencies, 
+# or in Dockerfile, or in docker workflow. 
 
 on:
   pull_request:
@@ -10,10 +10,7 @@ on:
       - '.github/workflows/docker-image.yml'
       - 'pyproject.toml'
       - 'Dockerfile'
-  push:
-    branches:
-      - "develop"
-
+      
   # allows to manually start a workflow run from the GitHub UI or using the GitHub API.    
   workflow_dispatch:
 
