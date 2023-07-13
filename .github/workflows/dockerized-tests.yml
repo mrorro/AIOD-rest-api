@@ -1,11 +1,8 @@
 name: Built docker image and run tests
 
-# This workflow is only triggered when something is pushed on develop branch.
 # This workflow will built docker image and run tests inside the container.
-# This workflow ensures that the after every change in "develop", the code is not breaking.
-# This workflow is not executed for every PR because it seems unnecessary: we're already testing 
-# the PRs using a python virtual env instead of the docker. 
-# Also performing dockerized tests for every PR seems to be overkill."
+# This workflow is only executed when a push is made in "develop", or 
+# if there is a change in pyproject.toml dependencies, or Dockerfile, or docker workflow. 
 
 on:
   push:
