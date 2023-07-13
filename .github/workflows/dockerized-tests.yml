@@ -2,7 +2,7 @@ name: Built docker image and run tests
 
 # This workflow will built docker image and run tests inside the container.
 # This workflow is only executed when a push is made in "develop", or 
-# if there is a change in pyproject.toml dependencies, or in Dockerfile, or in docker workflow. 
+# if there is pull request with change in pyproject.toml dependencies, or in Dockerfile, or in docker workflow. 
 
 on:
   pull_request:
