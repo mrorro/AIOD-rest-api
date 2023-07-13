@@ -5,11 +5,12 @@ name: Built docker image and run tests
 # if there is a change in pyproject.toml dependencies, or in Dockerfile, or in docker workflow. 
 
 on:
-  push:
+  pull_request:
     paths:
       - '.github/workflows/docker-image.yml'
       - 'pyproject.toml'
       - 'Dockerfile'
+  push:
     branches:
       - "develop"
 
