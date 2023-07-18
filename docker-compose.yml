@@ -1,13 +1,15 @@
-version: '3'
+version: '3.8'
 
 services:
   app:
-    build: Dockerfile
+    build: .
     container_name: apiserver
     ports:
       - 8000:8000
     networks:
-      - sql-network
+      - "sql-network"
+    healthcheck:
+      test: ["CMD", "python", "-c",  "import requests; requests.get('http://localhost:8000')"]
     depends_on:
       sqlserver:
         condition: service_healthy
@@ -17,18 +19,15 @@ services:
     container_name: sqlserver
     volumes:
       - ./data/mysql:/var/lib/mysql
-    networks:
-      - sql-network
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+      test: ["CMD", "mysqladmin", "-uroot", "-pok", "ping", "-h", "localhost"]
+    networks:
+      - "sql-network"
 
-    
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     container_name: keycloak
-    entrypoint: /opt/keycloak/bin/kc.sh start
+    entrypoint: /opt/keycloak/bin/kc.sh start-dev --import-realm
     restart: unless-stopped
     environment:
       - KEYCLOAK_ADMIN=admin
@@ -36,11 +35,14 @@ services:
       - KC_HTTP_RELATIVE_PATH=/aiod-auth
       - KC_HOSTNAME=localhost
       - KC_PROXY=edge
+      - KC_USERS=same_file
     ports:
       - 8080:8080 
+    networks:
+      - "sql-network"
     volumes:
      - ./keycloak:/opt/keycloak/data/import 
-
+ 
   nginx:
     image: nginx:stable
     container_name: nginx
@@ -49,10 +51,15 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d
     ports:
       - 80:80
-      - 443:443
+    networks:
+      - "sql-network"
     external_links:
       - keycloak
+    depends_on:
+      app:
+        condition: service_healthy
 
 networks:
   sql-network:
     driver: bridge
+
