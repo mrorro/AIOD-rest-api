@@ -29,7 +29,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--url-prefix", default="", help="Prefix for the api url.")
     parser.add_argument(
         "--rebuild-db",
-        default="only-if-empty",
+        default='always',
         choices=["no", "only-if-empty", "always"],
         help="Determines if the database is recreated.",
     )
