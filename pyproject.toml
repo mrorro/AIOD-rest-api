@@ -13,7 +13,7 @@ authors = [
     {name = "Taniya Das", email = "t.das@tue.nl"}
 ]
 dependencies = [
-    "urllib3== 2.0.3",
+    "urllib3== 2.0.4",
     "bibtexparser==1.4.0",
     "datasets==2.13.1",
     "fastapi==0.100.0",
