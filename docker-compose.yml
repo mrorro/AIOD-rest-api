@@ -1,8 +1,10 @@
-version: '3.8'
+version: '3.9'
 
 services:
   app:
-    build: .
+    build:
+      context: ./
+      dockerfile: Dockerfile
     container_name: apiserver
     ports:
       - 8000:8000
@@ -29,6 +31,8 @@ services:
   sqlserver:
     image: mysql
     container_name: sqlserver
+    env_file:
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
@@ -41,8 +45,9 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     container_name: keycloak
-    entrypoint: /opt/keycloak/bin/kc.sh start --import-realm
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=password
@@ -58,7 +63,8 @@ services:
       - "sql-network"
     volumes:
      - ./keycloak:/opt/keycloak/data/import 
- 
+    command: start --import-realm
+
   nginx:
     image: nginx:stable
     container_name: nginx
@@ -70,8 +76,6 @@ services:
       - 443:443
     networks:
       - "sql-network"
-    external_links:
-      - keycloak
     depends_on:
       app:
         condition: service_healthy
