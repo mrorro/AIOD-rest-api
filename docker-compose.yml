@@ -47,7 +47,7 @@ services:
     container_name: keycloak
     restart: unless-stopped
     env_file:
-      - .env
+      - src/.env
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=password
