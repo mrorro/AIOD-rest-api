@@ -6,6 +6,9 @@ services:
       context: ./
       dockerfile: Dockerfile
     container_name: apiserver
+    env_file: .env
+    environment:
+      - KEYCLOAK_CLIENT_SECRET=$KEYCLOAK_CLIENT_SECRET
     ports:
       - 8000:8000
     networks:
@@ -31,23 +34,24 @@ services:
   sqlserver:
     image: mysql
     container_name: sqlserver
-    env_file:
-      - .env
+    env_file: .env
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - ./data/mysql:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "-uroot", "-p$MYSQL_ROOT_PASSWORD", "ping", "-h", "localhost"]
+      interval: 60s
+      timeout: 60s
+      retries: 30
     networks:
       - "sql-network"
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     container_name: keycloak
+    env_file: .env
     restart: unless-stopped
-    env_file:
-      - src/.env
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=password
@@ -66,7 +70,7 @@ services:
     command: start --import-realm
 
   nginx:
-    image: nginx:stable
+    image: nginx
     container_name: nginx
     restart: unless-stopped
     volumes:
