@@ -53,21 +53,25 @@ services:
     env_file: .env
     restart: unless-stopped
     environment:
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=password
-      - KC_HTTP_RELATIVE_PATH=/aiod-auth
-      - KC_HOSTNAME=$KC_HOSTNAME
-      - KC_PROXY=edge
+      - HOSTNAME=$HOSTNAME
+      - KEYCLOAK_ADMIN=$KEYCLOAK_ADMIN
+      - KEYCLOAK_ADMIN_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD
+      - KC_HTTP_RELATIVE_PATH=$KC_HTTP_RELATIVE_PATH
       - KC_USERS=same_file
       - REDIRECT_URIS=$REDIRECT_URIS
       - POST_LOGOUT_REDIRECT_URIS=$POST_LOGOUT_REDIRECT_URIS
+      - PROXY_ADDRESS_FORWARDING=true
     ports:
       - 8080:8080 
     networks:
       - "sql-network"
     volumes:
      - ./keycloak:/opt/keycloak/data/import 
-    command: start --import-realm
+    command: >
+      start-dev
+      --hostname-url http://$HOSTNAME$KC_HTTP_RELATIVE_PATH
+      --hostname-admin-url http://$HOSTNAME$KC_HTTP_RELATIVE_PATH
+      --import-realm
 
   nginx:
     image: nginx
