@@ -14,8 +14,10 @@ services:
     volumes:
       - ./src:/app
     command: >
+      --rebuild-db always
       --fill-with-examples datasets computational_resources publications news events case_studies
             presentations projects educational_resources organisations
+      --reload
       --limit 10
     healthcheck:
       test: ["CMD", "python", "-c",  "import requests; requests.get('http://localhost:8000')"]
@@ -50,7 +52,7 @@ services:
     ports:
       - 8080:8080
     volumes:
-     - ./keycloak:/opt/keycloak/data/import
+     - ./quay-keycloak:/opt/keycloak/data/import
     command: >
       start-dev 
       --hostname-url http://${HOSTNAME}/aiod-auth
